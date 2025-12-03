@@ -1,0 +1,1425 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RH Manager - Sistema de Gestão de RH</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+        /* ===== LOGIN SCREEN ===== */
+        .login-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            padding: 20px;
+        }
+
+        .login-box {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .login-header h1 {
+            font-size: 28px;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .login-header p {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #2c3e50;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ecf0f1;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(44, 62, 80, 0.3);
+        }
+
+        .login-btn:active {
+            transform: translateY(0);
+        }
+
+        .login-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .error-message {
+            display: none;
+            background: #fee;
+            color: #c33;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            border-left: 4px solid #c33;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .success-message {
+            display: none;
+            background: #efe;
+            color: #3c3;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            border-left: 4px solid #3c3;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading-spinner.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 3px solid #ecf0f1;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+    @keyframes spin {
+163	            0% { transform: rotate(0deg); }
+164	            100% { transform: rotate(360deg); }
+165	        }
+
+        @keyframes rotate-sync {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .rotating .fa-sync-alt {
+            animation: rotate-sync 1s linear infinite;
+        }  /* ===== DASHBOARD SCREEN ===== */
+        .dashboard-container {
+            display: none;
+            flex: 1;
+            min-height: 100vh;
+        }
+
+        .dashboard-container.active {
+            display: flex;
+        }
+
+        .sidebar {
+            width: 210px;
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 20px;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar-header {
+            margin-bottom: 30px;
+            border-bottom: 2px dashed rgba(255, 255, 255, 0.2);
+            padding-bottom: 15px;
+        }
+
+        .sidebar-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .sidebar-subtitle {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .sidebar-user {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.5);
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-menu {
+            list-style: none;
+            margin-bottom: 30px;
+        }
+
+        .nav-item {
+            margin-bottom: 15px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            padding: 10px 12px;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+        }
+
+        .nav-link:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .nav-link.active {
+            background-color: #3498db;
+            color: white;
+            font-weight: 600;
+        }
+
+        .nav-icon {
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logout-btn {
+            width: 100%;
+            padding: 10px 12px;
+            background: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.7);
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 0, 0, 0.2);
+            color: #ff6b6b;
+        }
+
+        .main-content {
+            margin-left: 210px;
+            flex: 1;
+            padding: 30px;
+        }
+
+        .page-header {
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .page-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+
+        .page-subtitle {
+            font-size: 14px;
+            color: #7f8c8d;
+        }
+
+        .sync-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: #7f8c8d;
+        }
+
+        .sync-status.syncing {
+            color: #3498db;
+        }
+
+        .sync-status.synced {
+            color: #27ae60;
+        }
+
+        .sync-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #27ae60;
+        }
+
+        .sync-indicator.syncing {
+            background: #3498db;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .kpi-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            border-left: 4px solid #3498db;
+            transition: all 0.3s ease;
+        }
+
+        .kpi-card:hover {
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+            transform: translateY(-2px);
+        }
+
+        .kpi-card.green {
+            border-left-color: #27ae60;
+        }
+
+        .kpi-card.blue {
+            border-left-color: #3498db;
+        }
+
+        .kpi-card.orange {
+            border-left-color: #e67e22;
+        }
+
+        .kpi-card.purple {
+            border-left-color: #9b59b6;
+        }
+
+        .kpi-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .kpi-label {
+            font-size: 13px;
+            color: #7f8c8d;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .kpi-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .kpi-card.blue .kpi-icon {
+            background-color: rgba(52, 152, 219, 0.1);
+            color: #3498db;
+        }
+
+        .kpi-card.green .kpi-icon {
+            background-color: rgba(39, 174, 96, 0.1);
+            color: #27ae60;
+        }
+
+        .kpi-card.orange .kpi-icon {
+            background-color: rgba(230, 126, 34, 0.1);
+            color: #e67e22;
+        }
+
+        .kpi-card.purple .kpi-icon {
+            background-color: rgba(155, 89, 182, 0.1);
+            color: #9b59b6;
+        }
+
+        .kpi-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+
+        .kpi-change {
+            font-size: 12px;
+            color: #7f8c8d;
+        }
+
+        .kpi-change.positive {
+            color: #27ae60;
+        }
+
+        .kpi-change.negative {
+            color: #e74c3c;
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+
+        .activity-list, .vacation-list {
+            list-style: none;
+        }
+
+        .activity-item, .vacation-item {
+            padding: 15px 0;
+            border-bottom: 1px solid #ecf0f1;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .activity-item:last-child, .vacation-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-info, .vacation-info {
+            flex: 1;
+        }
+
+        .activity-name, .vacation-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 4px;
+        }
+
+        .activity-description, .vacation-dates {
+            font-size: 13px;
+            color: #7f8c8d;
+        }
+
+        .activity-time, .vacation-days {
+            font-size: 12px;
+            color: #3498db;
+            font-weight: 600;
+            white-space: nowrap;
+            margin-left: 10px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px 0;
+            color: #7f8c8d;
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @media (max-width: 1024px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 70px;
+                padding: 15px;
+            }
+
+            .sidebar-title, .sidebar-subtitle, .sidebar-user {
+                display: none;
+            }
+
+            .nav-link {
+                justify-content: center;
+                padding: 12px;
+            }
+
+            .nav-icon {
+                width: 24px;
+                height: 24px;
+            }
+
+            .main-content {
+                margin-left: 70px;
+                padding: 20px;
+            }
+
+            .page-title {
+                font-size: 24px;
+            }
+
+            .kpi-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .logout-btn {
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .sidebar {
+                width: 60px;
+            }
+
+            .main-content {
+                margin-left: 60px;
+                padding: 15px;
+            }
+
+            .page-title {
+                font-size: 20px;
+            }
+
+            .kpi-value {
+                font-size: 24px;
+            }
+
+            .kpi-card {
+                padding: 15px;
+            }
+        }
+
+        .config-box {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            color: #856404;
+        }
+
+        select, textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ecf0f1;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: all 0.3s ease;
+        }
+
+        select:focus, textarea:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        table th {
+            background: #f5f5f5;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #2c3e50;
+            border-bottom: 2px solid #ecf0f1;
+        }
+
+        table td {
+            padding: 12px;
+            border-bottom: 1px solid #ecf0f1;
+        }
+
+        table tr:hover {
+            background: #f9f9f9;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-pendente {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-aprovada {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-rejeitada {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .action-spinner {
+            display: none;
+            margin-left: 10px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            animation: spin 1s linear infinite;
+        }
+
+        .action-spinner.show {
+            display: block;
+        }tn-small {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-aprovar {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-aprovar:hover {
+            background: #229954;
+        }
+
+        .btn-rejeitar {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-rejeitar:hover {
+            background: #c0392b;
+        }
+    </style>
+</head>
+<body>
+    <!-- LOGIN SCREEN -->
+    <div id="loginScreen" class="login-container">
+        <div class="login-box">
+            <div class="login-header">
+                <h1>RH Manager</h1>
+                <p>Sistema de Gestão de RH</p>
+            </div>
+
+            
+
+            <div id="errorMessage" class="error-message"></div>
+            <div id="successMessage" class="success-message"></div>
+            <div id="loadingSpinner" class="loading-spinner">
+                <div class="spinner"></div>
+                <p>Validando credenciais...</p>
+            </div>
+
+            <form id="loginForm" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input 
+                        type="email" 
+                        id="email" 
+                        placeholder="seu.email@empresa.com" 
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Senha</label>
+                    <input 
+                        type="password" 
+                        id="password" 
+                        placeholder="Digite sua senha" 
+                        required
+                    >
+                </div>
+
+                <button type="submit" class="login-btn" id="loginBtn">
+                    <i class="fas fa-sign-in-alt"></i> ENTRAR
+                </button>
+            </form>
+
+            
+        </div>
+    </div>
+
+    <!-- DASHBOARD SCREEN -->
+    <div id="dashboardScreen" class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-title">RH Manager</div>
+                <div class="sidebar-subtitle">Sistema de Gestão</div>
+                <div class="sidebar-user" id="userEmail">Usuário</div>
+                <div class="sidebar-user" id="userName" style="margin-top: 5px;"></div>
+            </div>
+
+            <nav>
+                <ul class="nav-menu">
+                    <li class="nav-item">
+                        <button class="nav-link active" onclick="showPage('dashboard')">
+                            <span class="nav-icon">📊</span>
+                            <span>Dashboard</span>
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" onclick="showPage('horas')">
+                            <span class="nav-icon">⏱️</span>
+                            <span>Horas Extras</span>
+                        </button>
+                    </li>
+
+                    <li class="nav-item">
+                        <button class="nav-link" onclick="showPage('aprovacoes')">
+                            <span class="nav-icon">✅</span>
+                            <span>Aprovações</span>
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" onclick="showPage('ferias')">
+                            <span class="nav-icon">🏖️</span>
+                            <span>Férias</span>
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" onclick="showPage('funcionarios')">
+                            <span class="nav-icon">👥</span>
+                            <span>Funcionários</span>
+                        </button>
+                    </li>
+                </ul>
+            </nav>
+
+            <button class="logout-btn" onclick="handleLogout()">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Sair</span>
+            </button>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Dashboard Page -->
+            <div id="dashboard-page" class="page active">
+                <div class="page-header">
+                    <div>
+                        <h1 class="page-title">Dashboard</h1>
+                        <p class="page-subtitle">Visão geral do sistema de gestão de recursos humanos</p>
+                    </div>
+                    <div class="sync-status synced" id="syncStatus">
+                        <div class="sync-indicator"></div>
+                        <span>Sincronizado</span>
+                    </div>
+                </div>
+
+                <!-- KPI Cards -->
+                <div class="kpi-grid">
+                    <div class="kpi-card blue">
+                        <div class="kpi-header">
+                            <span class="kpi-label">Total de Funcionários</span>
+                            <div class="kpi-icon">👥</div>
+                        </div>
+                        <div class="kpi-value" id="totalFuncionarios">--</div>
+                        <div class="kpi-change positive" id="totalChange">Carregando...</div>
+                    </div>
+
+                    <div class="kpi-card green">
+                        <div class="kpi-header">
+                            <span class="kpi-label">Horas Extras (Mês)</span>
+                            <div class="kpi-icon">⏱️</div>
+                        </div>
+                        <div class="kpi-value" id="horasExtras">--</div>
+                        <div class="kpi-change negative" id="horasChange">Carregando...</div>
+                    </div>
+
+                    <div class="kpi-card orange">
+                        <div class="kpi-header">
+                            <span class="kpi-label">Férias Programadas</span>
+                            <div class="kpi-icon">🏖️</div>
+                        </div>
+                        <div class="kpi-value" id="feriasProgramadas">--</div>
+                        <div class="kpi-change positive" id="feriasChange">Carregando...</div>
+                    </div>
+
+                    <div class="kpi-card purple">
+                        <div class="kpi-header">
+                            <span class="kpi-label">Taxa de Presença</span>
+                            <div class="kpi-icon">✅</div>
+                        </div>
+                        <div class="kpi-value" id="taxaPresenca">--</div>
+                        <div class="kpi-change positive" id="presencaChange">Carregando...</div>
+                    </div>
+                </div>
+
+                <div class="content-grid">
+                    <div class="card">
+                        <h2 class="card-title">Atividades Recentes</h2>
+                        <div id="atividadesContainer">
+                            <div class="loading">
+                                <div class="spinner"></div>
+                                <p>Carregando atividades...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h2 class="card-title">Próximas Férias</h2>
+                        <div id="feriasContainer">
+                            <div class="loading">
+                                <div class="spinner"></div>
+                                <p>Carregando férias...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Horas Extras Page -->
+            <div id="horas-page" class="page">
+                <div class="page-header">
+                    <div>
+                        <h1 class="page-title">Horas Extras</h1>
+                        <p class="page-subtitle">Registro e acompanhamento de horas extras</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <div id="horasDetailContainer">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            <p>Carregando dados...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Férias Page -->
+            <div id="ferias-page" class="page">
+                <div class="page-header">
+                    <div>
+                        <h1 class="page-title">Férias</h1>
+                        <p class="page-subtitle">Gestão de férias dos funcionários</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <div id="feriasDetailContainer">
+                        <p style="text-align: center; color: #7f8c8d; padding: 40px;">🚧 Funcionalidade em desenvolvimento. Em breve você poderá gerenciar as férias dos funcionários aqui.</p>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- Aprovações Page -->
+            <div id="aprovacoes-page" class="page">
+                <div class="page-header">
+                    <div>
+                        <h1 class="page-title">Aprovações de Horas Extras</h1>
+                        <p class="page-subtitle">Aprove ou rejeite solicitações de horas extras</p>
+                    </div>
+                </div>
+
+                <div id="acessoNegado" style="display: none;">
+                    <div class="card">
+                        <p style="text-align: center; color: #e74c3c; font-size: 16px;">
+                            <i class="fas fa-lock"></i> Você não tem permissão para acessar esta página.
+                        </p>
+                    </div>
+                </div>
+
+                <div id="containerAprovacoes">
+                    <!-- Painel de Total de Horas Pendentes -->
+                    <div class="kpi-grid" style="margin-bottom: 20px;">
+                        <div class="kpi-card blue">
+                            <div class="kpi-header">
+                                <div class="kpi-label">TOTAL DE HORAS PENDENTES</div>
+                                <div class="kpi-icon"><button id="refreshButton" onclick="carregarSolicitacoesPendentes()" style="background:none; border:none; color:white; cursor:pointer; font-size:16px;"><i class="fas fa-sync-alt"></i></button></div>
+                            </div>
+                            <div class="kpi-value" id="totalHorasPendentes">00:00</div>
+                            <div class="kpi-change">Soma das horas em aprovação</div>
+                        </div>
+                    </div>
+                    <!-- Fim Painel de Total de Horas Pendentes -->
+                    <div class="card">
+                        <h2 class="card-title">Solicitações Pendentes</h2>
+                        <div id="solicitacoesPendentes">
+                            <div class="loading">
+                                <div class="spinner"></div>
+                                <p>Carregando solicitações...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Funcionários Page -->
+            <div id="funcionarios-page" class="page">
+                <div class="page-header">
+                    <div>
+                        <h1 class="page-title">Funcionários</h1>
+                        <p class="page-subtitle">Gestão de funcionários da empresa</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <div id="funcionariosContainer">
+                        <p style="text-align: center; color: #7f8c8d; padding: 40px;">🚧 Funcionalidade em desenvolvimento. Em breve você poderá gerenciar os funcionários aqui.</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // ===== CONFIGURAÇÃO DO GOOGLE APPS SCRIPT =====
+        // ATENÇÃO: SUBSTITUA ESTA URL PELA URL DE IMPLANTAÇÃO DO SEU GOOGLE APPS SCRIPT
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzB-G4h6xvs5SfF7hjVjos6VpS1ufmApyjge88Ohxg3IRvRRYVMf2JRfcScgFb94RE/exec';
+
+        // Função auxiliar para formatar a data
+function formatarData(dataString) {
+    try {
+        // Tenta criar um objeto Date a partir da string
+        const data = new Date(dataString);
+        // Verifica se a data é válida
+        if (isNaN(data)) {
+            return dataString; // Retorna a string original se for inválida
+        }
+        // Formata para dd/MM/yyyy
+        const dia = String(data.getDate()).padStart(2, '0');
+        const mes = String(data.getMonth() + 1).padStart(2, '0'); // Mês é 0-indexed
+        const ano = data.getFullYear();
+        return `${dia}/${mes}/${ano}`;
+    } catch (e) {
+        return dataString; // Retorna a string original em caso de erro
+    }
+}
+
+// ===== VARIÁVEIS GLOBAIS PARA APROVAÇÕES =====
+        let usuarioAtual = {};
+
+        // ===== AUTENTICAÇÃO =====
+        async function handleLogin(event) {
+            event.preventDefault();
+
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            const errorMessage = document.getElementById('errorMessage');
+            const successMessage = document.getElementById('successMessage');
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            const loginBtn = document.getElementById('loginBtn');
+
+            // Limpar mensagens anteriores
+            errorMessage.classList.remove('show');
+            successMessage.classList.remove('show');
+            loadingSpinner.classList.add('show');
+            loginBtn.disabled = true;
+
+            try {
+                // Chamar o Apps Script para validar credenciais
+                const url = `${SCRIPT_URL}?action=validarCredenciais&email=${encodeURIComponent(email)}&senha=${encodeURIComponent(password)}`;
+                
+                const response = await fetch(url);
+                const data = await response.json();
+
+                if (data.sucesso) {
+                    successMessage.textContent = 'Login realizado com sucesso!';
+                    successMessage.classList.add('show');
+                    
+                    // Salvar sessão no localStorage
+                    localStorage.setItem('isLoggedIn', 'true');
+                    localStorage.setItem('userEmail', data.dados.email);
+                    localStorage.setItem('userName', data.dados.nome);
+                    
+                    // Aguardar um pouco e depois mostrar dashboard
+                    setTimeout(() => {
+                        showDashboard(data.dados.email, data.dados.nome);
+                    }, 500);
+                } else {
+                    errorMessage.textContent = data.mensagem || 'Email ou senha inválidos!';
+                    errorMessage.classList.add('show');
+                }
+            } catch (error) {
+                errorMessage.textContent = 'Erro ao conectar com o servidor: ' + error.message;
+                errorMessage.classList.add('show');
+                console.error('Erro:', error);
+            } finally {
+                loadingSpinner.classList.remove('show');
+                loginBtn.disabled = false;
+            }
+        }
+
+        function showDashboard(userEmail, userName) {
+            usuarioAtual = {
+                email: userEmail,
+                nome: userName
+            };
+
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('dashboardScreen').classList.add('active');
+            document.getElementById('userEmail').textContent = userEmail;
+            document.getElementById('userName').textContent = userName || 'Usuário';
+            
+            // Carregar dados da dashboard
+            loadDashboardData();
+            // Mostrar a página inicial (Dashboard)
+            showPage('dashboard');
+        }
+
+        function handleLogout() {
+            localStorage.removeItem('isLoggedIn');
+            localStorage.removeItem('userEmail');
+            localStorage.removeItem('userName');
+            document.getElementById('dashboardScreen').classList.remove('active');
+            document.getElementById('loginScreen').style.display = 'flex';
+            document.getElementById('loginForm').reset();
+        }
+
+        // ===== NAVEGAÇÃO =====
+        function showPage(pageName) {
+            const pages = document.querySelectorAll('.page');
+            pages.forEach(page => page.classList.remove('active'));
+            const pageId = pageName + '-page';
+            const selectedPage = document.getElementById(pageId);
+            if (selectedPage) {
+                selectedPage.classList.add('active');
+            }
+            const navLinks = document.querySelectorAll('.nav-link');
+            navLinks.forEach(link => link.classList.remove('active'));
+            
+            const activeLink = document.querySelector(`[onclick="showPage('${pageName}')"]`);
+            if (activeLink) {
+                activeLink.classList.add('active');
+            }
+
+            // Ação específica ao mudar de página
+            if (pageName === 'aprovacoes') {
+                verificarPermissaoAprovacao();
+            }
+        }
+
+        // ===== CARREGAR DADOS DA DASHBOARD (Exemplo) =====
+        async function loadDashboardData() {
+            try {
+                // Chamar o Apps Script para obter dados
+                // NOTA: A função 'obterDashboard' não foi fornecida no Apps Script, 
+                // então usaremos dados mockados por enquanto.
+                // const url = `${SCRIPT_URL}?action=obterDashboard`;
+                // const response = await fetch(url);
+                // const data = await response.json();
+
+                // if (data.sucesso) {
+                //     const dashboard = data.dados;
+                    
+                //     // Atualizar KPIs
+                //     document.getElementById('totalFuncionarios').textContent = dashboard.totalFuncionarios || '0';
+                //     document.getElementById('totalChange').textContent = '+2 este mês';
+                //     document.getElementById('horasExtras').textContent = dashboard.horasExtras || '0h';
+                //     document.getElementById('horasChange').textContent = '-12% vs mês anterior';
+                //     document.getElementById('feriasProgramadas').textContent = dashboard.feriasProgramadas || '0';
+                //     document.getElementById('taxaPresenca').textContent = dashboard.taxaPresenca || '0%';
+                //     document.getElementById('presencaChange').textContent = '+3% vs anterior';
+                // }
+            } catch (error) {
+                console.error('Erro ao carregar dados:', error);
+            }
+
+            // Dados de exemplo (Mockados)
+            const atividades = [
+                { nome: 'Maria Silva', descricao: 'registrou 8h extras', tempo: '2h atrás' },
+                { nome: 'João Santos', descricao: 'solicitou férias', tempo: '5h atrás' },
+                { nome: 'Ana Costa', descricao: 'atualizou cadastro', tempo: '1d atrás' },
+                { nome: 'Pedro Lima', descricao: 'registrou ponto', tempo: '1d atrás' }
+            ];
+            const ferias = [
+                { nome: 'Carlos Mendes', datas: '15-29 Dez', dias: '15 dias' },
+                { nome: 'Lucia Ferreira', datas: '20-27 Dez', dias: '8 dias' },
+                { nome: 'Roberto Alves', datas: '2-16 Jan', dias: '15 dias' },
+                { nome: 'Fernanda Rocha', datas: '8-22 Jan', dias: '15 dias' }
+            ];
+
+            renderAtividades(atividades);
+            renderFerias(ferias);
+        }
+
+        function renderAtividades(atividades) {
+            const container = document.getElementById('atividadesContainer');
+            const html = `
+                <ul class="activity-list">
+                    ${atividades.map(a => `
+                        <li class="activity-item">
+                            <div class="activity-info">
+                                <div class="activity-name">${a.nome}</div>
+                                <div class="activity-description">${a.descricao}</div>
+                            </div>
+                            <div class="activity-time">${a.tempo}</div>
+                        </li>
+                    `).join('')}
+                </ul>
+            `;
+            container.innerHTML = html;
+        }
+
+        function renderFerias(ferias) {
+            const container = document.getElementById('feriasContainer');
+            const html = `
+                <ul class="vacation-list">
+                    ${ferias.map(f => `
+                        <li class="vacation-item">
+                            <div class="vacation-info">
+                                <div class="vacation-name">${f.nome}</div>
+                                <div class="vacation-dates">${f.datas}</div>
+                            </div>
+                            <div class="vacation-days">${f.dias}</div>
+                        </li>
+                    `).join('')}
+                </ul>
+            `;
+            container.innerHTML = html;
+        }
+
+        // ===== SINCRONIZAÇÃO EM TEMPO REAL =====
+        function setupRealtimeSync() {
+            setInterval(() => {
+                syncData();
+            }, 30000);
+            window.addEventListener('focus', () => {
+                syncData();
+            });
+        }
+
+        function syncData() {
+            const syncStatus = document.getElementById('syncStatus');
+            syncStatus.classList.remove('synced');
+            syncStatus.classList.add('syncing');
+            syncStatus.innerHTML = '<div class="sync-indicator syncing"></div><span>Sincronizando...</span>';
+            setTimeout(() => {
+                syncStatus.classList.remove('syncing');
+                syncStatus.classList.add('synced');
+                syncStatus.innerHTML = '<div class="sync-indicator"></div><span>Sincronizado</span>';
+            }, 1000);
+        }
+
+        // ===== VERIFICAR PERMISSÃO DE APROVAÇÃO =====
+        async function verificarPermissaoAprovacao() {
+          const loading = document.querySelector('#solicitacoesPendentes .loading');
+          if (loading) loading.style.display = 'block';
+
+          try {
+            const userEmail = localStorage.getItem('userEmail');
+            if (!userEmail) {
+                document.getElementById('containerAprovacoes').style.display = 'none';
+                document.getElementById('acessoNegado').style.display = 'block';
+                return;
+            }
+
+            const url = `${SCRIPT_URL}?action=verificarPermissaoAprovacao&email=${encodeURIComponent(userEmail)}`;
+            const response = await fetch(url);
+            const data = await response.json();
+            
+            if (data.sucesso && data.dados.podeAprovar) {
+              document.getElementById('containerAprovacoes').style.display = 'block';
+              document.getElementById('acessoNegado').style.display = 'none';
+              carregarSolicitacoesPendentes();
+            } else {
+              document.getElementById('containerAprovacoes').style.display = 'none';
+              document.getElementById('acessoNegado').style.display = 'block';
+            }
+          } catch (error) {
+            console.error('Erro ao verificar permissão:', error);
+            document.getElementById('containerAprovacoes').style.display = 'none';
+            document.getElementById('acessoNegado').style.display = 'block';
+          } finally {
+            if (loading) loading.style.display = 'none';
+          }
+        }
+
+        // ===== CARREGAR SOLICITAÇÕES PENDENTES =====
+        async function carregarSolicitacoesPendentes() {
+          const container = document.getElementById('solicitacoesPendentes');
+          const refreshButton = document.getElementById('refreshButton');
+
+          // Adiciona animação de rotação ao botão de atualização
+          refreshButton.classList.add('rotating');
+
+          container.innerHTML = `
+            <div class="loading">
+                <div class="spinner"></div>
+                <p>Carregando solicitações...</p>
+            </div>
+          `;
+
+          try {
+            const url = `${SCRIPT_URL}?action=obterSolicitacoesPendentes`;
+            const response = await fetch(url);
+            const data = await response.json();
+            
+            if (data.sucesso) {
+              renderizarSolicitacoesPendentes(data.dados);
+            } else {
+                container.innerHTML = `<p style="color: red; text-align: center;">Erro: ${data.mensagem}</p>`;
+            }
+            // Remove a animação de rotação após o carregamento
+            document.getElementById('refreshButton').classList.remove('rotating');
+          } catch (error) {
+            console.error('Erro ao carregar solicitações pendentes:', error);
+            document.getElementById('refreshButton').classList.remove('rotating');
+            container.innerHTML = '<p style="color: red; text-align: center;">Erro ao carregar solicitações. Verifique a URL do Apps Script.</p>';
+          }
+        }
+
+        // ===== RENDERIZAR SOLICITAÇÕES PENDENTES =====
+        function renderizarSolicitacoesPendentes(dados) {
+    const totalHoras = dados.totalHoras || '0.0';
+    document.getElementById('totalHorasPendentes').innerText = totalHoras;
+
+    const solicitacoes = dados.solicitacoes || [];
+          const container = document.getElementById('solicitacoesPendentes');
+          
+          if (solicitacoes.length === 0) {
+            container.innerHTML = '<p style="text-align: center; color: #7f8c8d; padding: 40px;">Nenhuma solicitação pendente</p>';
+            return;
+          }
+          
+          let html = '<div class="table-container"><table>';
+          html += '<thead><tr><th>Funcionário</th><th>Data</th><th>Horas</th><th>Motivo</th><th>Ações</th></tr></thead><tbody>';
+          
+          solicitacoes.forEach(sol => {
+            // O email do colaborador não está sendo retornado pelo Apps Script, 
+            // então vou usar um placeholder ou o nome.
+            const colaboradorInfo = sol.nome; 
+
+            html += `
+              <tr>
+                <td><strong>${colaboradorInfo}</strong></td>
+                <td>${formatarData(sol.data)}</td>
+                <td>${sol.horas}h</td>
+                <td>${sol.motivo}</td>
+                <td>
+            <div class="btn-group" id="actionGroup-${sol.linha}">
+                    <button class="btn-small btn-aprovar" onclick="aprovarSolicitacao('${sol.linha}')">Aprovar</button>
+                    <button class="btn-small btn-rejeitar" onclick="mostrarRejeicao('${sol.linha}')">Rejeitar</button>
+                    <div class="action-spinner" id="spinner-${sol.linha}"></div>
+                  </div>        </td>
+              </tr>
+            `;
+          });
+          
+          html += '</tbody></table></div>';
+          container.innerHTML = html;
+        }
+
+        // ===== APROVAR SOLICITAÇÃO =====
+        async function aprovarSolicitacao(linha) {
+          if (!confirm('Tem certeza que deseja APROVAR esta solicitação?')) return;
+
+          const actionGroup = document.getElementById(`actionGroup-${linha}`);
+          const spinner = document.getElementById(`spinner-${linha}`);
+          const buttons = actionGroup.querySelectorAll('button');
+
+          buttons.forEach(btn => btn.disabled = true);
+          spinner.classList.add('show');
+
+          try {
+            const userEmail = localStorage.getItem('userEmail');
+            if (!userEmail) {
+                alert('Erro: Usuário não logado.');
+                return;
+            }
+
+            const url = `${SCRIPT_URL}?action=aprovarSolicitacao&linha=${encodeURIComponent(linha)}&emailAprovador=${encodeURIComponent(userEmail)}`;
+            const response = await fetch(url);
+            const data = await response.json();
+            
+            if (data.sucesso) {
+              carregarSolicitacoesPendentes(); // Recarrega a lista
+            } else {
+              alert('❌ Erro ao aprovar: ' + data.mensagem);
+            }
+          } catch (error) {
+            alert('❌ Erro ao aprovar solicitação: ' + error.message);
+          } finally {
+            buttons.forEach(btn => btn.disabled = false);
+            spinner.classList.remove('show');
+          }
+        }
+
+        // ===== MOSTRAR FORMULÁRIO DE REJEIÇÃO =====
+        function mostrarRejeicao(linha) {
+          const motivo = prompt('Digite o motivo da rejeição:');
+          if (motivo !== null && motivo.trim() !== '') {
+            rejeitarSolicitacao(linha, motivo);
+          } else if (motivo !== null) {
+            alert('O motivo da rejeição não pode ser vazio.');
+          }
+        }
+
+        // ===== REJEITAR SOLICITAÇÃO =====
+        async function rejeitarSolicitacao(linha, motivo) {
+          if (!confirm('Tem certeza que deseja REJEITAR esta solicitação?')) return;
+
+          const actionGroup = document.getElementById(`actionGroup-${linha}`);
+          const spinner = document.getElementById(`spinner-${linha}`);
+          const buttons = actionGroup.querySelectorAll('button');
+
+          buttons.forEach(btn => btn.disabled = true);
+          spinner.classList.add('show');
+
+          try {
+            const userEmail = localStorage.getItem('userEmail');
+            if (!userEmail) {
+                alert('Erro: Usuário não logado.');
+                return;
+            }
+
+            const url = `${SCRIPT_URL}?action=rejeitarSolicitacao&linha=${encodeURIComponent(linha)}&emailAprovador=${encodeURIComponent(userEmail)}&motivo=${encodeURIComponent(motivo)}`;
+            const response = await fetch(url);
+            const data = await response.json();
+            
+            if (data.sucesso) {
+              carregarSolicitacoesPendentes(); // Recarrega a lista
+            } else {
+              alert('❌ Erro ao rejeitar: ' + data.mensagem);
+            }
+          } catch (error) {
+            alert('❌ Erro ao rejeitar solicitação: ' + error.message);
+          } finally {
+            buttons.forEach(btn => btn.disabled = false);
+            spinner.classList.remove('show');
+          }
+        }
+
+        // ===== INICIALIZAÇÃO =====
+        document.addEventListener('DOMContentLoaded', () => {
+            // Forçar logout ao recarregar a página
+            localStorage.removeItem('isLoggedIn');
+            localStorage.removeItem('userEmail');
+            localStorage.removeItem('userName');
+            
+            // Garantir que a tela de login seja exibida
+            document.getElementById('login-screen').style.display = 'flex';
+            document.querySelector('.dashboard-container').style.display = 'none';
+            
+            setupRealtimeSync();
+        });
+    </script>
+</body>
+</html>
