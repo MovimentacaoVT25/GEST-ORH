@@ -981,9 +981,15 @@
                     </div>
                 </div>
                 
-                <!-- Botão para adicionar -->
-                <div style="margin-bottom: 20px;">
-                    <button onclick="abrirModalAdicionarFuncionario()" style="background: #27ae60; color: white; padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600;">
+                <!-- Filtro e Botão -->
+                <div style="display: flex; gap: 15px; margin-bottom: 20px; align-items: center;">
+                    <div style="flex: 1;">
+                        <label style="display: block; font-size: 13px; font-weight: 600; color: #2c3e50; margin-bottom: 8px;">Filtrar por Setor:</label>
+                        <select id="filtroSetor" onchange="aplicarFiltroSetor()" style="width: 100%; padding: 10px; border: 2px solid #ecf0f1; border-radius: 6px; font-size: 14px; cursor: pointer;">
+                            <option value="">Todos os Setores</option>
+                        </select>
+                    </div>
+                    <button onclick="abrirModalAdicionarFuncionario()" style="background: #27ae60; color: white; padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; align-self: flex-end;">
                         + Adicionar Funcionário
                     </button>
                 </div>
@@ -1173,25 +1179,16 @@ function formatarData(dataString) {
         // ===== CARREGAR DADOS DA DASHBOARD (Exemplo) =====
         async function loadDashboardData() {
             try {
-                // Chamar o Apps Script para obter dados
-                // NOTA: A função 'obterDashboard' não foi fornecida no Apps Script, 
-                // então usaremos dados mockados por enquanto.
-                // const url = `${SCRIPT_URL}?action=obterDashboard`;
-                // const response = await fetch(url);
-                // const data = await response.json();
+                // Carregar total de funcionarios
+                const url = `${SCRIPT_URL}?action=obterFuncionarios`;
+                const response = await fetch(url);
+                const data = await response.json();
 
-                // if (data.sucesso) {
-                //     const dashboard = data.dados;
-                    
-                //     // Atualizar KPIs
-                //     document.getElementById('totalFuncionarios').textContent = dashboard.totalFuncionarios || '0';
-                //     document.getElementById('totalChange').textContent = '+2 este mês';
-                //     document.getElementById('horasExtras').textContent = dashboard.horasExtras || '0h';
-                //     document.getElementById('horasChange').textContent = '-12% vs mês anterior';
-                //     document.getElementById('feriasProgramadas').textContent = dashboard.feriasProgramadas || '0';
-                //     document.getElementById('taxaPresenca').textContent = dashboard.taxaPresenca || '0%';
-                //     document.getElementById('presencaChange').textContent = '+3% vs anterior';
-                // }
+                if (data.sucesso) {
+                    const totalFuncionarios = data.dados.funcionarios.length;
+                    document.getElementById('totalFuncionarios').textContent = totalFuncionarios;
+                    document.getElementById('totalChange').textContent = 'Funcionarios cadastrados';
+                }
             } catch (error) {
                 console.error('Erro ao carregar dados:', error);
             }
@@ -1463,7 +1460,10 @@ function formatarData(dataString) {
 
         // ===== FUNÇÕES PARA GERENCIAR FUNCIONÁRIOS =====
 
-        // Função para carregar funcionários
+        // Variavel global para armazenar todos os funcionarios
+        let todosFuncionarios = [];
+
+        // Funcao para carregar funcionarios
         async function carregarFuncionarios() {
           try {
             const url = `${SCRIPT_URL}?action=obterFuncionarios`;
@@ -1471,16 +1471,50 @@ function formatarData(dataString) {
             const data = await response.json();
             
             if (data.sucesso) {
-              exibirFuncionarios(data.dados.funcionarios);
+              todosFuncionarios = data.dados.funcionarios;
+              exibirFuncionarios(todosFuncionarios);
+              preencherFiltroSetor(todosFuncionarios);
             } else {
-              mostrarErroFuncionario('Erro ao carregar funcionários: ' + data.mensagem);
+              mostrarErroFuncionario('Erro ao carregar funcionarios: ' + data.mensagem);
             }
           } catch (error) {
             mostrarErroFuncionario('Erro ao carregar funcionários: ' + error.message);
           }
         }
 
-        // Função para exibir funcionários na tabela
+        // Funcao para preencher o filtro de setor
+        function preencherFiltroSetor(funcionarios) {
+          const setores = [...new Set(funcionarios.map(f => f.setor).filter(s => s))];
+          const select = document.getElementById('filtroSetor');
+          const opcaoAtual = select.value;
+          
+          while (select.options.length > 1) {
+            select.remove(1);
+          }
+          
+          setores.forEach(setor => {
+            const option = document.createElement('option');
+            option.value = setor;
+            option.textContent = setor;
+            select.appendChild(option);
+          });
+          
+          select.value = opcaoAtual;
+        }
+
+        // Funcao para aplicar filtro de setor
+        function aplicarFiltroSetor() {
+          const setor = document.getElementById('filtroSetor').value;
+          let funcionariosFiltrados = todosFuncionarios;
+          
+          if (setor) {
+            funcionariosFiltrados = todosFuncionarios.filter(f => f.setor === setor);
+          }
+          
+          exibirFuncionarios(funcionariosFiltrados);
+        }
+
+        // Funcao para exibir funcionarios na tabela
         function exibirFuncionarios(funcionarios) {
           const container = document.getElementById('funcionariosContainer');
           
