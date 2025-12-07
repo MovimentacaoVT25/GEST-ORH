@@ -980,10 +980,62 @@
                         <p class="page-subtitle">Gestão de funcionários da empresa</p>
                     </div>
                 </div>
+                
+                <!-- Botão para adicionar -->
+                <div style="margin-bottom: 20px;">
+                    <button onclick="abrirModalAdicionarFuncionario()" style="background: #27ae60; color: white; padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600;">
+                        + Adicionar Funcionário
+                    </button>
+                </div>
+                
+                <!-- Tabela de funcionários -->
                 <div class="card">
                     <div id="funcionariosContainer">
-                        <p style="text-align: center; color: #7f8c8d; padding: 40px;">🚧 Funcionalidade em desenvolvimento. Em breve você poderá gerenciar os funcionários aqui.</p>
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            <p>Carregando funcionários...</p>
+                        </div>
                     </div>
+                </div>
+            </div>
+            
+            <!-- Modal para adicionar/editar funcionário -->
+            <div id="modalFuncionario" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); z-index: 1000; align-items: center; justify-content: center;">
+                <div style="background: white; border-radius: 8px; padding: 30px; max-width: 500px; width: 90%; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);">
+                    <h2 id="modalTitulo" style="font-size: 20px; font-weight: 700; margin-bottom: 20px; color: #2c3e50;">Adicionar Funcionário</h2>
+                    
+                    <form id="formFuncionario" onsubmit="event.preventDefault(); salvarFuncionario();">
+                        <input type="hidden" id="linhaFuncionario" value="">
+                        
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; font-size: 14px; font-weight: 600; color: #2c3e50; margin-bottom: 8px;">Nome *</label>
+                            <input type="text" id="inputNome" style="width: 100%; padding: 10px; border: 2px solid #ecf0f1; border-radius: 6px; font-size: 14px;" required>
+                        </div>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; font-size: 14px; font-weight: 600; color: #2c3e50; margin-bottom: 8px;">Cargo</label>
+                            <input type="text" id="inputCargo" style="width: 100%; padding: 10px; border: 2px solid #ecf0f1; border-radius: 6px; font-size: 14px;">
+                        </div>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; font-size: 14px; font-weight: 600; color: #2c3e50; margin-bottom: 8px;">Setor</label>
+                            <input type="text" id="inputSetor" style="width: 100%; padding: 10px; border: 2px solid #ecf0f1; border-radius: 6px; font-size: 14px;">
+                        </div>
+                        
+                        <div style="margin-bottom: 20px;">
+                            <label style="display: block; font-size: 14px; font-weight: 600; color: #2c3e50; margin-bottom: 8px;">Turno</label>
+                            <input type="text" id="inputTurno" style="width: 100%; padding: 10px; border: 2px solid #ecf0f1; border-radius: 6px; font-size: 14px;">
+                        </div>
+                        
+                        <div style="display: flex; gap: 10px;">
+                            <button type="submit" style="flex: 1; background: #3498db; color: white; padding: 10px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">
+                                Salvar
+                            </button>
+                            <button type="button" onclick="fecharModalFuncionario()" style="flex: 1; background: #95a5a6; color: white; padding: 10px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">
+                                Cancelar
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </main>
@@ -1113,6 +1165,8 @@ function formatarData(dataString) {
             // Ação específica ao mudar de página
             if (pageName === 'aprovacoes') {
                 verificarPermissaoAprovacao();
+            } else if (pageName === 'funcionarios') {
+                carregarFuncionarios();
             }
         }
 
@@ -1407,6 +1461,153 @@ function formatarData(dataString) {
           }
         }
 
+        // ===== FUNÇÕES PARA GERENCIAR FUNCIONÁRIOS =====
+
+        // Função para carregar funcionários
+        async function carregarFuncionarios() {
+          try {
+            const url = `${SCRIPT_URL}?action=obterFuncionarios`;
+            const response = await fetch(url);
+            const data = await response.json();
+            
+            if (data.sucesso) {
+              exibirFuncionarios(data.dados.funcionarios);
+            } else {
+              mostrarErroFuncionario('Erro ao carregar funcionários: ' + data.mensagem);
+            }
+          } catch (error) {
+            mostrarErroFuncionario('Erro ao carregar funcionários: ' + error.message);
+          }
+        }
+
+        // Função para exibir funcionários na tabela
+        function exibirFuncionarios(funcionarios) {
+          const container = document.getElementById('funcionariosContainer');
+          
+          if (funcionarios.length === 0) {
+            container.innerHTML = '<p style="text-align: center; color: #7f8c8d; padding: 40px;">Nenhum funcionário cadastrado</p>';
+            return;
+          }
+          
+          let html = '<div style="overflow-x: auto;"><table style="width: 100%; border-collapse: collapse;">';
+          html += '<thead><tr style="background: #f5f5f5; border-bottom: 2px solid #ecf0f1;"><th style="padding: 12px; text-align: left; font-weight: 600;">Nome</th><th style="padding: 12px; text-align: left; font-weight: 600;">Cargo</th><th style="padding: 12px; text-align: left; font-weight: 600;">Setor</th><th style="padding: 12px; text-align: left; font-weight: 600;">Turno</th><th style="padding: 12px; text-align: left; font-weight: 600;">Ações</th></tr></thead><tbody>';
+          
+          funcionarios.forEach(func => {
+            html += `
+              <tr style="border-bottom: 1px solid #ecf0f1;">
+                <td style="padding: 12px;">${func.nome}</td>
+                <td style="padding: 12px;">${func.cargo}</td>
+                <td style="padding: 12px;">${func.setor}</td>
+                <td style="padding: 12px;">${func.turno}</td>
+                <td style="padding: 12px;">
+                  <button onclick="editarFuncionarioModal(${func.linha}, '${func.nome.replace(/'/g, "\\'")}',' ${func.cargo.replace(/'/g, "\\'")}',' ${func.setor.replace(/'/g, "\\'")}',' ${func.turno.replace(/'/g, "\\'")}')" style="background: #3498db; color: white; padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; margin-right: 5px;">Editar</button>
+                  <button onclick="deletarFuncionarioConfirm(${func.linha}, '${func.nome.replace(/'/g, "\\'")}'" style="background: #e74c3c; color: white; padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">Deletar</button>
+                </td>
+              </tr>
+            `;
+          });
+          
+          html += '</tbody></table></div>';
+          container.innerHTML = html;
+        }
+
+        // Função para abrir modal de adicionar funcionário
+        function abrirModalAdicionarFuncionario() {
+          document.getElementById('modalTitulo').textContent = 'Adicionar Funcionário';
+          document.getElementById('formFuncionario').reset();
+          document.getElementById('linhaFuncionario').value = '';
+          document.getElementById('modalFuncionario').style.display = 'flex';
+        }
+
+        // Função para abrir modal de editar funcionário
+        function editarFuncionarioModal(linha, nome, cargo, setor, turno) {
+          document.getElementById('modalTitulo').textContent = 'Editar Funcionário';
+          document.getElementById('inputNome').value = nome;
+          document.getElementById('inputCargo').value = cargo;
+          document.getElementById('inputSetor').value = setor;
+          document.getElementById('inputTurno').value = turno;
+          document.getElementById('linhaFuncionario').value = linha;
+          document.getElementById('modalFuncionario').style.display = 'flex';
+        }
+
+        // Função para fechar modal
+        function fecharModalFuncionario() {
+          document.getElementById('modalFuncionario').style.display = 'none';
+        }
+
+        // Função para salvar funcionário (adicionar ou editar)
+        async function salvarFuncionario() {
+          const nome = document.getElementById('inputNome').value.trim();
+          const cargo = document.getElementById('inputCargo').value.trim();
+          const setor = document.getElementById('inputSetor').value.trim();
+          const turno = document.getElementById('inputTurno').value.trim();
+          const linha = document.getElementById('linhaFuncionario').value;
+          
+          if (!nome) {
+            mostrarErroFuncionario('Nome é obrigatório');
+            return;
+          }
+          
+          try {
+            let url;
+            if (linha) {
+              // Editar
+              url = `${SCRIPT_URL}?action=editarFuncionario&linha=${linha}&nome=${encodeURIComponent(nome)}&cargo=${encodeURIComponent(cargo)}&setor=${encodeURIComponent(setor)}&turno=${encodeURIComponent(turno)}`;
+            } else {
+              // Adicionar
+              url = `${SCRIPT_URL}?action=adicionarFuncionario&nome=${encodeURIComponent(nome)}&cargo=${encodeURIComponent(cargo)}&setor=${encodeURIComponent(setor)}&turno=${encodeURIComponent(turno)}`;
+            }
+            
+            const response = await fetch(url);
+            const data = await response.json();
+            
+            if (data.sucesso) {
+              mostrarSucessoFuncionario(data.mensagem);
+              fecharModalFuncionario();
+              carregarFuncionarios();
+            } else {
+              mostrarErroFuncionario('Erro: ' + data.mensagem);
+            }
+          } catch (error) {
+            mostrarErroFuncionario('Erro ao salvar funcionário: ' + error.message);
+          }
+        }
+
+        // Função para confirmar deletar
+        function deletarFuncionarioConfirm(linha, nome) {
+          if (confirm(`Tem certeza que deseja deletar ${nome}?`)) {
+            deletarFuncionario(linha);
+          }
+        }
+
+        // Função para deletar funcionário
+        async function deletarFuncionario(linha) {
+          try {
+            const url = `${SCRIPT_URL}?action=deletarFuncionario&linha=${linha}`;
+            const response = await fetch(url);
+            const data = await response.json();
+            
+            if (data.sucesso) {
+              mostrarSucessoFuncionario('Funcionário deletado com sucesso!');
+              carregarFuncionarios();
+            } else {
+              mostrarErroFuncionario('Erro: ' + data.mensagem);
+            }
+          } catch (error) {
+            mostrarErroFuncionario('Erro ao deletar funcionário: ' + error.message);
+          }
+        }
+
+        // Função para mostrar erro
+        function mostrarErroFuncionario(mensagem) {
+          alert('❌ ' + mensagem);
+        }
+
+        // Função para mostrar sucesso
+        function mostrarSucessoFuncionario(mensagem) {
+          alert('✅ ' + mensagem);
+        }
+
         // ===== INICIALIZAÇÃO =====
         document.addEventListener('DOMContentLoaded', () => {
             // Forçar logout ao recarregar a página
@@ -1423,7 +1624,6 @@ function formatarData(dataString) {
     </script>
 </body>
 </html>
-
 
 
 
