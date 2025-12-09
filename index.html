@@ -932,26 +932,7 @@
                     </div>
                 </div>
 
-                <!-- Tabela de Colaboradores com Horas Acumuladas -->
-                <div class="card">
-                    <h2 class="card-title">Horas Acumuladas por Colaborador</h2>
-                    <div class="table-container">
-                        <table id="tabelaHorasExtras">
-                            <thead>
-                                <tr>
-                                    <th>Nome</th>
-                                    <th>Setor</th>
-                                    <th>Horas Acumuladas</th>
-                                </tr>
-                            </thead>
-                            <tbody id="corpoTabelaHorasExtras">
-                                <tr>
-                                    <td colspan="3" style="text-align: center; color: #7f8c8d;">Carregando...</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+
             </div>
 
             <!-- Férias Page -->
@@ -1090,7 +1071,7 @@
     <script>
         // ===== CONFIGURAÇÃO DO GOOGLE APPS SCRIPT =====
         // ATENÇÃO: SUBSTITUA ESTA URL PELA URL DE IMPLANTAÇÃO DO SEU GOOGLE APPS SCRIPT
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx4Yl-36cPHNlQ_UfbZwN7kKE2HqH7kQu6M1dee6KPMyNlQql7aEnm2vMMWIHDaGDWO/exec';
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxFZjIyIZdV1BL2D4oFLIuTUHBj1YVjPkRzuauMnWz3kPObyTLD3j9FcrWq3bCYxDxi/exec';
 
         // Função auxiliar para formatar a data
 function formatarData(dataString) {
@@ -1720,41 +1701,6 @@ function formatarData(dataString) {
           // Atualizar grafico
           atualizarGraficoHorasPorSetor(dados.horasPorSetor || []);
           
-          // Carregar tabela
-          carregarTabelaHorasExtras();
-        }
-
-        async function carregarTabelaHorasExtras() {
-          try {
-            const url = `${SCRIPT_URL}?action=obterTabelaHorasExtras`;
-            const response = await fetch(url);
-            const data = await response.json();
-            
-            if (data.sucesso) {
-              exibirTabelaHorasExtras(data.dados.colaboradores);
-            } else {
-              console.error('Erro ao carregar tabela:', data.mensagem);
-            }
-          } catch (error) {
-            console.error('Erro ao carregar tabela de horas extras:', error);
-          }
-        }
-
-        function exibirTabelaHorasExtras(colaboradores) {
-          const tbody = document.getElementById('corpoTabelaHorasExtras');
-          
-          if (colaboradores.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: #7f8c8d;">Nenhuma hora extra aprovada</td></tr>';
-            return;
-          }
-          
-          tbody.innerHTML = colaboradores.map(col => `
-            <tr>
-              <td>${col.nome}</td>
-              <td>${col.setor}</td>
-              <td><strong>${col.horas}</strong></td>
-            </tr>
-          `).join('');
         }
 
         function atualizarGraficoHorasPorSetor(setores) {
