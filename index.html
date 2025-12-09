@@ -904,12 +904,31 @@
                         <p class="page-subtitle">Registro e acompanhamento de horas extras</p>
                     </div>
                 </div>
-                <div class="card">
-                    <div id="horasDetailContainer">
-                        <div class="loading">
-                            <div class="spinner"></div>
-                            <p>Carregando dados...</p>
+                
+                <!-- KPI Cards -->
+                <div class="kpi-grid">
+                    <div class="kpi-card blue">
+                        <div class="kpi-header">
+                            <span class="kpi-label">Total de Horas Extras</span>
                         </div>
+                        <div class="kpi-value" id="totalHorasExtras">--</div>
+                        <div class="kpi-change" id="totalChange">Carregando...</div>
+                    </div>
+
+                    <div class="kpi-card green">
+                        <div class="kpi-header">
+                            <span class="kpi-label">Colaborador com Mais Horas</span>
+                        </div>
+                        <div class="kpi-value" id="colaboradorMaisHoras">--</div>
+                        <div class="kpi-change" id="colaboradorChange">Carregando...</div>
+                    </div>
+                </div>
+                
+                <!-- Grafico de Horas por Setor -->
+                <div class="card">
+                    <h2 class="card-title">Horas Extras por Setor</h2>
+                    <div style="position: relative; height: 300px;">
+                        <canvas id="graficoHorasPorSetor"></canvas>
                     </div>
                 </div>
             </div>
@@ -1050,7 +1069,7 @@
     <script>
         // ===== CONFIGURAÇÃO DO GOOGLE APPS SCRIPT =====
         // ATENÇÃO: SUBSTITUA ESTA URL PELA URL DE IMPLANTAÇÃO DO SEU GOOGLE APPS SCRIPT
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxnLwRW1qYwSQV7RAmNByCJlOK_rnjufxMJUfkrqST4hCeVuyFSdbVibbjZts6Hfa1p/exec';
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwtYfFtefGgNu_VqR3QpvVPevzp6xiIp3NBiYo955JHoGGXDNVpe72cxUL5-HJZtIpf/exec';
 
         // Função auxiliar para formatar a data
 function formatarData(dataString) {
@@ -1167,12 +1186,13 @@ function formatarData(dataString) {
             if (activeLink) {
                 activeLink.classList.add('active');
             }
-
-            // Ação específica ao mudar de página
+            // Ação específfica ao mudar de página
             if (pageName === 'aprovacoes') {
                 verificarPermissaoAprovacao();
             } else if (pageName === 'funcionarios') {
                 carregarFuncionarios();
+            } else if (pageName === 'horas-extras') {
+                carregarDadosHorasExtras();
             }
         }
 
@@ -1640,6 +1660,101 @@ function formatarData(dataString) {
         // Função para mostrar sucesso
         function mostrarSucessoFuncionario(mensagem) {
           alert('✅ ' + mensagem);
+        }
+
+        // ===== FUNÇÕES PARA HORAS EXTRAS =====
+        let graficoHorasPorSetor = null;
+
+        async function carregarDadosHorasExtras() {
+          try {
+            const url = `${SCRIPT_URL}?action=obterDadosHorasExtras`;
+            const response = await fetch(url);
+            const data = await response.json();
+            
+            if (data.sucesso) {
+              exibirDadosHorasExtras(data.dados);
+            } else {
+              alert('Erro ao carregar dados: ' + data.mensagem);
+            }
+          } catch (error) {
+            console.error('Erro ao carregar dados de horas extras:', error);
+            alert('Erro ao carregar dados de horas extras');
+          }
+        }
+
+        function exibirDadosHorasExtras(dados) {
+          // Atualizar KPI de Total de Horas
+          document.getElementById('totalHorasExtras').textContent = dados.totalHoras || '00:00';
+          document.getElementById('totalChange').textContent = 'Total de horas extras aprovadas';
+          
+          // Atualizar KPI de Colaborador com Mais Horas
+          if (dados.colaboradorMaisHoras) {
+            document.getElementById('colaboradorMaisHoras').textContent = dados.colaboradorMaisHoras.horas || '00:00';
+            document.getElementById('colaboradorChange').textContent = dados.colaboradorMaisHoras.nome || 'Nenhum';
+          } else {
+            document.getElementById('colaboradorMaisHoras').textContent = '--';
+            document.getElementById('colaboradorChange').textContent = 'Nenhum colaborador';
+          }
+          
+          // Atualizar gráfico
+          atualizarGraficoHorasPorSetor(dados.horasPorSetor || []);
+        }
+
+        function atualizarGraficoHorasPorSetor(setores) {
+          const ctx = document.getElementById('graficoHorasPorSetor');
+          if (!ctx) return;
+          
+          // Destruir gráfico anterior se existir
+          if (graficoHorasPorSetor) {
+            graficoHorasPorSetor.destroy();
+          }
+          
+          // Preparar dados para o gráfico
+          const labels = setores.map(s => s.setor);
+          const horasEmNumeros = setores.map(s => {
+            const partes = s.horas.split(':');
+            return parseInt(partes[0]) + parseInt(partes[1]) / 60;
+          });
+          
+          // Cores para o gráfico
+          const cores = [
+            '#3498db', '#e74c3c', '#2ecc71', '#f39c12', '#9b59b6',
+            '#1abc9c', '#34495e', '#e67e22', '#95a5a6', '#c0392b'
+          ];
+          
+          // Criar novo gráfico
+          graficoHorasPorSetor = new Chart(ctx, {
+            type: 'bar',
+            data: {
+              labels: labels,
+              datasets: [{
+                label: 'Horas Extras',
+                data: horasEmNumeros,
+                backgroundColor: cores.slice(0, labels.length),
+                borderColor: cores.slice(0, labels.length),
+                borderWidth: 1
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  display: true,
+                  position: 'top'
+                }
+              },
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  title: {
+                    display: true,
+                    text: 'Horas'
+                  }
+                }
+              }
+            }
+          });
         }
 
         // ===== INICIALIZAÇÃO =====
