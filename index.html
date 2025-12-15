@@ -160,10 +160,10 @@
             margin: 0 auto 10px;
         }
 
-    @keyframes spin {
-163	            0% { transform: rotate(0deg); }
-164	            100% { transform: rotate(360deg); }
-165	        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
 
         @keyframes rotate-sync {
             from { transform: rotate(0deg); }
@@ -172,7 +172,9 @@
 
         .rotating .fa-sync-alt {
             animation: rotate-sync 1s linear infinite;
-        }  /* ===== DASHBOARD SCREEN ===== */
+        }
+
+        /* ===== DASHBOARD SCREEN ===== */
         .dashboard-container {
             display: none;
             flex: 1;
@@ -690,7 +692,9 @@
 
         .action-spinner.show {
             display: block;
-        }tn-small {
+        }
+
+        .btn-small {
             padding: 8px 12px;
             border: none;
             border-radius: 4px;
@@ -717,6 +721,46 @@
         .btn-rejeitar:hover {
             background: #c0392b;
         }
+
+        /* Estilos adicionais para a página de Horas Extras */
+        .chart-container {
+            position: relative;
+            height: 350px;
+            margin-bottom: 30px;
+        }
+
+        .colaboradores-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .colaborador-card {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            border-top: 4px solid #3498db;
+        }
+
+        .colaborador-nome {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .colaborador-setor {
+            font-size: 12px;
+            color: #7f8c8d;
+            margin-bottom: 10px;
+        }
+
+        .colaborador-horas {
+            font-size: 20px;
+            font-weight: 700;
+            color: #3498db;
+        }
     </style>
 </head>
 <body>
@@ -727,8 +771,6 @@
                 <h1>RH Manager</h1>
                 <p>Sistema de Gestão de RH</p>
             </div>
-
-            
 
             <div id="errorMessage" class="error-message"></div>
             <div id="successMessage" class="success-message"></div>
@@ -762,8 +804,6 @@
                     <i class="fas fa-sign-in-alt"></i> ENTRAR
                 </button>
             </form>
-
-            
         </div>
     </div>
 
@@ -861,7 +901,7 @@
                             <div class="kpi-icon">🏖️</div>
                         </div>
                         <div class="kpi-value" id="feriasProgramadas">--</div>
-                        <div class="kpi-change positive" id="feriasChange">Carregando...</div>
+                        <div class="kpi-change" id="feriasChange">Carregando...</div>
                     </div>
 
                     <div class="kpi-card purple">
@@ -898,12 +938,15 @@
             </div>
 
             <!-- Horas Extras Page -->
-            <div id="horas-extras-page" class="page">
+            <div id="horas-page" class="page">
                 <div class="page-header">
                     <div>
                         <h1 class="page-title">Horas Extras</h1>
-                        <p class="page-subtitle">Registro e acompanhamento de horas extras</p>
+                        <p class="page-subtitle">Acompanhamento de horas extras por área e colaborador</p>
                     </div>
+                    <button onclick="recarregarHorasExtras()" style="background: #3498db; color: white; padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">
+                        <i class="fas fa-sync-alt"></i> Atualizar
+                    </button>
                 </div>
                 
                 <!-- KPI Cards -->
@@ -911,29 +954,49 @@
                     <div class="kpi-card blue">
                         <div class="kpi-header">
                             <span class="kpi-label">Total de Horas Extras</span>
+                            <div class="kpi-icon">⏱️</div>
                         </div>
                         <div class="kpi-value" id="totalHorasExtras">--</div>
-                        <div class="kpi-change" id="totalChange">Carregando...</div>
+                        <div class="kpi-change" id="totalHorasChange">Carregando...</div>
                     </div>
 
                     <div class="kpi-card green">
                         <div class="kpi-header">
                             <span class="kpi-label">Colaborador com Mais Horas</span>
+                            <div class="kpi-icon">⭐</div>
                         </div>
                         <div class="kpi-value" id="colaboradorMaisHoras">--</div>
                         <div class="kpi-change" id="colaboradorChange">Carregando...</div>
                     </div>
+
+                    <div class="kpi-card orange">
+                        <div class="kpi-header">
+                            <span class="kpi-label">Número de Setores</span>
+                            <div class="kpi-icon">🏢</div>
+                        </div>
+                        <div class="kpi-value" id="numeroSetores">--</div>
+                        <div class="kpi-change" id="setoresChange">Com horas extras</div>
+                    </div>
                 </div>
                 
-                <!-- Grafico de Horas por Setor -->
+                <!-- Gráfico de Horas por Setor -->
                 <div class="card">
                     <h2 class="card-title">Horas Extras por Setor</h2>
-                    <div style="position: relative; height: 300px;">
+                    <div class="chart-container">
                         <canvas id="graficoHorasPorSetor"></canvas>
                     </div>
                 </div>
 
-
+                <!-- Tabela de Colaboradores -->
+                <div class="card">
+                    <h2 class="card-title">Horas Extras por Colaborador</h2>
+                    <div id="tabelaColaboradores">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            <p>Carregando dados...</p>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- Férias Page -->
@@ -950,7 +1013,6 @@
                     </div>
                 </div>
             </div>
-
 
             <!-- Aprovações Page -->
             <div id="aprovacoes-page" class="page">
@@ -1071,110 +1133,111 @@
 
     <script>
         // ===== CONFIGURAÇÃO DO GOOGLE APPS SCRIPT =====
-        // ATENÇÃO: SUBSTITUA ESTA URL PELA URL DE IMPLANTAÇÃO DO SEU GOOGLE APPS SCRIPT
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxOh_U-rsszABNtmwSKt67QU7KT_rqBVMBVZL-oR-ebwCKTo0YVVLEj1EtHZ00oEp_Z/exec';
 
-        // Função auxiliar para formatar a data
-function formatarData(dataString) {
-    try {
-        // Tenta criar um objeto Date a partir da string
-        const data = new Date(dataString);
-        // Verifica se a data é válida
-        if (isNaN(data)) {
-            return dataString; // Retorna a string original se for inválida
-        }
-        // Formata para dd/MM/yyyy
-        const dia = String(data.getDate()).padStart(2, '0');
-        const mes = String(data.getMonth() + 1).padStart(2, '0'); // Mês é 0-indexed
-        const ano = data.getFullYear();
-        return `${dia}/${mes}/${ano}`;
-    } catch (e) {
-        return dataString; // Retorna a string original em caso de erro
-    }
-}
+        // Constante para o tempo limite de inatividade (5 minutos em milissegundos)
+        const INACTIVITY_TIMEOUT = 300000; 
+        let inactivityTimer;
 
-// ===== VARIÁVEIS GLOBAIS PARA APROVAÇÕES =====
+        // Função auxiliar para formatar a data
+        function formatarData(dataString) {
+            try {
+                const data = new Date(dataString);
+                if (isNaN(data)) {
+                    return dataString;
+                }
+                const dia = String(data.getDate()).padStart(2, '0');
+                const mes = String(data.getMonth() + 1).padStart(2, '0');
+                const ano = data.getFullYear();
+                return `${dia}/${mes}/${ano}`;
+            } catch (e) {
+                return dataString;
+            }
+        }
+
+        // ===== VARIÁVEIS GLOBAIS =====
         let usuarioAtual = {};
+        let graficoHorasPorSetor = null;
 
         // ===== AUTENTICAÇÃO =====
         async function handleLogin(event) {
             event.preventDefault();
-
-            const email = document.getElementById('email').value.trim();
+            const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
-            const errorMessage = document.getElementById('errorMessage');
-            const successMessage = document.getElementById('successMessage');
-            const loadingSpinner = document.getElementById('loadingSpinner');
             const loginBtn = document.getElementById('loginBtn');
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            const errorMessage = document.getElementById('errorMessage');
 
-            // Limpar mensagens anteriores
-            errorMessage.classList.remove('show');
-            successMessage.classList.remove('show');
-            loadingSpinner.classList.add('show');
             loginBtn.disabled = true;
+            loadingSpinner.classList.add('show');
+            errorMessage.classList.remove('show');
 
             try {
-                // Chamar o Apps Script para validar credenciais
                 const url = `${SCRIPT_URL}?action=validarCredenciais&email=${encodeURIComponent(email)}&senha=${encodeURIComponent(password)}`;
-                
                 const response = await fetch(url);
                 const data = await response.json();
 
                 if (data.sucesso) {
-                    successMessage.textContent = 'Login realizado com sucesso!';
-                    successMessage.classList.add('show');
-                    
-                    // Salvar sessão no localStorage
+                    // Armazena apenas o necessário para a sessão
                     localStorage.setItem('isLoggedIn', 'true');
                     localStorage.setItem('userEmail', data.dados.email);
                     localStorage.setItem('userName', data.dados.nome);
                     
-                    // Aguardar um pouco e depois mostrar dashboard
-                    setTimeout(() => {
-                        showDashboard(data.dados.email, data.dados.nome);
-                    }, 500);
+                    usuarioAtual = data.dados;
+                    document.getElementById('userEmail').textContent = data.dados.email;
+                    document.getElementById('userName').textContent = data.dados.nome;
+
+                    document.getElementById('loginScreen').style.display = 'none';
+                    document.getElementById('dashboardScreen').classList.add('active');
+                    
+                    loadDashboardData();
+                    resetInactivityTimer(); // Inicia o timer após o login
                 } else {
-                    errorMessage.textContent = data.mensagem || 'Email ou senha inválidos!';
+                    errorMessage.textContent = 'Email ou senha inválidos';
                     errorMessage.classList.add('show');
                 }
             } catch (error) {
-                errorMessage.textContent = 'Erro ao conectar com o servidor: ' + error.message;
+                console.error('Erro ao fazer login:', error);
+                errorMessage.textContent = 'Erro ao conectar com o servidor';
                 errorMessage.classList.add('show');
-                console.error('Erro:', error);
             } finally {
-                loadingSpinner.classList.remove('show');
                 loginBtn.disabled = false;
+                loadingSpinner.classList.remove('show');
             }
         }
 
-        function showDashboard(userEmail, userName) {
-            usuarioAtual = {
-                email: userEmail,
-                nome: userName
-            };
-
-            document.getElementById('loginScreen').style.display = 'none';
-            document.getElementById('dashboardScreen').classList.add('active');
-            document.getElementById('userEmail').textContent = userEmail;
-            document.getElementById('userName').textContent = userName || 'Usuário';
-            
-            // Carregar dados da dashboard
-            loadDashboardData();
-            // Mostrar a página inicial (Dashboard)
-            showPage('dashboard');
-        }
-
         function handleLogout() {
+            // Limpa o timer de inatividade
+            clearTimeout(inactivityTimer);
+            
+            // Limpa o localStorage
             localStorage.removeItem('isLoggedIn');
             localStorage.removeItem('userEmail');
             localStorage.removeItem('userName');
-            document.getElementById('dashboardScreen').classList.remove('active');
+            
+            // Volta para a tela de login
             document.getElementById('loginScreen').style.display = 'flex';
-            document.getElementById('loginForm').reset();
+            document.getElementById('dashboardScreen').classList.remove('active');
+            document.getElementById('email').value = '';
+            document.getElementById('password').value = '';
+            
+            // Opcional: Alerta para o usuário
+            alert('Sessão expirada por inatividade ou logout manual.');
         }
 
-        // ===== NAVEGAÇÃO =====
+        // ===== TIMER DE INATIVIDADE =====
+        function resetInactivityTimer() {
+            // Limpa o timer anterior
+            clearTimeout(inactivityTimer);
+            
+            // Configura um novo timer
+            inactivityTimer = setTimeout(handleLogout, INACTIVITY_TIMEOUT);
+        }
+
+        // ===== NAVEGAÇÃO ENTRE PÁGINAS =====
         function showPage(pageName) {
+            resetInactivityTimer(); // Reseta o timer em cada navegação
+            
             const pages = document.querySelectorAll('.page');
             pages.forEach(page => page.classList.remove('active'));
             const pageId = pageName + '-page';
@@ -1189,20 +1252,21 @@ function formatarData(dataString) {
             if (activeLink) {
                 activeLink.classList.add('active');
             }
-            // Ação específfica ao mudar de página
+
+            // Ação específica ao mudar de página
             if (pageName === 'aprovacoes') {
                 verificarPermissaoAprovacao();
             } else if (pageName === 'funcionarios') {
                 carregarFuncionarios();
-            } else if (pageName === 'horas-extras') {
+            } else if (pageName === 'horas') {
                 carregarDadosHorasExtras();
             }
         }
 
-        // ===== CARREGAR DADOS DA DASHBOARD (Exemplo) =====
+        // ===== CARREGAR DADOS DO DASHBOARD =====
         async function loadDashboardData() {
+            resetInactivityTimer(); // Reseta o timer ao carregar dados
             try {
-                // Carregar total de funcionarios
                 const url = `${SCRIPT_URL}?action=obterFuncionarios`;
                 const response = await fetch(url);
                 const data = await response.json();
@@ -1216,7 +1280,7 @@ function formatarData(dataString) {
                 console.error('Erro ao carregar dados:', error);
             }
 
-            // Dados de exemplo (Mockados)
+            // Dados de exemplo
             const atividades = [
                 { nome: 'Maria Silva', descricao: 'registrou 8h extras', tempo: '2h atrás' },
                 { nome: 'João Santos', descricao: 'solicitou férias', tempo: '5h atrás' },
@@ -1292,505 +1356,492 @@ function formatarData(dataString) {
             }, 1000);
         }
 
-        // ===== VERIFICAR PERMISSÃO DE APROVAÇÃO =====
-        async function verificarPermissaoAprovacao() {
-          const loading = document.querySelector('#solicitacoesPendentes .loading');
-          if (loading) loading.style.display = 'block';
+        // ===== FUNÇÕES PARA HORAS EXTRAS =====
+        async function carregarDadosHorasExtras() {
+            resetInactivityTimer(); // Reseta o timer ao carregar dados
+            try {
+                const url = `${SCRIPT_URL}?action=obterDadosHorasExtras`;
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (data.sucesso) {
+                    exibirDadosHorasExtras(data.dados);
+                    carregarTabelaHorasExtras();
+                } else {
+                    console.error('Erro ao carregar dados:', data.mensagem);
+                }
+            } catch (error) {
+                console.error('Erro ao carregar dados de horas extras:', error);
+            }
+        }
 
-          try {
-            const userEmail = localStorage.getItem('userEmail');
-            if (!userEmail) {
-                document.getElementById('containerAprovacoes').style.display = 'none';
-                document.getElementById('acessoNegado').style.display = 'block';
+        function exibirDadosHorasExtras(dados) {
+            // Atualizar KPI de Total de Horas
+            document.getElementById('totalHorasExtras').textContent = dados.totalHoras || '00:00';
+            document.getElementById('totalHorasChange').textContent = 'Total de horas extras aprovadas';
+            
+            // Atualizar KPI de Colaborador com Mais Horas
+            if (dados.colaboradorMaisHoras) {
+                document.getElementById('colaboradorMaisHoras').textContent = dados.colaboradorMaisHoras.horas || '00:00';
+                document.getElementById('colaboradorChange').textContent = dados.colaboradorMaisHoras.nome || 'Nenhum';
+            } else {
+                document.getElementById('colaboradorMaisHoras').textContent = '--';
+                document.getElementById('colaboradorChange').textContent = 'Nenhum colaborador';
+            }
+
+            // Atualizar número de setores
+            const numSetores = (dados.horasPorSetor || []).length;
+            document.getElementById('numeroSetores').textContent = numSetores;
+            
+            // Atualizar gráfico
+            atualizarGraficoHorasPorSetor(dados.horasPorSetor || []);
+        }
+
+        function atualizarGraficoHorasPorSetor(setores) {
+            const ctx = document.getElementById('graficoHorasPorSetor');
+            if (!ctx) return;
+            
+            // Destruir gráfico anterior se existir
+            if (graficoHorasPorSetor) {
+                graficoHorasPorSetor.destroy();
+            }
+            
+            // Preparar dados para o gráfico
+            const labels = setores.map(s => s.setor);
+            const horasEmNumeros = setores.map(s => {
+                const partes = s.horas.split(':');
+                return parseInt(partes[0]) + parseInt(partes[1]) / 60;
+            });
+            
+            // Cores para o gráfico
+            const cores = [
+                '#3498db', '#e74c3c', '#2ecc71', '#f39c12', '#9b59b6',
+                '#1abc9c', '#34495e', '#e67e22', '#95a5a6', '#c0392b'
+            ];
+            
+            // Criar novo gráfico
+            graficoHorasPorSetor = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Horas Extras',
+                        data: horasEmNumeros,
+                        backgroundColor: cores.slice(0, labels.length),
+                        borderColor: cores.slice(0, labels.length),
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Horas'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        async function carregarTabelaHorasExtras() {
+            resetInactivityTimer(); // Reseta o timer ao carregar dados
+            try {
+                const url = `${SCRIPT_URL}?action=obterTabelaHorasExtras`;
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (data.sucesso) {
+                    renderizarTabelaHorasExtras(data.dados.colaboradores || []);
+                }
+            } catch (error) {
+                console.error('Erro ao carregar tabela de horas extras:', error);
+            }
+        }
+
+        function renderizarTabelaHorasExtras(colaboradores) {
+            const container = document.getElementById('tabelaColaboradores');
+            
+            if (colaboradores.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #7f8c8d; padding: 40px;">Nenhuma hora extra registrada</p>';
                 return;
             }
-
-            const url = `${SCRIPT_URL}?action=verificarPermissaoAprovacao&email=${encodeURIComponent(userEmail)}`;
-            const response = await fetch(url);
-            const data = await response.json();
             
-            if (data.sucesso && data.dados.podeAprovar) {
-              document.getElementById('containerAprovacoes').style.display = 'block';
-              document.getElementById('acessoNegado').style.display = 'none';
-              carregarSolicitacoesPendentes();
-            } else {
-              document.getElementById('containerAprovacoes').style.display = 'none';
-              document.getElementById('acessoNegado').style.display = 'block';
+            let html = '<div class="table-container"><table>';
+            html += '<thead><tr><th>Colaborador</th><th>Setor</th><th>Horas Extras</th></tr></thead><tbody>';
+            
+            colaboradores.forEach(col => {
+                html += `
+                    <tr>
+                        <td><strong>${col.nome}</strong></td>
+                        <td>${col.setor || '--'}</td>
+                        <td style="color: #3498db; font-weight: 600;">${col.horas}</td>
+                    </tr>
+                `;
+            });
+            
+            html += '</tbody></table></div>';
+            container.innerHTML = html;
+        }
+
+        function recarregarHorasExtras() {
+            carregarDadosHorasExtras();
+        }
+
+        // ===== VERIFICAR PERMISSÃO DE APROVAÇÃO =====
+        async function verificarPermissaoAprovacao() {
+            resetInactivityTimer(); // Reseta o timer ao carregar dados
+            const loading = document.querySelector('#solicitacoesPendentes .loading');
+            if (loading) loading.style.display = 'block';
+
+            try {
+                const userEmail = localStorage.getItem('userEmail');
+                if (!userEmail) {
+                    document.getElementById('containerAprovacoes').style.display = 'none';
+                    document.getElementById('acessoNegado').style.display = 'block';
+                    return;
+                }
+
+                const url = `${SCRIPT_URL}?action=verificarPermissaoAprovacao&email=${encodeURIComponent(userEmail)}`;
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (data.sucesso && data.dados.podeAprovar) {
+                    document.getElementById('containerAprovacoes').style.display = 'block';
+                    document.getElementById('acessoNegado').style.display = 'none';
+                    carregarSolicitacoesPendentes();
+                } else {
+                    document.getElementById('containerAprovacoes').style.display = 'none';
+                    document.getElementById('acessoNegado').style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Erro ao verificar permissão:', error);
+                document.getElementById('containerAprovacoes').style.display = 'none';
+                document.getElementById('acessoNegado').style.display = 'block';
+            } finally {
+                if (loading) loading.style.display = 'none';
             }
-          } catch (error) {
-            console.error('Erro ao verificar permissão:', error);
-            document.getElementById('containerAprovacoes').style.display = 'none';
-            document.getElementById('acessoNegado').style.display = 'block';
-          } finally {
-            if (loading) loading.style.display = 'none';
-          }
         }
 
         // ===== CARREGAR SOLICITAÇÕES PENDENTES =====
         async function carregarSolicitacoesPendentes() {
-          const container = document.getElementById('solicitacoesPendentes');
-          const refreshButton = document.getElementById('refreshButton');
+            resetInactivityTimer(); // Reseta o timer ao carregar dados
+            const container = document.getElementById('solicitacoesPendentes');
+            const refreshButton = document.getElementById('refreshButton');
 
-          // Adiciona animação de rotação ao botão de atualização
-          refreshButton.classList.add('rotating');
+            refreshButton.classList.add('rotating');
 
-          container.innerHTML = `
-            <div class="loading">
-                <div class="spinner"></div>
-                <p>Carregando solicitações...</p>
-            </div>
-          `;
+            container.innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Carregando solicitações...</p>
+                </div>
+            `;
 
-          try {
-            const url = `${SCRIPT_URL}?action=obterSolicitacoesPendentes`;
-            const response = await fetch(url);
-            const data = await response.json();
-            
-            if (data.sucesso) {
-              renderizarSolicitacoesPendentes(data.dados);
-            } else {
-                container.innerHTML = `<p style="color: red; text-align: center;">Erro: ${data.mensagem}</p>`;
+            try {
+                const url = `${SCRIPT_URL}?action=obterSolicitacoesPendentes`;
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (data.sucesso) {
+                    renderizarSolicitacoesPendentes(data.dados);
+                } else {
+                    container.innerHTML = `<p style="color: red; text-align: center;">Erro: ${data.mensagem}</p>`;
+                }
+                document.getElementById('refreshButton').classList.remove('rotating');
+            } catch (error) {
+                console.error('Erro ao carregar solicitações pendentes:', error);
+                document.getElementById('refreshButton').classList.remove('rotating');
+                container.innerHTML = '<p style="color: red; text-align: center;">Erro ao carregar solicitações. Verifique a URL do Apps Script.</p>';
             }
-            // Remove a animação de rotação após o carregamento
-            document.getElementById('refreshButton').classList.remove('rotating');
-          } catch (error) {
-            console.error('Erro ao carregar solicitações pendentes:', error);
-            document.getElementById('refreshButton').classList.remove('rotating');
-            container.innerHTML = '<p style="color: red; text-align: center;">Erro ao carregar solicitações. Verifique a URL do Apps Script.</p>';
-          }
         }
 
         // ===== RENDERIZAR SOLICITAÇÕES PENDENTES =====
         function renderizarSolicitacoesPendentes(dados) {
-    const totalHoras = dados.totalHoras || '0.0';
-    document.getElementById('totalHorasPendentes').innerText = totalHoras;
+            const totalHoras = dados.totalHoras || '0.0';
+            document.getElementById('totalHorasPendentes').innerText = totalHoras;
 
-    const solicitacoes = dados.solicitacoes || [];
-          const container = document.getElementById('solicitacoesPendentes');
-          
-          if (solicitacoes.length === 0) {
-            container.innerHTML = '<p style="text-align: center; color: #7f8c8d; padding: 40px;">Nenhuma solicitação pendente</p>';
-            return;
-          }
-          
-          let html = '<div class="table-container"><table>';
-          html += '<thead><tr><th>Funcionário</th><th>Data</th><th>Horas</th><th>Motivo</th><th>Ações</th></tr></thead><tbody>';
-          
-          solicitacoes.forEach(sol => {
-            // O email do colaborador não está sendo retornado pelo Apps Script, 
-            // então vou usar um placeholder ou o nome.
-            const colaboradorInfo = sol.nome; 
+            const solicitacoes = dados.solicitacoes || [];
+            const container = document.getElementById('solicitacoesPendentes');
+            
+            if (solicitacoes.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #7f8c8d; padding: 40px;">Nenhuma solicitação pendente</p>';
+                return;
+            }
+            
+            let html = '<div class="table-container"><table>';
+            html += '<thead><tr><th>Funcionário</th><th>Data</th><th>Horas</th><th>Motivo</th><th>Ações</th></tr></thead><tbody>';
+            
+            solicitacoes.forEach(sol => {
+                const colaboradorInfo = sol.nome; 
 
-            html += `
-              <tr>
-                <td><strong>${colaboradorInfo}</strong></td>
-                <td>${formatarData(sol.data)}</td>
-                <td>${sol.horas}h</td>
-                <td>${sol.motivo}</td>
-                <td>
-            <div class="btn-group" id="actionGroup-${sol.linha}">
-                    <button class="btn-small btn-aprovar" onclick="aprovarSolicitacao('${sol.linha}')">Aprovar</button>
-                    <button class="btn-small btn-rejeitar" onclick="mostrarRejeicao('${sol.linha}')">Rejeitar</button>
-                    <div class="action-spinner" id="spinner-${sol.linha}"></div>
-                  </div>        </td>
-              </tr>
-            `;
-          });
-          
-          html += '</tbody></table></div>';
-          container.innerHTML = html;
+                html += `
+                    <tr>
+                        <td><strong>${colaboradorInfo}</strong></td>
+                        <td>${formatarData(sol.data)}</td>
+                        <td>${sol.horas}h</td>
+                        <td>${sol.motivo}</td>
+                        <td>
+                            <div class="btn-group" id="actionGroup-${sol.linha}">
+                                <button class="btn-small btn-aprovar" onclick="aprovarSolicitacao('${sol.linha}')">Aprovar</button>
+                                <button class="btn-small btn-rejeitar" onclick="mostrarRejeicao('${sol.linha}')">Rejeitar</button>
+                                <div class="action-spinner" id="spinner-${sol.linha}"></div>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            html += '</tbody></table></div>';
+            container.innerHTML = html;
         }
 
         // ===== APROVAR SOLICITAÇÃO =====
         async function aprovarSolicitacao(linha) {
-          if (!confirm('Tem certeza que deseja APROVAR esta solicitação?')) return;
-
-          const actionGroup = document.getElementById(`actionGroup-${linha}`);
-          const spinner = document.getElementById(`spinner-${linha}`);
-          const buttons = actionGroup.querySelectorAll('button');
-
-          buttons.forEach(btn => btn.disabled = true);
-          spinner.classList.add('show');
-
-          try {
+            resetInactivityTimer(); // Reseta o timer ao interagir
             const userEmail = localStorage.getItem('userEmail');
-            if (!userEmail) {
-                alert('Erro: Usuário não logado.');
-                return;
-            }
-
-            const url = `${SCRIPT_URL}?action=aprovarSolicitacao&linha=${encodeURIComponent(linha)}&emailAprovador=${encodeURIComponent(userEmail)}`;
-            const response = await fetch(url);
-            const data = await response.json();
+            const spinner = document.getElementById(`spinner-${linha}`);
+            const actionGroup = document.getElementById(`actionGroup-${linha}`);
             
-            if (data.sucesso) {
-              carregarSolicitacoesPendentes(); // Recarrega a lista
-            } else {
-              alert('❌ Erro ao aprovar: ' + data.mensagem);
+            spinner.classList.add('show');
+            actionGroup.style.opacity = '0.5';
+
+            try {
+                const url = `${SCRIPT_URL}?action=aprovarSolicitacao&linha=${linha}&emailAprovador=${encodeURIComponent(userEmail)}`;
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (data.sucesso) {
+                    alert('Solicitação aprovada com sucesso!');
+                    carregarSolicitacoesPendentes();
+                } else {
+                    alert('Erro ao aprovar: ' + data.mensagem);
+                }
+            } catch (error) {
+                console.error('Erro ao aprovar:', error);
+                alert('Erro ao aprovar solicitação');
+            } finally {
+                spinner.classList.remove('show');
+                actionGroup.style.opacity = '1';
             }
-          } catch (error) {
-            alert('❌ Erro ao aprovar solicitação: ' + error.message);
-          } finally {
-            buttons.forEach(btn => btn.disabled = false);
-            spinner.classList.remove('show');
-          }
         }
 
-        // ===== MOSTRAR FORMULÁRIO DE REJEIÇÃO =====
+        // ===== MOSTRAR MODAL DE REJEIÇÃO =====
         function mostrarRejeicao(linha) {
-          const motivo = prompt('Digite o motivo da rejeição:');
-          if (motivo !== null && motivo.trim() !== '') {
-            rejeitarSolicitacao(linha, motivo);
-          } else if (motivo !== null) {
-            alert('O motivo da rejeição não pode ser vazio.');
-          }
+            resetInactivityTimer(); // Reseta o timer ao interagir
+            const motivo = prompt('Digite o motivo da rejeição:');
+            if (motivo !== null) {
+                rejeitarSolicitacao(linha, motivo);
+            }
         }
 
         // ===== REJEITAR SOLICITAÇÃO =====
         async function rejeitarSolicitacao(linha, motivo) {
-          if (!confirm('Tem certeza que deseja REJEITAR esta solicitação?')) return;
-
-          const actionGroup = document.getElementById(`actionGroup-${linha}`);
-          const spinner = document.getElementById(`spinner-${linha}`);
-          const buttons = actionGroup.querySelectorAll('button');
-
-          buttons.forEach(btn => btn.disabled = true);
-          spinner.classList.add('show');
-
-          try {
+            resetInactivityTimer(); // Reseta o timer ao interagir
             const userEmail = localStorage.getItem('userEmail');
-            if (!userEmail) {
-                alert('Erro: Usuário não logado.');
+            const spinner = document.getElementById(`spinner-${linha}`);
+            const actionGroup = document.getElementById(`actionGroup-${linha}`);
+            
+            spinner.classList.add('show');
+            actionGroup.style.opacity = '0.5';
+
+            try {
+                const url = `${SCRIPT_URL}?action=rejeitarSolicitacao&linha=${linha}&emailAprovador=${encodeURIComponent(userEmail)}&motivo=${encodeURIComponent(motivo)}`;
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (data.sucesso) {
+                    alert('Solicitação rejeitada com sucesso!');
+                    carregarSolicitacoesPendentes();
+                } else {
+                    alert('Erro ao rejeitar: ' + data.mensagem);
+                }
+            } catch (error) {
+                console.error('Erro ao rejeitar:', error);
+                alert('Erro ao rejeitar solicitação');
+            } finally {
+                spinner.classList.remove('show');
+                actionGroup.style.opacity = '1';
+            }
+        }
+
+        // ===== CARREGAR FUNCIONÁRIOS =====
+        async function carregarFuncionarios() {
+            resetInactivityTimer(); // Reseta o timer ao carregar dados
+            try {
+                const url = `${SCRIPT_URL}?action=obterFuncionarios`;
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (data.sucesso) {
+                    renderizarFuncionarios(data.dados.funcionarios || []);
+                    preencherFiltroSetor(data.dados.funcionarios || []);
+                }
+            } catch (error) {
+                console.error('Erro ao carregar funcionários:', error);
+            }
+        }
+
+        function renderizarFuncionarios(funcionarios) {
+            const container = document.getElementById('funcionariosContainer');
+            
+            if (funcionarios.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #7f8c8d; padding: 40px;">Nenhum funcionário cadastrado</p>';
+                return;
+            }
+            
+            let html = '<div class="table-container"><table>';
+            html += '<thead><tr><th>Nome</th><th>Cargo</th><th>Setor</th><th>Turno</th><th>Ações</th></tr></thead><tbody>';
+            
+            funcionarios.forEach(func => {
+                html += `
+                    <tr>
+                        <td><strong>${func.nome}</strong></td>
+                        <td>${func.cargo || '--'}</td>
+                        <td>${func.setor || '--'}</td>
+                        <td>${func.turno || '--'}</td>
+                        <td>
+                            <button class="btn-small" onclick="editarFuncionarioModal(${func.linha}, '${func.nome}', '${func.cargo}', '${func.setor}', '${func.turno}')" style="background: #3498db; color: white; margin-right: 5px;">Editar</button>
+                            <button class="btn-small" onclick="deletarFuncionarioConfirm(${func.linha})" style="background: #e74c3c; color: white;">Deletar</button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            html += '</tbody></table></div>';
+            container.innerHTML = html;
+        }
+
+        function preencherFiltroSetor(funcionarios) {
+            const setores = [...new Set(funcionarios.map(f => f.setor).filter(s => s))];
+            const filtro = document.getElementById('filtroSetor');
+            setores.forEach(setor => {
+                const option = document.createElement('option');
+                option.value = setor;
+                option.textContent = setor;
+                filtro.appendChild(option);
+            });
+        }
+
+        function aplicarFiltroSetor() {
+            resetInactivityTimer(); // Reseta o timer ao interagir
+            const setor = document.getElementById('filtroSetor').value;
+            // Implementar filtro se necessário
+        }
+
+        function abrirModalAdicionarFuncionario() {
+            resetInactivityTimer(); // Reseta o timer ao interagir
+            document.getElementById('modalTitulo').textContent = 'Adicionar Funcionário';
+            document.getElementById('linhaFuncionario').value = '';
+            document.getElementById('inputNome').value = '';
+            document.getElementById('inputCargo').value = '';
+            document.getElementById('inputSetor').value = '';
+            document.getElementById('inputTurno').value = '';
+            document.getElementById('modalFuncionario').style.display = 'flex';
+        }
+
+        function editarFuncionarioModal(linha, nome, cargo, setor, turno) {
+            resetInactivityTimer(); // Reseta o timer ao interagir
+            document.getElementById('modalTitulo').textContent = 'Editar Funcionário';
+            document.getElementById('linhaFuncionario').value = linha;
+            document.getElementById('inputNome').value = nome;
+            document.getElementById('inputCargo').value = cargo;
+            document.getElementById('inputSetor').value = setor;
+            document.getElementById('inputTurno').value = turno;
+            document.getElementById('modalFuncionario').style.display = 'flex';
+        }
+
+        function fecharModalFuncionario() {
+            resetInactivityTimer(); // Reseta o timer ao interagir
+            document.getElementById('modalFuncionario').style.display = 'none';
+        }
+
+        async function salvarFuncionario() {
+            resetInactivityTimer(); // Reseta o timer ao interagir
+            const linha = document.getElementById('linhaFuncionario').value;
+            const nome = document.getElementById('inputNome').value;
+            const cargo = document.getElementById('inputCargo').value;
+            const setor = document.getElementById('inputSetor').value;
+            const turno = document.getElementById('inputTurno').value;
+
+            if (!nome) {
+                alert('Nome é obrigatório');
                 return;
             }
 
-            const url = `${SCRIPT_URL}?action=rejeitarSolicitacao&linha=${encodeURIComponent(linha)}&emailAprovador=${encodeURIComponent(userEmail)}&motivo=${encodeURIComponent(motivo)}`;
-            const response = await fetch(url);
-            const data = await response.json();
-            
-            if (data.sucesso) {
-              carregarSolicitacoesPendentes(); // Recarrega a lista
-            } else {
-              alert('❌ Erro ao rejeitar: ' + data.mensagem);
-            }
-          } catch (error) {
-            alert('❌ Erro ao rejeitar solicitação: ' + error.message);
-          } finally {
-            buttons.forEach(btn => btn.disabled = false);
-            spinner.classList.remove('show');
-          }
-        }
-
-        // ===== FUNÇÕES PARA GERENCIAR FUNCIONÁRIOS =====
-
-        // Variavel global para armazenar todos os funcionarios
-        let todosFuncionarios = [];
-
-        // Funcao para carregar funcionarios
-        async function carregarFuncionarios() {
-          try {
-            const url = `${SCRIPT_URL}?action=obterFuncionarios`;
-            const response = await fetch(url);
-            const data = await response.json();
-            
-            if (data.sucesso) {
-              todosFuncionarios = data.dados.funcionarios;
-              exibirFuncionarios(todosFuncionarios);
-              preencherFiltroSetor(todosFuncionarios);
-            } else {
-              mostrarErroFuncionario('Erro ao carregar funcionarios: ' + data.mensagem);
-            }
-          } catch (error) {
-            mostrarErroFuncionario('Erro ao carregar funcionários: ' + error.message);
-          }
-        }
-
-        // Funcao para preencher o filtro de setor
-        function preencherFiltroSetor(funcionarios) {
-          const setores = [...new Set(funcionarios.map(f => f.setor).filter(s => s))];
-          const select = document.getElementById('filtroSetor');
-          const opcaoAtual = select.value;
-          
-          while (select.options.length > 1) {
-            select.remove(1);
-          }
-          
-          setores.forEach(setor => {
-            const option = document.createElement('option');
-            option.value = setor;
-            option.textContent = setor;
-            select.appendChild(option);
-          });
-          
-          select.value = opcaoAtual;
-        }
-
-        // Funcao para aplicar filtro de setor
-        function aplicarFiltroSetor() {
-          const setor = document.getElementById('filtroSetor').value;
-          let funcionariosFiltrados = todosFuncionarios;
-          
-          if (setor) {
-            funcionariosFiltrados = todosFuncionarios.filter(f => f.setor === setor);
-          }
-          
-          exibirFuncionarios(funcionariosFiltrados);
-        }
-
-        // Funcao para exibir funcionarios na tabela
-        function exibirFuncionarios(funcionarios) {
-          const container = document.getElementById('funcionariosContainer');
-          
-          if (funcionarios.length === 0) {
-            container.innerHTML = '<p style="text-align: center; color: #7f8c8d; padding: 40px;">Nenhum funcionário cadastrado</p>';
-            return;
-          }
-          
-          let html = '<div style="overflow-x: auto;"><table style="width: 100%; border-collapse: collapse;">';
-          html += '<thead><tr style="background: #f5f5f5; border-bottom: 2px solid #ecf0f1;"><th style="padding: 12px; text-align: left; font-weight: 600;">Nome</th><th style="padding: 12px; text-align: left; font-weight: 600;">Cargo</th><th style="padding: 12px; text-align: left; font-weight: 600;">Setor</th><th style="padding: 12px; text-align: left; font-weight: 600;">Turno</th><th style="padding: 12px; text-align: left; font-weight: 600;">Ações</th></tr></thead><tbody>';
-          
-          funcionarios.forEach(func => {
-            html += `
-              <tr style="border-bottom: 1px solid #ecf0f1;">
-                <td style="padding: 12px;">${func.nome}</td>
-                <td style="padding: 12px;">${func.cargo}</td>
-                <td style="padding: 12px;">${func.setor}</td>
-                <td style="padding: 12px;">${func.turno}</td>
-                <td style="padding: 12px;">
-                  <button onclick="editarFuncionarioModal(${func.linha}, '${func.nome.replace(/'/g, "\\'")}',' ${func.cargo.replace(/'/g, "\\'")}',' ${func.setor.replace(/'/g, "\\'")}',' ${func.turno.replace(/'/g, "\\'")}')" style="background: #3498db; color: white; padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; margin-right: 5px;">Editar</button>
-                  <button onclick="deletarFuncionarioConfirm(${func.linha}, '${func.nome.replace(/'/g, "\\'")}'" style="background: #e74c3c; color: white; padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">Deletar</button>
-                </td>
-              </tr>
-            `;
-          });
-          
-          html += '</tbody></table></div>';
-          container.innerHTML = html;
-        }
-
-        // Função para abrir modal de adicionar funcionário
-        function abrirModalAdicionarFuncionario() {
-          document.getElementById('modalTitulo').textContent = 'Adicionar Funcionário';
-          document.getElementById('formFuncionario').reset();
-          document.getElementById('linhaFuncionario').value = '';
-          document.getElementById('modalFuncionario').style.display = 'flex';
-        }
-
-        // Função para abrir modal de editar funcionário
-        function editarFuncionarioModal(linha, nome, cargo, setor, turno) {
-          document.getElementById('modalTitulo').textContent = 'Editar Funcionário';
-          document.getElementById('inputNome').value = nome;
-          document.getElementById('inputCargo').value = cargo;
-          document.getElementById('inputSetor').value = setor;
-          document.getElementById('inputTurno').value = turno;
-          document.getElementById('linhaFuncionario').value = linha;
-          document.getElementById('modalFuncionario').style.display = 'flex';
-        }
-
-        // Função para fechar modal
-        function fecharModalFuncionario() {
-          document.getElementById('modalFuncionario').style.display = 'none';
-        }
-
-        // Função para salvar funcionário (adicionar ou editar)
-        async function salvarFuncionario() {
-          const nome = document.getElementById('inputNome').value.trim();
-          const cargo = document.getElementById('inputCargo').value.trim();
-          const setor = document.getElementById('inputSetor').value.trim();
-          const turno = document.getElementById('inputTurno').value.trim();
-          const linha = document.getElementById('linhaFuncionario').value;
-          
-          if (!nome) {
-            mostrarErroFuncionario('Nome é obrigatório');
-            return;
-          }
-          
-          try {
-            let url;
-            if (linha) {
-              // Editar
-              url = `${SCRIPT_URL}?action=editarFuncionario&linha=${linha}&nome=${encodeURIComponent(nome)}&cargo=${encodeURIComponent(cargo)}&setor=${encodeURIComponent(setor)}&turno=${encodeURIComponent(turno)}`;
-            } else {
-              // Adicionar
-              url = `${SCRIPT_URL}?action=adicionarFuncionario&nome=${encodeURIComponent(nome)}&cargo=${encodeURIComponent(cargo)}&setor=${encodeURIComponent(setor)}&turno=${encodeURIComponent(turno)}`;
-            }
-            
-            const response = await fetch(url);
-            const data = await response.json();
-            
-            if (data.sucesso) {
-              mostrarSucessoFuncionario(data.mensagem);
-              fecharModalFuncionario();
-              carregarFuncionarios();
-            } else {
-              mostrarErroFuncionario('Erro: ' + data.mensagem);
-            }
-          } catch (error) {
-            mostrarErroFuncionario('Erro ao salvar funcionário: ' + error.message);
-          }
-        }
-
-        // Função para confirmar deletar
-        function deletarFuncionarioConfirm(linha, nome) {
-          if (confirm(`Tem certeza que deseja deletar ${nome}?`)) {
-            deletarFuncionario(linha);
-          }
-        }
-
-        // Função para deletar funcionário
-        async function deletarFuncionario(linha) {
-          try {
-            const url = `${SCRIPT_URL}?action=deletarFuncionario&linha=${linha}`;
-            const response = await fetch(url);
-            const data = await response.json();
-            
-            if (data.sucesso) {
-              mostrarSucessoFuncionario('Funcionário deletado com sucesso!');
-              carregarFuncionarios();
-            } else {
-              mostrarErroFuncionario('Erro: ' + data.mensagem);
-            }
-          } catch (error) {
-            mostrarErroFuncionario('Erro ao deletar funcionário: ' + error.message);
-          }
-        }
-
-        // Função para mostrar erro
-        function mostrarErroFuncionario(mensagem) {
-          alert('❌ ' + mensagem);
-        }
-
-        // Função para mostrar sucesso
-        function mostrarSucessoFuncionario(mensagem) {
-          alert('✅ ' + mensagem);
-        }
-
-        // ===== FUNÇÕES PARA HORAS EXTRAS =====
-        let graficoHorasPorSetor = null;
-
-        async function carregarDadosHorasExtras() {
-          try {
-            const url = `${SCRIPT_URL}?action=obterDadosHorasExtras`;
-            const response = await fetch(url);
-            const data = await response.json();
-            
-            if (data.sucesso) {
-              exibirDadosHorasExtras(data.dados);
-            } else {
-              alert('Erro ao carregar dados: ' + data.mensagem);
-            }
-          } catch (error) {
-            console.error('Erro ao carregar dados de horas extras:', error);
-            alert('Erro ao carregar dados de horas extras');
-          }
-        }
-
-        function exibirDadosHorasExtras(dados) {
-          // Atualizar KPI de Total de Horas
-          document.getElementById('totalHorasExtras').textContent = dados.totalHoras || '00:00';
-          document.getElementById('totalChange').textContent = 'Total de horas extras aprovadas';
-          
-          // Atualizar KPI de Colaborador com Mais Horas
-          if (dados.colaboradorMaisHoras) {
-            document.getElementById('colaboradorMaisHoras').textContent = dados.colaboradorMaisHoras.horas || '00:00';
-            document.getElementById('colaboradorChange').textContent = dados.colaboradorMaisHoras.nome || 'Nenhum';
-          } else {
-            document.getElementById('colaboradorMaisHoras').textContent = '--';
-            document.getElementById('colaboradorChange').textContent = 'Nenhum colaborador';
-          }
-          
-          // Atualizar grafico
-          atualizarGraficoHorasPorSetor(dados.horasPorSetor || []);
-          
-        }
-
-        function atualizarGraficoHorasPorSetor(setores) {
-          const ctx = document.getElementById('graficoHorasPorSetor');
-          if (!ctx) return;
-          
-          // Destruir gráfico anterior se existir
-          if (graficoHorasPorSetor) {
-            graficoHorasPorSetor.destroy();
-          }
-          
-          // Preparar dados para o gráfico
-          const labels = setores.map(s => s.setor);
-          const horasEmNumeros = setores.map(s => {
-            const partes = s.horas.split(':');
-            return parseInt(partes[0]) + parseInt(partes[1]) / 60;
-          });
-          
-          // Cores para o gráfico
-          const cores = [
-            '#3498db', '#e74c3c', '#2ecc71', '#f39c12', '#9b59b6',
-            '#1abc9c', '#34495e', '#e67e22', '#95a5a6', '#c0392b'
-          ];
-          
-          // Criar novo gráfico
-          graficoHorasPorSetor = new Chart(ctx, {
-            type: 'bar',
-            data: {
-              labels: labels,
-              datasets: [{
-                label: 'Horas Extras',
-                data: horasEmNumeros,
-                backgroundColor: cores.slice(0, labels.length),
-                borderColor: cores.slice(0, labels.length),
-                borderWidth: 1
-              }]
-            },
-            options: {
-              responsive: true,
-              maintainAspectRatio: false,
-              plugins: {
-                legend: {
-                  display: true,
-                  position: 'top'
+            try {
+                let url;
+                if (linha) {
+                    url = `${SCRIPT_URL}?action=editarFuncionario&linha=${linha}&nome=${encodeURIComponent(nome)}&cargo=${encodeURIComponent(cargo)}&setor=${encodeURIComponent(setor)}&turno=${encodeURIComponent(turno)}`;
+                } else {
+                    url = `${SCRIPT_URL}?action=adicionarFuncionario&nome=${encodeURIComponent(nome)}&cargo=${encodeURIComponent(cargo)}&setor=${encodeURIComponent(setor)}&turno=${encodeURIComponent(turno)}`;
                 }
-              },
-              scales: {
-                y: {
-                  beginAtZero: true,
-                  title: {
-                    display: true,
-                    text: 'Horas'
-                  }
+
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (data.sucesso) {
+                    alert(data.mensagem);
+                    fecharModalFuncionario();
+                    carregarFuncionarios();
+                } else {
+                    alert('Erro: ' + data.mensagem);
                 }
-              }
+            } catch (error) {
+                console.error('Erro ao salvar funcionário:', error);
+                alert('Erro ao salvar funcionário');
             }
-          });
+        }
+
+        async function deletarFuncionarioConfirm(linha) {
+            resetInactivityTimer(); // Reseta o timer ao interagir
+            if (confirm('Tem certeza que deseja deletar este funcionário?')) {
+                try {
+                    const url = `${SCRIPT_URL}?action=deletarFuncionario&linha=${linha}`;
+                    const response = await fetch(url);
+                    const data = await response.json();
+                    
+                    if (data.sucesso) {
+                        alert(data.mensagem);
+                        carregarFuncionarios();
+                    } else {
+                        alert('Erro: ' + data.mensagem);
+                    }
+                } catch (error) {
+                    console.error('Erro ao deletar funcionário:', error);
+                    alert('Erro ao deletar funcionário');
+                }
+            }
         }
 
         // ===== INICIALIZAÇÃO =====
         document.addEventListener('DOMContentLoaded', () => {
-            // Forçar logout ao recarregar a página
+            // 1. Logout ao recarregar a página (limpa a sessão)
             localStorage.removeItem('isLoggedIn');
             localStorage.removeItem('userEmail');
             localStorage.removeItem('userName');
-            
-            // Garantir que a tela de login seja exibida
-            document.getElementById('login-screen').style.display = 'flex';
-            document.querySelector('.dashboard-container').style.display = 'none';
+
+            // 2. Garante que a tela de login seja exibida
+            document.getElementById('loginScreen').style.display = 'flex';
+            document.getElementById('dashboardScreen').classList.remove('active');
             
             setupRealtimeSync();
+            
+            // 3. Configura os listeners para resetar o timer de inatividade
+            document.addEventListener('mousemove', resetInactivityTimer);
+            document.addEventListener('keypress', resetInactivityTimer);
+            document.addEventListener('click', resetInactivityTimer);
         });
     </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
