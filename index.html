@@ -900,8 +900,8 @@
                             <span class="kpi-label">Férias Programadas</span>
                             <div class="kpi-icon">🏖️</div>
                         </div>
-                        <div class="kpi-value" id="feriasProgramadas">--</div>
-                        <div class="kpi-change" id="feriasChange">Carregando...</div>
+                        <div class="kpi-value" id="feriasProgramadas">3</div>
+                        <div class="kpi-change" id="feriasChange">3 Férias Confirmadas</div>
                     </div>
 
                     <div class="kpi-card purple">
@@ -1282,10 +1282,10 @@
 
             // Dados de exemplo
             const atividades = [
-                { nome: 'Maria Silva', descricao: 'registrou 8h extras', tempo: '2h atrás' },
-                { nome: 'João Santos', descricao: 'solicitou férias', tempo: '5h atrás' },
-                { nome: 'Ana Costa', descricao: 'atualizou cadastro', tempo: '1d atrás' },
-                { nome: 'Pedro Lima', descricao: 'registrou ponto', tempo: '1d atrás' }
+                { nome: 'João Carlos', descricao: 'Saiu de Férias em 15/12/25', tempo: 'Retorno 05/01/26' },
+                { nome: 'Júlio Cesar', descricao: 'Saiu de Férias em 15/12/25', tempo: 'Retorno 05/01/26' },
+                { nome: 'Osni Kletemberg', descricao: 'Sairá de Férias em 05/01/26', tempo: 'Retorno 04/02/26' },
+               
             ];
             const ferias = [
                 { nome: 'Carlos Mendes', datas: '15-29 Dez', dias: '15 dias' },
@@ -1359,8 +1359,6 @@
         // ===== FUNÇÕES PARA HORAS EXTRAS =====
         async function carregarDadosHorasExtras() {
             resetInactivityTimer(); // Reseta o timer ao carregar dados
-            
-            // 1. Carregar dados gerais (KPIs e Gráfico)
             try {
                 const url = `${SCRIPT_URL}?action=obterDadosHorasExtras`;
                 const response = await fetch(url);
@@ -1368,28 +1366,12 @@
                 
                 if (data.sucesso) {
                     exibirDadosHorasExtras(data.dados);
+                    carregarTabelaHorasExtras();
                 } else {
-                    console.error('Erro ao carregar dados gerais:', data.mensagem);
+                    console.error('Erro ao carregar dados:', data.mensagem);
                 }
             } catch (error) {
-                console.error('Erro ao carregar dados gerais de horas extras:', error);
-            }
-
-            // 2. Carregar dados da Tabela (Horas por Colaborador)
-            try {
-                const url = `${SCRIPT_URL}?action=obterHorasPorColaborador`; // Chamada à nova função
-                const response = await fetch(url);
-                const data = await response.json();
-                
-                if (data.sucesso) {
-                    renderizarTabelaHorasExtras(data.dados || []);
-                } else {
-                    console.error('Erro ao carregar tabela de horas:', data.mensagem);
-                    document.getElementById('tabelaColaboradores').innerHTML = '<p style="color: red; text-align: center; padding: 40px;">Erro ao carregar dados da tabela.</p>';
-                }
-            } catch (error) {
-                console.error('Erro ao carregar tabela de horas extras:', error);
-                document.getElementById('tabelaColaboradores').innerHTML = '<p style="color: red; text-align: center; padding: 40px;">Erro ao carregar dados da tabela.</p>';
+                console.error('Erro ao carregar dados de horas extras:', error);
             }
         }
 
@@ -1472,8 +1454,20 @@
             });
         }
 
-        // Função antiga removida, pois a lógica foi incorporada em carregarDadosHorasExtras()
-// async function carregarTabelaHorasExtras() { ... }
+        async function carregarTabelaHorasExtras() {
+            resetInactivityTimer(); // Reseta o timer ao carregar dados
+            try {
+                const url = `${SCRIPT_URL}?action=obterTabelaHorasExtras`;
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (data.sucesso) {
+                    renderizarTabelaHorasExtras(data.dados.colaboradores || []);
+                }
+            } catch (error) {
+                console.error('Erro ao carregar tabela de horas extras:', error);
+            }
+        }
 
         function renderizarTabelaHorasExtras(colaboradores) {
             const container = document.getElementById('tabelaColaboradores');
@@ -1851,3 +1845,13 @@
     </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
