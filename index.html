@@ -900,8 +900,8 @@
                             <span class="kpi-label">Férias Programadas</span>
                             <div class="kpi-icon">🏖️</div>
                         </div>
-                        <div class="kpi-value" id="feriasProgramadas">3</div>
-                        <div class="kpi-change" id="feriasChange">3 Férias Confirmadas</div>
+                        <div class="kpi-value" id="feriasProgramadas">--</div>
+                        <div class="kpi-change" id="feriasChange">Carregando...</div>
                     </div>
 
                     <div class="kpi-card purple">
@@ -1133,7 +1133,7 @@
 
     <script>
         // ===== CONFIGURAÇÃO DO GOOGLE APPS SCRIPT =====
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxX0kFoCNJndawxcCSqRe36SFkKVOanXexD7STqJmS7Tm0uSztfb3Ap_vEIZItTvVHQ/exec';
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxOh_U-rsszABNtmwSKt67QU7KT_rqBVMBVZL-oR-ebwCKTo0YVVLEj1EtHZ00oEp_Z/exec';
 
         // Constante para o tempo limite de inatividade (5 minutos em milissegundos)
         const INACTIVITY_TIMEOUT = 300000; 
@@ -1282,10 +1282,10 @@
 
             // Dados de exemplo
             const atividades = [
-                { nome: 'João Carlos', descricao: 'Saiu de Férias em 15/12/25', tempo: 'Retorno 05/01/26' },
-                { nome: 'Júlio Cesar', descricao: 'Saiu de Férias em 15/12/25', tempo: 'Retorno 05/01/26' },
-                { nome: 'Osni Kletemberg', descricao: 'Sairá de Férias em 05/01/26', tempo: 'Retorno 04/02/26' },
-               
+                { nome: 'Maria Silva', descricao: 'registrou 8h extras', tempo: '2h atrás' },
+                { nome: 'João Santos', descricao: 'solicitou férias', tempo: '5h atrás' },
+                { nome: 'Ana Costa', descricao: 'atualizou cadastro', tempo: '1d atrás' },
+                { nome: 'Pedro Lima', descricao: 'registrou ponto', tempo: '1d atrás' }
             ];
             const ferias = [
                 { nome: 'Carlos Mendes', datas: '15-29 Dez', dias: '15 dias' },
@@ -1359,6 +1359,8 @@
         // ===== FUNÇÕES PARA HORAS EXTRAS =====
         async function carregarDadosHorasExtras() {
             resetInactivityTimer(); // Reseta o timer ao carregar dados
+            
+            // 1. Carregar dados gerais (KPIs e Gráfico)
             try {
                 const url = `${SCRIPT_URL}?action=obterDadosHorasExtras`;
                 const response = await fetch(url);
@@ -1366,12 +1368,28 @@
                 
                 if (data.sucesso) {
                     exibirDadosHorasExtras(data.dados);
-                    carregarTabelaHorasExtras();
                 } else {
-                    console.error('Erro ao carregar dados:', data.mensagem);
+                    console.error('Erro ao carregar dados gerais:', data.mensagem);
                 }
             } catch (error) {
-                console.error('Erro ao carregar dados de horas extras:', error);
+                console.error('Erro ao carregar dados gerais de horas extras:', error);
+            }
+
+            // 2. Carregar dados da Tabela (Horas por Colaborador)
+            try {
+                const url = `${SCRIPT_URL}?action=obterHorasPorColaborador`; // Chamada à nova função
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (data.sucesso) {
+                    renderizarTabelaHorasExtras(data.dados || []);
+                } else {
+                    console.error('Erro ao carregar tabela de horas:', data.mensagem);
+                    document.getElementById('tabelaColaboradores').innerHTML = '<p style="color: red; text-align: center; padding: 40px;">Erro ao carregar dados da tabela.</p>';
+                }
+            } catch (error) {
+                console.error('Erro ao carregar tabela de horas extras:', error);
+                document.getElementById('tabelaColaboradores').innerHTML = '<p style="color: red; text-align: center; padding: 40px;">Erro ao carregar dados da tabela.</p>';
             }
         }
 
@@ -1454,20 +1472,8 @@
             });
         }
 
-        async function carregarTabelaHorasExtras() {
-            resetInactivityTimer(); // Reseta o timer ao carregar dados
-            try {
-                const url = `${SCRIPT_URL}?action=obterTabelaHorasExtras`;
-                const response = await fetch(url);
-                const data = await response.json();
-                
-                if (data.sucesso) {
-                    renderizarTabelaHorasExtras(data.dados.colaboradores || []);
-                }
-            } catch (error) {
-                console.error('Erro ao carregar tabela de horas extras:', error);
-            }
-        }
+        // Função antiga removida, pois a lógica foi incorporada em carregarDadosHorasExtras()
+// async function carregarTabelaHorasExtras() { ... }
 
         function renderizarTabelaHorasExtras(colaboradores) {
             const container = document.getElementById('tabelaColaboradores');
@@ -1480,12 +1486,30 @@
             let html = '<div class="table-container"><table>';
             html += '<thead><tr><th>Colaborador</th><th>Setor</th><th>Horas Extras</th></tr></thead><tbody>';
             
+            // O Apps Script retorna um array de arrays: [[email, horas_formatadas], ...]
+            // Precisamos buscar o nome e o setor do colaborador
+            
+            // Simulação de busca de nome e setor (idealmente, o Apps Script faria isso)
+            // Como o Apps Script só retorna [email, horas], vamos simplificar a tabela
+            
+            // Ordenar por horas (maior para menor)
+            colaboradores.sort((a, b) => {
+                // Converte HH:MM para minutos para comparação
+                const [hA, mA] = a[1].split(':').map(Number);
+                const [hB, mB] = b[1].split(':').map(Number);
+                return (hB * 60 + mB) - (hA * 60 + mA);
+            });
+
             colaboradores.forEach(col => {
+                const email = col[0];
+                const horas = col[1];
+                
+                // Nota: O nome e setor não estão disponíveis aqui, então vamos mostrar apenas o email e as horas
                 html += `
                     <tr>
-                        <td><strong>${col.nome}</strong></td>
-                        <td>${col.setor || '--'}</td>
-                        <td style="color: #3498db; font-weight: 600;">${col.horas}</td>
+                        <td><strong>${email}</strong></td>
+                        <td>--</td>
+                        <td style="color: #3498db; font-weight: 600;">${horas}</td>
                     </tr>
                 `;
             });
@@ -1845,14 +1869,3 @@
     </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
