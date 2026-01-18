@@ -7,429 +7,73 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5; color: #333; }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background-color: #f5f5f5;
-            color: #333;
-        }
+        /* ===== ESTILOS GERAIS E LAYOUT ===== */
+        .login-container { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%); padding: 20px; }
+        .login-box { background: white; border-radius: 12px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2); padding: 40px; width: 100%; max-width: 400px; }
+        .login-header { text-align: center; margin-bottom: 30px; }
+        .login-header h1 { font-size: 28px; color: #2c3e50; margin-bottom: 10px; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; color: #2c3e50; font-weight: 600; font-size: 14px; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px 15px; border: 2px solid #ecf0f1; border-radius: 6px; font-size: 14px; transition: all 0.3s ease; font-family: inherit; background-color: white; }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: #3498db; box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1); }
+        
+        .login-btn { width: 100%; padding: 12px; background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%); color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: 600; cursor: pointer; transition: 0.3s; margin-top: 10px; }
+        .login-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(44, 62, 80, 0.3); }
+        .loading-spinner { display: none; text-align: center; padding: 20px; }
+        .loading-spinner.show { display: block; }
+        .spinner { border: 3px solid #ecf0f1; border-top: 3px solid #3498db; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 0 auto 10px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* ===== LOGIN SCREEN ===== */
-        .login-container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-            padding: 20px;
-        }
-
-        .login-box {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-            padding: 40px;
-            width: 100%;
-            max-width: 400px;
-        }
-
-        .login-header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        .login-header h1 {
-            font-size: 28px;
-            color: #2c3e50;
-            margin-bottom: 10px;
-        }
-
-        .login-header p {
-            color: #7f8c8d;
-            font-size: 14px;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-            position: relative;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            color: #2c3e50;
-            font-weight: 600;
-            font-size: 14px;
-        }
-
-        .form-group input, .form-group select, .form-group textarea {
-            width: 100%;
-            padding: 12px 15px;
-            border: 2px solid #ecf0f1;
-            border-radius: 6px;
-            font-size: 14px;
-            transition: all 0.3s ease;
-            font-family: inherit;
-        }
-
-        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
-            outline: none;
-            border-color: #3498db;
-            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
-        }
-
-        .login-btn {
-            width: 100%;
-            padding: 12px;
-            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-top: 10px;
-        }
-
-        .login-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(44, 62, 80, 0.3);
-        }
-
-        .login-btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-
-        .error-message {
-            display: none;
-            background: #fee;
-            color: #c33;
-            padding: 12px;
-            border-radius: 6px;
-            margin-bottom: 20px;
-            font-size: 14px;
-            border-left: 4px solid #c33;
-        }
-
-        .error-message.show {
-            display: block;
-        }
-
-        .loading-spinner {
-            display: none;
-            text-align: center;
-            padding: 20px;
-        }
-
-        .loading-spinner.show {
-            display: block;
-        }
-
-        .spinner {
-            border: 3px solid #ecf0f1;
-            border-top: 3px solid #3498db;
-            border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 10px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        /* ===== DASHBOARD SCREEN ===== */
-        .dashboard-container {
-            display: none;
-            flex: 1;
-            min-height: 100vh;
-        }
-
-        .dashboard-container.active {
-            display: flex;
-        }
-
-        .sidebar {
-            width: 210px;
-            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-            color: white;
-            padding: 20px;
-            position: fixed;
-            height: 100vh;
-            overflow-y: auto;
-            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
-        }
-
-        .sidebar-header {
-            margin-bottom: 30px;
-            border-bottom: 2px dashed rgba(255, 255, 255, 0.2);
-            padding-bottom: 15px;
-        }
-
-        .sidebar-title {
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 5px;
-        }
-
-        .sidebar-subtitle {
-            font-size: 12px;
-            color: rgba(255, 255, 255, 0.6);
-        }
-
-        .sidebar-user {
-            font-size: 12px;
-            color: rgba(255, 255, 255, 0.5);
-            margin-top: 10px;
-            padding-top: 10px;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .nav-menu {
-            list-style: none;
-            margin-bottom: 30px;
-        }
-
-        .nav-item {
-            margin-bottom: 15px;
-        }
-
-        .nav-link {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: rgba(255, 255, 255, 0.7);
-            text-decoration: none;
-            padding: 10px 12px;
-            border-radius: 6px;
-            transition: all 0.3s ease;
-            font-size: 14px;
-            cursor: pointer;
-            border: none;
-            background: none;
-            width: 100%;
-            text-align: left;
-        }
-
-        .nav-link:hover {
-            background-color: rgba(255, 255, 255, 0.1);
-            color: white;
-        }
-
-        .nav-link.active {
-            background-color: #3498db;
-            color: white;
-            font-weight: 600;
-        }
-
-        .nav-icon {
-            width: 20px;
-            height: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .logout-btn {
-            width: 100%;
-            padding: 10px 12px;
-            background: rgba(255, 255, 255, 0.1);
-            color: rgba(255, 255, 255, 0.7);
-            border: none;
-            border-radius: 6px;
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-top: 20px;
-        }
-
-        .logout-btn:hover {
-            background: rgba(255, 0, 0, 0.2);
-            color: #ff6b6b;
-        }
-
-        .main-content {
-            margin-left: 210px;
-            flex: 1;
-            padding: 30px;
-        }
-
-        .page-header {
-            margin-bottom: 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .page-title {
-            font-size: 28px;
-            font-weight: 700;
-            color: #2c3e50;
-        }
-
-        .page-subtitle {
-            font-size: 14px;
-            color: #7f8c8d;
-        }
-
-        .sync-status {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 12px;
-            color: #7f8c8d;
-        }
-
-        .sync-status.synced { color: #27ae60; }
-        .sync-status.syncing { color: #3498db; }
-
-        .sync-indicator {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: #27ae60;
-        }
-
-        .sync-indicator.syncing {
-            background: #3498db;
-            animation: pulse 1.5s ease-in-out infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-
-        .kpi-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .kpi-card {
-            background: white;
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-            border-left: 4px solid #3498db;
-            transition: all 0.3s ease;
-        }
-
-        .kpi-card.blue { border-left-color: #3498db; }
-        .kpi-card.green { border-left-color: #27ae60; }
-        .kpi-card.orange { border-left-color: #e67e22; }
-        .kpi-card.purple { border-left-color: #9b59b6; }
-
-        .kpi-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-
-        .kpi-label {
-            font-size: 13px;
-            color: #7f8c8d;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-
-        .kpi-value {
-            font-size: 32px;
-            font-weight: 700;
-            color: #2c3e50;
-            margin-bottom: 8px;
-        }
-
-        .kpi-change {
-            font-size: 12px;
-            color: #7f8c8d;
-        }
-
-        .kpi-change.positive { color: #27ae60; }
-        .kpi-change.negative { color: #e74c3c; }
-
-        .content-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-
-        .card {
-            background: white;
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-            margin-bottom: 20px; /* Margem extra para segurança */
-        }
-
-        .card-title {
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 20px;
-            color: #2c3e50;
-        }
-
-        .activity-list, .vacation-list { list-style: none; }
-        .activity-item, .vacation-item {
-            padding: 15px 0;
-            border-bottom: 1px solid #ecf0f1;
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-        }
-        .activity-item:last-child, .vacation-item:last-child { border-bottom: none; }
-
-        .loading { text-align: center; padding: 40px 0; color: #7f8c8d; }
-
+        /* Dashboard */
+        .dashboard-container { display: none; flex: 1; min-height: 100vh; }
+        .dashboard-container.active { display: flex; }
+        .sidebar { width: 210px; background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%); color: white; padding: 20px; position: fixed; height: 100vh; overflow-y: auto; }
+        .sidebar-title { font-size: 18px; font-weight: 700; }
+        .sidebar-user { font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px; }
+        .nav-menu { list-style: none; margin-top: 30px; }
+        .nav-link { display: flex; align-items: center; gap: 10px; color: rgba(255,255,255,0.7); text-decoration: none; padding: 10px 12px; border-radius: 6px; font-size: 14px; cursor: pointer; border: none; background: none; width: 100%; text-align: left; margin-bottom: 5px; }
+        .nav-link:hover, .nav-link.active { background-color: #3498db; color: white; }
+        
+        .main-content { margin-left: 210px; flex: 1; padding: 30px; }
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .page-title { font-size: 28px; font-weight: 700; color: #2c3e50; }
+        
+        /* Cards e Grids */
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .kpi-card { background: white; border-radius: 8px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border-left: 4px solid #3498db; }
+        .kpi-value { font-size: 32px; font-weight: 700; color: #2c3e50; margin-top: 10px; }
+        
+        .content-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .card { background: white; border-radius: 8px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 20px; }
+        .card-title { font-size: 18px; font-weight: 700; margin-bottom: 20px; color: #2c3e50; }
+        
         .page { display: none; }
         .page.active { display: block; }
 
-        .config-box {
-            background: #fff3cd;
-            border: 1px solid #ffc107;
-            border-radius: 6px;
-            padding: 15px;
-            margin-bottom: 20px;
-            font-size: 13px;
-            color: #856404;
-        }
-
-        /* Tabelas */
+        /* Estilos Específicos */
+        .config-box { background: #fff3cd; border: 1px solid #ffc107; border-radius: 6px; padding: 15px; margin-bottom: 20px; font-size: 13px; color: #856404; }
         .table-container { overflow-x: auto; margin-top: 20px; }
         table { width: 100%; border-collapse: collapse; font-size: 14px; }
-        table th { background: #f5f5f5; padding: 12px; text-align: left; font-weight: 600; color: #2c3e50; border-bottom: 2px solid #ecf0f1; }
+        table th { background: #f5f5f5; padding: 12px; text-align: left; border-bottom: 2px solid #ecf0f1; }
         table td { padding: 12px; border-bottom: 1px solid #ecf0f1; }
-        table tr:hover { background: #f9f9f9; }
-
-        /* Botões Ação */
-        .btn-small { padding: 8px 12px; border: none; border-radius: 4px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; }
+        
+        .btn-small { padding: 8px 12px; border: none; border-radius: 4px; font-size: 12px; font-weight: 600; cursor: pointer; }
         .btn-aprovar { background: #27ae60; color: white; }
         .btn-rejeitar { background: #e74c3c; color: white; }
-        
-        .action-spinner { display: none; width: 16px; height: 16px; border: 3px solid #f3f3f3; border-top: 3px solid #3498db; border-radius: 50%; animation: spin 1s linear infinite; }
-        .action-spinner.show { display: block; }
 
-        @media (max-width: 768px) {
-            .sidebar { width: 70px; padding: 15px; }
-            .sidebar-title, .sidebar-subtitle, .sidebar-user { display: none; }
-            .main-content { margin-left: 70px; padding: 20px; }
-            .content-grid { grid-template-columns: 1fr; }
-            .nav-link { justify-content: center; }
+        /* NOVO: Estilo Botão Outline (Email) */
+        .btn-outline { background: transparent; border: 2px solid #3498db; color: #3498db; font-weight: 600; transition: all 0.3s ease; }
+        .btn-outline:hover { background: #ebf5fb; transform: translateY(-2px); }
+
+        @media (max-width: 1024px) { .content-grid { grid-template-columns: 1fr; } }
+        @media (max-width: 768px) { 
+            .sidebar { width: 70px; padding: 15px; } 
+            .sidebar-title, .sidebar-user { display: none; }
             .nav-link span:last-child { display: none; }
+            .main-content { margin-left: 70px; padding: 20px; }
         }
     </style>
 </head>
@@ -440,179 +84,58 @@
                 <h1>RH Manager</h1>
                 <p>Sistema de Gestão de RH</p>
             </div>
-
-            <div id="errorMessage" class="error-message"></div>
-            <div id="loadingSpinner" class="loading-spinner">
-                <div class="spinner"></div>
-                <p>Validando credenciais...</p>
-            </div>
-
+            <div id="errorMessage" style="display:none; color:red; margin-bottom:10px; text-align:center;"></div>
+            <div id="loadingSpinner" class="loading-spinner"><div class="spinner"></div><p>Validando...</p></div>
             <form id="loginForm" onsubmit="handleLogin(event)">
-                <div class="form-group">
-                    <label for="email">Email</label>
-                    <input type="email" id="email" placeholder="seu.email@empresa.com" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="password">Senha</label>
-                    <input type="password" id="password" placeholder="Digite sua senha" required>
-                </div>
-
-                <button type="submit" class="login-btn" id="loginBtn">
-                    <i class="fas fa-sign-in-alt"></i> ENTRAR
-                </button>
+                <div class="form-group"><label>Email</label><input type="email" id="email" required></div>
+                <div class="form-group"><label>Senha</label><input type="password" id="password" required></div>
+                <button type="submit" class="login-btn" id="loginBtn">ENTRAR</button>
             </form>
         </div>
     </div>
 
     <div id="dashboardScreen" class="dashboard-container">
         <aside class="sidebar">
-            <div class="sidebar-header">
-                <div class="sidebar-title">RH Manager</div>
-                <div class="sidebar-subtitle">Sistema de Gestão</div>
-                <div class="sidebar-user" id="userEmail">Usuário</div>
-                <div class="sidebar-user" id="userName" style="margin-top: 5px;"></div>
-            </div>
-
+            <div class="sidebar-title">RH Manager</div>
+            <div class="sidebar-user" id="userEmail">Usuário</div>
+            <div class="sidebar-user" id="userName" style="border:none; margin-top:0; padding-top:0;"></div>
             <nav>
                 <ul class="nav-menu">
-                    <li class="nav-item">
-                        <button class="nav-link active" onclick="showPage('dashboard')">
-                            <span class="nav-icon">📊</span>
-                            <span>Dashboard</span>
-                        </button>
-                    </li>
-                    <li class="nav-item">
-                        <button class="nav-link" onclick="showPage('horas')">
-                            <span class="nav-icon">⏱️</span>
-                            <span>Horas Extras</span>
-                        </button>
-                    </li>
-                    <li class="nav-item">
-                        <button class="nav-link" onclick="showPage('aprovacoes')">
-                            <span class="nav-icon">✅</span>
-                            <span>Aprovações</span>
-                        </button>
-                    </li>
-                    <li class="nav-item">
-                        <button class="nav-link" onclick="showPage('ferias')">
-                            <span class="nav-icon">🏖️</span>
-                            <span>Férias</span>
-                        </button>
-                    </li>
-                    <li class="nav-item">
-                        <button class="nav-link" onclick="showPage('funcionarios')">
-                            <span class="nav-icon">👥</span>
-                            <span>Funcionários</span>
-                        </button>
-                    </li>
+                    <li><button class="nav-link active" onclick="showPage('dashboard')"><i class="fas fa-chart-bar"></i> <span>Dashboard</span></button></li>
+                    <li><button class="nav-link" onclick="showPage('horas')"><i class="fas fa-clock"></i> <span>Horas Extras</span></button></li>
+                    <li><button class="nav-link" onclick="showPage('aprovacoes')"><i class="fas fa-check-circle"></i> <span>Aprovações</span></button></li>
+                    <li><button class="nav-link" onclick="showPage('ferias')"><i class="fas fa-umbrella-beach"></i> <span>Férias</span></button></li>
+                    <li><button class="nav-link" onclick="showPage('funcionarios')"><i class="fas fa-users"></i> <span>Funcionários</span></button></li>
                 </ul>
             </nav>
-
-            <button class="logout-btn" onclick="handleLogout()">
-                <i class="fas fa-sign-out-alt"></i>
-                <span>Sair</span>
-            </button>
+            <button onclick="handleLogout()" class="nav-link" style="margin-top:20px; color:#e74c3c;"><i class="fas fa-sign-out-alt"></i> <span>Sair</span></button>
         </aside>
 
         <main class="main-content">
             <div id="dashboard-page" class="page active">
-                <div class="page-header">
-                    <div>
-                        <h1 class="page-title">Dashboard</h1>
-                        <p class="page-subtitle">Visão geral do sistema de gestão de recursos humanos</p>
-                    </div>
-                    <div class="sync-status synced" id="syncStatus">
-                        <div class="sync-indicator"></div>
-                        <span>Sincronizado</span>
-                    </div>
-                </div>
-
+                <div class="page-header"><h1 class="page-title">Dashboard</h1></div>
                 <div class="kpi-grid">
-                    <div class="kpi-card blue">
-                        <div class="kpi-header">
-                            <span class="kpi-label">Total de Funcionários</span>
-                            <div class="kpi-icon">👥</div>
-                        </div>
-                        <div class="kpi-value" id="totalFuncionarios">--</div>
-                        <div class="kpi-change positive" id="totalChange">Carregando...</div>
-                    </div>
-
-                    <div class="kpi-card green">
-                        <div class="kpi-header">
-                            <span class="kpi-label">Horas Extras (Mês)</span>
-                            <div class="kpi-icon">⏱️</div>
-                        </div>
-                        <div class="kpi-value" id="horasExtras">--</div>
-                        <div class="kpi-change negative" id="horasChange">Carregando...</div>
-                    </div>
-
-                    <div class="kpi-card orange">
-                        <div class="kpi-header">
-                            <span class="kpi-label">Férias Programadas</span>
-                            <div class="kpi-icon">🏖️</div>
-                        </div>
-                        <div class="kpi-value" id="feriasProgramadas">--</div>
-                        <div class="kpi-change" id="feriasChange">Carregando...</div>
-                    </div>
-                </div>
-
-                <div class="content-grid">
-                    <div class="card">
-                        <h2 class="card-title">Atividades Recentes</h2>
-                        <div id="atividadesContainer">
-                            <div class="loading"><div class="spinner"></div></div>
-                        </div>
-                    </div>
+                    <div class="kpi-card"><div class="kpi-label">Funcionários</div><div class="kpi-value" id="totalFuncionarios">--</div></div>
+                    <div class="kpi-card" style="border-left-color: #27ae60;"><div class="kpi-label">Horas Extras (Mês)</div><div class="kpi-value" id="horasExtras">--</div></div>
                 </div>
             </div>
 
             <div id="horas-page" class="page">
                 <div class="page-header">
-                    <div>
-                        <h1 class="page-title">Horas Extras</h1>
-                        <p class="page-subtitle">Acompanhamento de horas extras</p>
-                    </div>
-                    <button onclick="recarregarHorasExtras()" style="background: #3498db; color: white; padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">
-                        <i class="fas fa-sync-alt"></i> Atualizar
-                    </button>
+                    <h1 class="page-title">Horas Extras</h1>
+                    <button onclick="recarregarHorasExtras()" class="btn-small" style="background:#3498db; color:white; font-size:14px;">Atualizar</button>
                 </div>
-                
                 <div class="kpi-grid">
-                    <div class="kpi-card blue">
-                        <div class="kpi-header"><span class="kpi-label">Total Horas</span></div>
-                        <div class="kpi-value" id="totalHorasExtras">--</div>
-                    </div>
-                    <div class="kpi-card green">
-                        <div class="kpi-header"><span class="kpi-label">Maior Saldo</span></div>
-                        <div class="kpi-value" id="colaboradorMaisHoras">--</div>
-                        <div class="kpi-change" id="colaboradorChange">--</div>
-                    </div>
+                    <div class="kpi-card"><div class="kpi-label">Total Horas</div><div class="kpi-value" id="totalHorasExtras">--</div></div>
+                    <div class="kpi-card" style="border-left-color: #27ae60;"><div class="kpi-label">Maior Saldo</div><div class="kpi-value" id="colaboradorMaisHoras">--</div><small id="colaboradorChange"></small></div>
                 </div>
-
-                <div class="card">
-                    <h2 class="card-title">Horas Extras por Setor</h2>
-                    <div style="height: 350px; position: relative;">
-                        <canvas id="graficoHorasPorSetor"></canvas>
-                    </div>
-                </div>
-
-                <div class="card">
-                    <h2 class="card-title">Horas Extras por Colaborador</h2>
-                    <div id="tabelaColaboradores">
-                        <div class="loading"><div class="spinner"></div></div>
-                    </div>
-                </div>
+                <div class="card"><h2 class="card-title">Por Setor</h2><div style="height:300px;"><canvas id="graficoHorasPorSetor"></canvas></div></div>
+                <div class="card"><h2 class="card-title">Por Colaborador</h2><div id="tabelaColaboradores">Carregando...</div></div>
             </div>
 
             <div id="ferias-page" class="page">
-                <div class="page-header">
-                    <div>
-                        <h1 class="page-title">Agendamento de Férias</h1>
-                        <p class="page-subtitle">Solicite e gerencie suas férias</p>
-                    </div>
-                </div>
-
+                <div class="page-header"><h1 class="page-title">Agendamento de Férias</h1></div>
+                
                 <div class="content-grid">
                     <div class="card">
                         <h2 class="card-title">Nova Solicitação</h2>
@@ -620,7 +143,9 @@
                             
                             <div class="form-group">
                                 <label>Colaborador</label>
-                                <input type="text" id="feriasNomeColaborador" style="background-color: #f0f0f0; cursor: not-allowed;" readonly>
+                                <select id="feriasNomeColaborador" required style="width: 100%; padding: 12px 15px; border: 2px solid #ecf0f1; border-radius: 6px; font-size: 14px; background-color: white;">
+                                    <option value="">Carregando funcionários...</option>
+                                </select>
                                 <input type="hidden" id="feriasEmailColaborador">
                             </div>
 
@@ -635,7 +160,6 @@
                                         <option value="15_9_7">15 dias (1º período)</option>
                                     </select>
                                 </div>
-
                                 <div class="form-group">
                                     <label>Data de Início</label>
                                     <input type="date" id="dataSaida" onchange="calcularVolta()" required>
@@ -644,13 +168,8 @@
 
                             <div class="config-box" id="boxPrevisao" style="display:none; margin-top: 0;">
                                 <div style="display: flex; justify-content: space-between; align-items: center;">
-                                    <div>
-                                        <strong>Retorno:</strong>
-                                        <span id="textoDataRetorno" style="font-size: 16px; color: #2c3e50; font-weight: bold;">--/--/----</span>
-                                    </div>
-                                    <div style="text-align: right;">
-                                        <small id="textoDiasGozo" style="display:block; color: #e67e22;"></small>
-                                    </div>
+                                    <div><strong>Retorno:</strong> <span id="textoDataRetorno" style="font-weight: bold;">--/--/----</span></div>
+                                    <div style="text-align: right;"><small id="textoDiasGozo" style="color: #e67e22;"></small></div>
                                 </div>
                                 <input type="hidden" id="dataRetornoCalculada">
                             </div>
@@ -660,25 +179,25 @@
                                 <textarea id="obsFerias" rows="2" placeholder="Ex: Gostaria de adiantar a 1ª parcela do 13º..."></textarea>
                             </div>
 
-                            <div style="margin-top: 20px;">
+                            <div style="margin-top: 20px; display: flex; flex-direction: column; gap: 10px;">
                                 <button type="submit" id="btnSalvarFerias" style="width: 100%; background: #3498db; color: white; padding: 12px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">
-                                    Solicitar Agendamento
+                                    Solicitar Agendamento (Sistema)
                                 </button>
-                                <div id="loadingFerias" class="loading" style="display: none; padding: 10px;">
-                                    <div class="spinner" style="width: 20px; height: 20px; border-width: 2px;"></div>
-                                </div>
+                                
+                                <button type="button" onclick="abrirEmailRH()" class="btn-outline" style="width: 100%; padding: 12px; border-radius: 6px; cursor: pointer;">
+                                    <i class="far fa-envelope"></i> Solicitar ao RH (E-mail)
+                                </button>
+
+                                <div id="loadingFerias" class="loading-spinner"><div class="spinner"></div></div>
                             </div>
                         </form>
                     </div>
 
                     <div class="card">
                         <h2 class="card-title">Minhas Solicitações</h2>
-                        <div id="historicoFeriasContainer">
-                            <p style="text-align: center; color: #7f8c8d; padding: 20px;">Carregando...</p>
-                        </div>
-                        
+                        <div id="historicoFeriasContainer"><p style="text-align:center; color:#999;">Carregando...</p></div>
                         <div class="config-box" style="margin-top: 20px; background: #e8f4fd; border-color: #3498db; color: #2980b9;">
-                            <strong>Regras Importantes:</strong>
+                            <strong>Regras:</strong>
                             <ul style="margin-top: 5px; margin-left: 20px; font-size: 12px;">
                                 <li>Férias não podem iniciar em sextas-feiras.</li>
                                 <li>Solicitar com no mínimo 30 dias de antecedência.</li>
@@ -689,68 +208,33 @@
             </div>
 
             <div id="aprovacoes-page" class="page">
-                <div class="page-header">
-                    <div>
-                        <h1 class="page-title">Aprovações</h1>
-                        <p class="page-subtitle">Gerenciar horas extras pendentes</p>
-                    </div>
-                </div>
-
-                <div id="acessoNegado" style="display: none;" class="card">
-                    <p style="text-align: center; color: #e74c3c;">
-                        <i class="fas fa-lock"></i> Acesso negado.
-                    </p>
-                </div>
-
+                <div class="page-header"><h1 class="page-title">Aprovações</h1></div>
+                <div id="acessoNegado" style="display:none; text-align:center; padding:20px; background:white; border-radius:8px;">Acesso Negado</div>
                 <div id="containerAprovacoes">
-                    <div class="kpi-grid">
-                        <div class="kpi-card blue">
-                            <div class="kpi-header">
-                                <div class="kpi-label">TOTAL PENDENTE</div>
-                                <button id="refreshButton" onclick="carregarSolicitacoesPendentes()" style="background:none; border:none; cursor:pointer;"><i class="fas fa-sync-alt"></i></button>
-                            </div>
-                            <div class="kpi-value" id="totalHorasPendentes">00:00</div>
-                        </div>
-                    </div>
-                    <div class="card">
-                        <h2 class="card-title">Solicitações Pendentes</h2>
-                        <div id="solicitacoesPendentes">
-                            <div class="loading"><div class="spinner"></div></div>
-                        </div>
-                    </div>
+                    <div class="kpi-grid"><div class="kpi-card"><div class="kpi-label">Pendente</div><div class="kpi-value" id="totalHorasPendentes">00:00</div></div></div>
+                    <div class="card"><h2 class="card-title">Pendências <button onclick="carregarSolicitacoesPendentes()" style="border:none; background:none; cursor:pointer;"><i class="fas fa-sync"></i></button></h2>
+                    <div id="solicitacoesPendentes"><div class="loading-spinner" style="display:block"><div class="spinner"></div></div></div></div>
                 </div>
             </div>
 
             <div id="funcionarios-page" class="page">
-                <div class="page-header">
-                    <div>
-                        <h1 class="page-title">Funcionários</h1>
-                    </div>
-                </div>
-                <div style="display: flex; gap: 15px; margin-bottom: 20px;">
-                    <button onclick="abrirModalAdicionarFuncionario()" style="background: #27ae60; color: white; padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">
-                        + Adicionar
-                    </button>
-                </div>
-                <div class="card">
-                    <div id="funcionariosContainer">
-                        <div class="loading"><div class="spinner"></div></div>
-                    </div>
-                </div>
+                <div class="page-header"><h1 class="page-title">Funcionários</h1></div>
+                <button onclick="abrirModalAdicionarFuncionario()" class="btn-small" style="background:#27ae60; color:white; margin-bottom:20px; font-size:14px;">+ Adicionar</button>
+                <div class="card"><div id="funcionariosContainer"><div class="loading-spinner" style="display:block"><div class="spinner"></div></div></div></div>
             </div>
 
-            <div id="modalFuncionario" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
-                <div style="background: white; border-radius: 8px; padding: 30px; width: 90%; max-width: 500px;">
-                    <h2 id="modalTitulo" style="margin-bottom: 20px;">Funcionário</h2>
-                    <form onsubmit="event.preventDefault(); salvarFuncionario();">
+            <div id="modalFuncionario" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center;">
+                <div style="background:white; padding:30px; border-radius:8px; width:90%; max-width:500px;">
+                    <h2>Funcionário</h2>
+                    <form onsubmit="event.preventDefault(); salvarFuncionario();" style="margin-top:20px;">
                         <input type="hidden" id="linhaFuncionario">
                         <div class="form-group"><label>Nome</label><input id="inputNome" required></div>
                         <div class="form-group"><label>Cargo</label><input id="inputCargo"></div>
                         <div class="form-group"><label>Setor</label><input id="inputSetor"></div>
                         <div class="form-group"><label>Turno</label><input id="inputTurno"></div>
-                        <div style="display: flex; gap: 10px;">
+                        <div style="display:flex; gap:10px;">
                             <button type="submit" style="flex:1; background:#3498db; color:white; padding:10px; border:none; border-radius:6px;">Salvar</button>
-                            <button type="button" onclick="fecharModalFuncionario()" style="flex:1; background:#95a5a6; color:white; padding:10px; border:none; border-radius:6px;">Cancelar</button>
+                            <button type="button" onclick="document.getElementById('modalFuncionario').style.display='none'" style="flex:1; background:#95a5a6; color:white; padding:10px; border:none; border-radius:6px;">Cancelar</button>
                         </div>
                     </form>
                 </div>
@@ -759,21 +243,41 @@
     </div>
 
     <script>
-        // URL do seu Script Google
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzk-EEeHpHGBX2Kni6_ekG373_GvJUAAIDoVZ6MjHGbLTVLu5A10C3zwKj9htVX9O0o/exec';
+        // URL DO SEU BACKEND (Google Apps Script)
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyFxQeuMozOpkKV4dwsY471jHgfFIL2NYUgzlp8O9N4b33N1SylVFSIDVlcBNVsvBB3/exec';
         
         const INACTIVITY_TIMEOUT = 300000; 
         let inactivityTimer;
 
         // ===== LÓGICA DE FÉRIAS =====
 
-        function prepararFormularioFerias() {
-            const nome = localStorage.getItem('userName');
-            const email = localStorage.getItem('userEmail');
-            
-            if (document.getElementById('feriasNomeColaborador')) {
-                document.getElementById('feriasNomeColaborador').value = nome || 'Usuário';
-                document.getElementById('feriasEmailColaborador').value = email || '';
+        // 1. Carrega lista suspensa de funcionários
+        async function carregarSelectFuncionarios() {
+            const select = document.getElementById('feriasNomeColaborador');
+            const usuarioLogado = localStorage.getItem('userName');
+            select.innerHTML = '<option value="">Carregando...</option>';
+
+            try {
+                const response = await fetch(`${SCRIPT_URL}?action=obterFuncionarios`);
+                const data = await response.json();
+
+                if (data.sucesso && data.dados.funcionarios) {
+                    select.innerHTML = '<option value="">Selecione o Colaborador...</option>';
+                    data.dados.funcionarios.forEach(func => {
+                        const option = document.createElement('option');
+                        option.value = func.nome; 
+                        option.textContent = func.nome;
+                        if (usuarioLogado && func.nome.toLowerCase() === usuarioLogado.toLowerCase()) {
+                            option.selected = true;
+                        }
+                        select.appendChild(option);
+                    });
+                } else {
+                    select.innerHTML = '<option value="">Erro ao carregar</option>';
+                }
+            } catch (error) {
+                console.error(error);
+                select.innerHTML = '<option value="">Erro de conexão</option>';
             }
         }
 
@@ -782,31 +286,23 @@
             const modelo = document.getElementById('modeloFerias').value;
             const boxPrevisao = document.getElementById('boxPrevisao');
             
-            if (!dataSaidaInput || !modelo) {
-                boxPrevisao.style.display = 'none';
-                return;
-            }
+            if (!dataSaidaInput || !modelo) { boxPrevisao.style.display = 'none'; return; }
 
             let diasDuracao = 0;
             let textoExtra = "";
-
             switch (modelo) {
-                case '30': diasDuracao = 30; textoExtra = "30 dias de descanso"; break;
-                case '20_10_venda': diasDuracao = 20; textoExtra = "20 dias descanso + Abono"; break;
-                case '20_10_gozo': diasDuracao = 20; textoExtra = "20 dias (Saldo restante: 10)"; break;
-                case '15_9_7': diasDuracao = 15; textoExtra = "15 dias (Saldo restante: 16)"; break;
+                case '30': diasDuracao = 30; textoExtra = "30 dias"; break;
+                case '20_10_venda': diasDuracao = 20; textoExtra = "20 dias + Abono"; break;
+                case '20_10_gozo': diasDuracao = 20; textoExtra = "20 dias (Saldo: 10)"; break;
+                case '15_9_7': diasDuracao = 15; textoExtra = "15 dias (Saldo: 16)"; break;
             }
 
-            const dataObj = new Date(dataSaidaInput + 'T00:00:00'); 
-            
-            // Validação de Sexta-feira (5=Sex)
-            if (dataObj.getDay() === 5) {
-                alert("Atenção: Pela legislação, férias não devem iniciar na sexta-feira.");
-            }
+            const dataObj = new Date(dataSaidaInput + 'T00:00:00');
+            if (dataObj.getDay() === 5) alert("Atenção: Férias não devem iniciar na sexta-feira.");
 
             const dataRetornoObj = new Date(dataObj);
             dataRetornoObj.setDate(dataObj.getDate() + diasDuracao); 
-
+            
             const dia = String(dataRetornoObj.getDate()).padStart(2, '0');
             const mes = String(dataRetornoObj.getMonth() + 1).padStart(2, '0');
             const ano = dataRetornoObj.getFullYear();
@@ -822,22 +318,21 @@
             const btn = document.getElementById('btnSalvarFerias');
             const loading = document.getElementById('loadingFerias');
             
-            const email = document.getElementById('feriasEmailColaborador').value;
+            // Pega o nome do SELECT
+            const nomeSelecionado = document.getElementById('feriasNomeColaborador').value;
             const modelo = document.getElementById('modeloFerias').value;
             const dataSaida = document.getElementById('dataSaida').value;
             const dataRetorno = document.getElementById('dataRetornoCalculada').value;
             const obs = document.getElementById('obsFerias').value;
 
-            if (!modelo || !dataSaida) {
-                alert("Preencha todos os campos obrigatórios.");
-                return;
-            }
+            if (!nomeSelecionado || !modelo || !dataSaida) { alert("Preencha todos os campos."); return; }
 
             btn.style.display = 'none';
             loading.style.display = 'block';
 
             try {
-                const url = `${SCRIPT_URL}?action=agendarFerias&email=${encodeURIComponent(email)}&modelo=${modelo}&dataSaida=${dataSaida}&dataRetorno=${dataRetorno}&obs=${encodeURIComponent(obs)}`;
+                // Envia o nome no campo 'email' pois o backend espera um identificador na coluna B
+                const url = `${SCRIPT_URL}?action=agendarFerias&email=${encodeURIComponent(nomeSelecionado)}&modelo=${modelo}&dataSaida=${dataSaida}&dataRetorno=${dataRetorno}&obs=${encodeURIComponent(obs)}`;
                 
                 const response = await fetch(url);
                 const data = await response.json();
@@ -850,89 +345,98 @@
                 } else {
                     alert('❌ Erro: ' + data.mensagem);
                 }
-
             } catch (error) {
-                console.error("Erro ferias:", error);
-                alert("Erro ao conectar com o servidor.");
+                console.error(error);
+                alert("Erro ao conectar.");
             } finally {
                 btn.style.display = 'block';
                 loading.style.display = 'none';
             }
         }
 
-        async function carregarHistoricoFerias() {
-            const email = localStorage.getItem('userEmail');
-            const container = document.getElementById('historicoFeriasContainer');
+        // 2. Função Botão Email RH
+        function abrirEmailRH() {
+            const nome = document.getElementById('feriasNomeColaborador').value;
+            const modelo = document.getElementById('modeloFerias').value;
+            const dataInicio = document.getElementById('dataSaida').value;
+            const dataRetorno = document.getElementById('dataRetornoCalculada').value;
+            const obs = document.getElementById('obsFerias').value;
 
+            if (!nome || !modelo || !dataInicio) { alert("Preencha o formulário antes de gerar o e-mail."); return; }
+
+            let modeloTexto = modelo;
+            if (modelo === '30') modeloTexto = '30 dias corridos';
+            else if (modelo === '20_10_venda') modeloTexto = '20 dias + Abono Pecuniário';
+            
+            const dataInicioFormatada = dataInicio.split('-').reverse().join('/');
+            const dataRetornoFormatada = dataRetorno ? dataRetorno.split('-').reverse().join('/') : 'A calcular';
+            const emailRH = "rh@suaempresa.com"; // Defina o email do RH aqui se quiser fixo
+
+            const assunto = encodeURIComponent(`Solicitação de Férias - ${nome}`);
+            const corpo = encodeURIComponent(`Olá RH,\n\nGostaria de solicitar o agendamento das minhas férias:\n\n👤 Colaborador: ${nome}\n📅 Modelo: ${modeloTexto}\n🚀 Início: ${dataInicioFormatada}\n🔙 Retorno: ${dataRetornoFormatada}\n\n📝 Obs:\n${obs}\n\nAtenciosamente,\n${nome}`);
+
+            window.open(`mailto:${emailRH}?subject=${assunto}&body=${corpo}`);
+        }
+
+        async function carregarHistoricoFerias() {
+            const usuarioLogado = localStorage.getItem('userName'); // Filtra pelo nome do usuário logado se possível
+            const container = document.getElementById('historicoFeriasContainer');
             container.innerHTML = '<p style="text-align:center; color:#999;">Carregando...</p>';
 
             try {
-                const url = `${SCRIPT_URL}?action=obterMinhasFerias&email=${encodeURIComponent(email)}`;
+                // Aqui estamos passando o Nome do usuário logado para filtrar
+                const url = `${SCRIPT_URL}?action=obterMinhasFerias&email=${encodeURIComponent(usuarioLogado)}`;
                 const response = await fetch(url);
                 const data = await response.json();
 
                 if (data.sucesso && data.dados && data.dados.length > 0) {
-                    let html = '<ul class="vacation-list">';
-                    
+                    let html = '<ul class="vacation-list" style="list-style:none;">';
                     data.dados.forEach(ferias => {
                         let corStatus = '#f39c12'; 
                         if(ferias.status === 'Aprovada') corStatus = '#27ae60';
                         if(ferias.status === 'Rejeitada') corStatus = '#c0392b';
-
                         const dataSaidaFormatada = ferias.saida.split('-').reverse().join('/');
                         
-                        html += `
-                            <li class="vacation-item" style="border-bottom: 1px solid #eee; padding: 10px 0;">
-                                <div class="vacation-info">
-                                    <div class="vacation-name" style="font-weight:bold; color:#2c3e50;">
-                                        ${ferias.modelo}
-                                    </div>
-                                    <div class="vacation-dates" style="font-size:12px; color:#7f8c8d;">
-                                        Início: ${dataSaidaFormatada} | Retorno: ${ferias.retorno.split('-').reverse().join('/')}
-                                    </div>
-                                </div>
-                                <div class="vacation-days">
-                                    <span style="background:${corStatus}; color:white; padding: 2px 8px; border-radius:10px; font-size:10px;">
-                                        ${ferias.status}
-                                    </span>
-                                </div>
-                            </li>
-                        `;
+                        html += `<li style="border-bottom:1px solid #eee; padding:10px 0; display:flex; justify-content:space-between;">
+                            <div><div style="font-weight:bold;">${ferias.modelo}</div><div style="font-size:12px; color:#777;">Início: ${dataSaidaFormatada}</div></div>
+                            <div><span style="background:${corStatus}; color:white; padding:2px 8px; border-radius:10px; font-size:10px;">${ferias.status}</span></div>
+                        </li>`;
                     });
-                    
                     html += '</ul>';
                     container.innerHTML = html;
                 } else {
                     container.innerHTML = '<p style="text-align: center; color: #7f8c8d; padding: 20px;">Nenhuma solicitação encontrada.</p>';
                 }
-
-            } catch (error) {
-                console.error(error);
-                container.innerHTML = '<p style="color:red; text-align:center;">Erro ao carregar histórico.</p>';
-            }
+            } catch (error) { container.innerHTML = '<p style="color:red; text-align:center;">Erro ao carregar histórico.</p>'; }
         }
 
-        // ===== FUNÇÕES EXISTENTES E UTILITÁRIOS =====
+        // ===== OUTRAS FUNÇÕES DO SISTEMA (Login, Navegação, etc) =====
 
-        function formatarData(dataString) {
-            try {
-                const data = new Date(dataString);
-                if (isNaN(data)) return dataString;
-                return `${String(data.getDate()).padStart(2, '0')}/${String(data.getMonth() + 1).padStart(2, '0')}/${data.getFullYear()}`;
-            } catch (e) { return dataString; }
+        function showPage(pageName) {
+            resetInactivityTimer();
+            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+            document.getElementById(pageName + '-page').classList.add('active');
+            
+            document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+            // Adicione a classe active no botão clicado (simplificado aqui)
+
+            if (pageName === 'aprovacoes') verificarPermissaoAprovacao();
+            else if (pageName === 'funcionarios') carregarFuncionarios();
+            else if (pageName === 'horas') carregarDadosHorasExtras();
+            else if (pageName === 'ferias') {
+                carregarSelectFuncionarios(); // Carrega o select
+                carregarHistoricoFerias();    // Carrega a lista
+            }
         }
 
         async function handleLogin(event) {
             event.preventDefault();
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
-            const loginBtn = document.getElementById('loginBtn');
-            const loadingSpinner = document.getElementById('loadingSpinner');
-            const errorMessage = document.getElementById('errorMessage');
-
-            loginBtn.disabled = true;
-            loadingSpinner.classList.add('show');
-            errorMessage.classList.remove('show');
+            
+            document.getElementById('loginBtn').disabled = true;
+            document.getElementById('loadingSpinner').style.display = 'block';
+            document.getElementById('errorMessage').style.display = 'none';
 
             try {
                 const url = `${SCRIPT_URL}?action=validarCredenciais&email=${encodeURIComponent(email)}&senha=${encodeURIComponent(password)}`;
@@ -946,32 +450,28 @@
                     
                     document.getElementById('userEmail').textContent = data.dados.email;
                     document.getElementById('userName').textContent = data.dados.nome;
-
                     document.getElementById('loginScreen').style.display = 'none';
-                    document.getElementById('dashboardScreen').classList.add('active');
+                    document.getElementById('dashboardScreen').style.display = 'flex';
                     
                     loadDashboardData();
                     resetInactivityTimer();
                 } else {
-                    errorMessage.textContent = 'Email ou senha inválidos';
-                    errorMessage.classList.add('show');
+                    document.getElementById('errorMessage').textContent = 'Email ou senha inválidos';
+                    document.getElementById('errorMessage').style.display = 'block';
                 }
             } catch (error) {
-                errorMessage.textContent = 'Erro ao conectar com o servidor';
-                errorMessage.classList.add('show');
+                document.getElementById('errorMessage').textContent = 'Erro de conexão';
+                document.getElementById('errorMessage').style.display = 'block';
             } finally {
-                loginBtn.disabled = false;
-                loadingSpinner.classList.remove('show');
+                document.getElementById('loginBtn').disabled = false;
+                document.getElementById('loadingSpinner').style.display = 'none';
             }
         }
 
         function handleLogout() {
             clearTimeout(inactivityTimer);
             localStorage.clear();
-            document.getElementById('loginScreen').style.display = 'flex';
-            document.getElementById('dashboardScreen').classList.remove('active');
-            document.getElementById('email').value = '';
-            document.getElementById('password').value = '';
+            location.reload();
         }
 
         function resetInactivityTimer() {
@@ -979,65 +479,29 @@
             inactivityTimer = setTimeout(handleLogout, INACTIVITY_TIMEOUT);
         }
 
-        function showPage(pageName) {
-            resetInactivityTimer();
-            const pages = document.querySelectorAll('.page');
-            pages.forEach(page => page.classList.remove('active'));
-            document.getElementById(pageName + '-page').classList.add('active');
-            
-            document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
-            const activeLink = document.querySelector(`[onclick="showPage('${pageName}')"]`);
-            if (activeLink) activeLink.classList.add('active');
-
-            if (pageName === 'aprovacoes') verificarPermissaoAprovacao();
-            else if (pageName === 'funcionarios') carregarFuncionarios();
-            else if (pageName === 'horas') carregarDadosHorasExtras();
-            else if (pageName === 'ferias') {
-                prepararFormularioFerias();
-                carregarHistoricoFerias();
-            }
-        }
-
+        // Dashboard Data
         async function loadDashboardData() {
             try {
-                const url = `${SCRIPT_URL}?action=obterFuncionarios`;
-                const response = await fetch(url);
-                const data = await response.json();
-                if (data.sucesso) {
-                    document.getElementById('totalFuncionarios').textContent = data.dados.funcionarios.length;
-                    document.getElementById('totalChange').textContent = 'Funcionarios cadastrados';
-                }
-            } catch (error) { console.error(error); }
-
-            // Dados estáticos de exemplo para atividades
-            const container = document.getElementById('atividadesContainer');
-            container.innerHTML = `<ul class="activity-list">
-                <li class="activity-item"><div class="activity-info"><div class="activity-name">Sistema Iniciado</div><div class="activity-description">Dashboard carregado</div></div><div class="activity-time">Agora</div></li>
-            </ul>`;
+                const res = await fetch(`${SCRIPT_URL}?action=obterFuncionarios`);
+                const data = await res.json();
+                if(data.sucesso) document.getElementById('totalFuncionarios').textContent = data.dados.funcionarios.length;
+            } catch(e) {}
         }
-
-        // Funções de Horas Extras e Aprovações (Simplificadas para caber, mantendo lógica original)
+        
+        // Horas Extras Data
         async function carregarDadosHorasExtras() {
             try {
-                const url = `${SCRIPT_URL}?action=obterDadosHorasExtras`;
-                const response = await fetch(url);
-                const data = await response.json();
-                if (data.sucesso) exibirDadosHorasExtras(data.dados);
-                
-                const urlTab = `${SCRIPT_URL}?action=obterHorasPorColaborador`;
-                const resTab = await fetch(urlTab);
+                const res = await fetch(`${SCRIPT_URL}?action=obterDadosHorasExtras`);
+                const data = await res.json();
+                if(data.sucesso) {
+                    document.getElementById('totalHorasExtras').textContent = data.dados.totalHoras;
+                    if(data.dados.colaboradorMaisHoras) document.getElementById('colaboradorMaisHoras').textContent = data.dados.colaboradorMaisHoras.horas;
+                    if(data.dados.horasPorSetor) atualizarGrafico(data.dados.horasPorSetor);
+                }
+                const resTab = await fetch(`${SCRIPT_URL}?action=obterHorasPorColaborador`);
                 const dataTab = await resTab.json();
-                renderizarTabelaHorasExtras(dataTab.dados || []);
-            } catch (e) { console.error(e); }
-        }
-
-        function exibirDadosHorasExtras(dados) {
-            document.getElementById('totalHorasExtras').textContent = dados.totalHoras || '00:00';
-            if (dados.colaboradorMaisHoras) {
-                document.getElementById('colaboradorMaisHoras').textContent = dados.colaboradorMaisHoras.horas;
-                document.getElementById('colaboradorChange').textContent = dados.colaboradorMaisHoras.nome;
-            }
-            if(dados.horasPorSetor) atualizarGrafico(dados.horasPorSetor);
+                renderizarTabelaHoras(dataTab.dados || []);
+            } catch(e) {}
         }
 
         let chartInstance = null;
@@ -1048,66 +512,52 @@
                 type: 'bar',
                 data: {
                     labels: setores.map(s => s.setor),
-                    datasets: [{
-                        label: 'Horas',
-                        data: setores.map(s => {
-                            const p = s.horas.split(':');
-                            return parseInt(p[0]) + parseInt(p[1])/60;
-                        }),
-                        backgroundColor: '#3498db'
-                    }]
+                    datasets: [{ label: 'Horas', data: setores.map(s => parseInt(s.horas.split(':')[0]) + parseInt(s.horas.split(':')[1])/60), backgroundColor: '#3498db' }]
                 },
                 options: { responsive: true, maintainAspectRatio: false }
             });
         }
 
-        function renderizarTabelaHorasExtras(colaboradores) {
+        function renderizarTabelaHoras(colaboradores) {
             const container = document.getElementById('tabelaColaboradores');
-            if(!colaboradores.length) { container.innerHTML = '<p style="text-align:center; padding:20px;">Sem dados</p>'; return; }
+            if(!colaboradores.length) { container.innerHTML = 'Sem dados'; return; }
             let html = '<div class="table-container"><table><thead><tr><th>Email</th><th>Horas</th></tr></thead><tbody>';
-            colaboradores.forEach(c => html += `<tr><td>${c[0]}</td><td style="color:#3498db; font-weight:bold;">${c[1]}</td></tr>`);
+            colaboradores.forEach(c => html += `<tr><td>${c[0]}</td><td>${c[1]}</td></tr>`);
             html += '</tbody></table></div>';
             container.innerHTML = html;
         }
 
+        // Aprovações
         async function verificarPermissaoAprovacao() {
             const email = localStorage.getItem('userEmail');
-            const container = document.getElementById('containerAprovacoes');
-            const denied = document.getElementById('acessoNegado');
-            try {
-                const url = `${SCRIPT_URL}?action=verificarPermissaoAprovacao&email=${encodeURIComponent(email)}`;
-                const res = await fetch(url);
-                const data = await res.json();
-                if(data.sucesso && data.dados.podeAprovar) {
-                    container.style.display = 'block'; denied.style.display = 'none';
-                    carregarSolicitacoesPendentes();
-                } else {
-                    container.style.display = 'none'; denied.style.display = 'block';
-                }
-            } catch(e) { console.error(e); }
+            const res = await fetch(`${SCRIPT_URL}?action=verificarPermissaoAprovacao&email=${encodeURIComponent(email)}`);
+            const data = await res.json();
+            if(data.sucesso && data.dados.podeAprovar) {
+                document.getElementById('containerAprovacoes').style.display = 'block';
+                document.getElementById('acessoNegado').style.display = 'none';
+                carregarSolicitacoesPendentes();
+            } else {
+                document.getElementById('containerAprovacoes').style.display = 'none';
+                document.getElementById('acessoNegado').style.display = 'block';
+            }
         }
 
         async function carregarSolicitacoesPendentes() {
             const container = document.getElementById('solicitacoesPendentes');
-            container.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
-            try {
-                const res = await fetch(`${SCRIPT_URL}?action=obterSolicitacoesPendentes`);
-                const data = await res.json();
-                if(data.sucesso) {
-                    document.getElementById('totalHorasPendentes').innerText = data.dados.totalHoras;
-                    if(!data.dados.solicitacoes.length) { container.innerHTML = '<p style="text-align:center; padding:20px;">Nenhuma pendência</p>'; return; }
-                    let html = '<div class="table-container"><table><thead><tr><th>Nome</th><th>Data</th><th>Horas</th><th>Ações</th></tr></thead><tbody>';
-                    data.dados.solicitacoes.forEach(s => {
-                        html += `<tr><td>${s.nome}</td><td>${formatarData(s.data)}</td><td>${s.horas}</td>
-                        <td>
-                            <button class="btn-small btn-aprovar" onclick="acaoAprovar('${s.linha}')">✓</button>
-                            <button class="btn-small btn-rejeitar" onclick="acaoRejeitar('${s.linha}')">✕</button>
-                        </td></tr>`;
-                    });
-                    html += '</tbody></table></div>';
-                    container.innerHTML = html;
-                }
-            } catch(e) { container.innerHTML = '<p style="color:red; text-align:center;">Erro</p>'; }
+            container.innerHTML = '<p>Carregando...</p>';
+            const res = await fetch(`${SCRIPT_URL}?action=obterSolicitacoesPendentes`);
+            const data = await res.json();
+            if(data.sucesso) {
+                document.getElementById('totalHorasPendentes').innerText = data.dados.totalHoras;
+                if(!data.dados.solicitacoes.length) { container.innerHTML = 'Nenhuma pendência'; return; }
+                let html = '<div class="table-container"><table><thead><tr><th>Nome</th><th>Data</th><th>Horas</th><th>Ações</th></tr></thead><tbody>';
+                data.dados.solicitacoes.forEach(s => {
+                    html += `<tr><td>${s.nome}</td><td>${s.data.split('T')[0]}</td><td>${s.horas}</td>
+                    <td><button class="btn-small btn-aprovar" onclick="acaoAprovar('${s.linha}')">✓</button> <button class="btn-small btn-rejeitar" onclick="acaoRejeitar('${s.linha}')">✕</button></td></tr>`;
+                });
+                html += '</tbody></table></div>';
+                container.innerHTML = html;
+            }
         }
 
         async function acaoAprovar(linha) {
@@ -1118,38 +568,28 @@
         }
 
         async function acaoRejeitar(linha) {
-            const motivo = prompt('Motivo:');
-            if(!motivo) return;
+            const motivo = prompt('Motivo:'); if(!motivo) return;
             const email = localStorage.getItem('userEmail');
             await fetch(`${SCRIPT_URL}?action=rejeitarSolicitacao&linha=${linha}&emailAprovador=${encodeURIComponent(email)}&motivo=${encodeURIComponent(motivo)}`);
             carregarSolicitacoesPendentes();
         }
 
-        // Funções de Funcionários
+        // Funcionários CRUD
         async function carregarFuncionarios() {
             const container = document.getElementById('funcionariosContainer');
-            try {
-                const res = await fetch(`${SCRIPT_URL}?action=obterFuncionarios`);
-                const data = await res.json();
-                if(data.sucesso) {
-                    let html = '<div class="table-container"><table><thead><tr><th>Nome</th><th>Setor</th><th>Ações</th></tr></thead><tbody>';
-                    data.dados.funcionarios.forEach(f => {
-                        html += `<tr><td>${f.nome}</td><td>${f.setor}</td><td>
-                            <button class="btn-small btn-rejeitar" onclick="deletarFuncionario('${f.linha}')">Excluir</button>
-                        </td></tr>`;
-                    });
-                    html += '</tbody></table></div>';
-                    container.innerHTML = html;
-                }
-            } catch(e) { console.error(e); }
+            const res = await fetch(`${SCRIPT_URL}?action=obterFuncionarios`);
+            const data = await res.json();
+            if(data.sucesso) {
+                let html = '<div class="table-container"><table><thead><tr><th>Nome</th><th>Cargo</th><th>Ações</th></tr></thead><tbody>';
+                data.dados.funcionarios.forEach(f => html += `<tr><td>${f.nome}</td><td>${f.cargo}</td><td><button class="btn-small btn-rejeitar" onclick="deletarFuncionario('${f.linha}')">Excluir</button></td></tr>`);
+                html += '</tbody></table></div>';
+                container.innerHTML = html;
+            }
         }
 
         function abrirModalAdicionarFuncionario() {
             document.getElementById('modalFuncionario').style.display = 'flex';
             document.getElementById('linhaFuncionario').value = '';
-        }
-        function fecharModalFuncionario() {
-            document.getElementById('modalFuncionario').style.display = 'none';
         }
 
         async function salvarFuncionario() {
@@ -1157,9 +597,8 @@
             const cargo = document.getElementById('inputCargo').value;
             const setor = document.getElementById('inputSetor').value;
             const turno = document.getElementById('inputTurno').value;
-            
             await fetch(`${SCRIPT_URL}?action=adicionarFuncionario&nome=${encodeURIComponent(nome)}&cargo=${encodeURIComponent(cargo)}&setor=${encodeURIComponent(setor)}&turno=${encodeURIComponent(turno)}`);
-            fecharModalFuncionario();
+            document.getElementById('modalFuncionario').style.display = 'none';
             carregarFuncionarios();
         }
 
@@ -1172,17 +611,11 @@
 
         function recarregarHorasExtras() { carregarDadosHorasExtras(); }
 
-        // Inicialização
         document.addEventListener('DOMContentLoaded', () => {
-            localStorage.clear();
-            document.getElementById('loginScreen').style.display = 'flex';
-            document.getElementById('dashboardScreen').classList.remove('active');
-            
+            document.getElementById('dashboardScreen').style.display = 'none';
             document.addEventListener('mousemove', resetInactivityTimer);
-            document.addEventListener('keypress', resetInactivityTimer);
             document.addEventListener('click', resetInactivityTimer);
         });
     </script>
 </body>
 </html>
-
