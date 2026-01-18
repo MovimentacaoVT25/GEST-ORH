@@ -3,37 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RH Manager - Sistema de Gestão de RH</title>
+    <title>RH Manager - Sistema de Gestão</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5; color: #333; }
 
-        /* ===== ESTILOS GERAIS E LAYOUT ===== */
+        /* ===== LOGIN ===== */
         .login-container { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%); padding: 20px; }
         .login-box { background: white; border-radius: 12px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2); padding: 40px; width: 100%; max-width: 400px; }
         .login-header { text-align: center; margin-bottom: 30px; }
         .login-header h1 { font-size: 28px; color: #2c3e50; margin-bottom: 10px; }
+        
+        /* ===== FORMULÁRIOS ===== */
         .form-group { margin-bottom: 20px; }
         .form-group label { display: block; margin-bottom: 8px; color: #2c3e50; font-weight: 600; font-size: 14px; }
-        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px 15px; border: 2px solid #ecf0f1; border-radius: 6px; font-size: 14px; transition: all 0.3s ease; font-family: inherit; background-color: white; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px 15px; border: 2px solid #ecf0f1; border-radius: 6px; font-size: 14px; transition: 0.3s; font-family: inherit; background-color: white; }
         .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: #3498db; box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1); }
         
+        /* ===== BOTÕES ===== */
         .login-btn { width: 100%; padding: 12px; background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%); color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: 600; cursor: pointer; transition: 0.3s; margin-top: 10px; }
         .login-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(44, 62, 80, 0.3); }
+        
+        .btn-small { padding: 8px 12px; border: none; border-radius: 4px; font-size: 12px; font-weight: 600; cursor: pointer; }
+        .btn-aprovar { background: #27ae60; color: white; }
+        .btn-rejeitar { background: #e74c3c; color: white; }
+
+        .btn-outline { background: transparent; border: 2px solid #3498db; color: #3498db; font-weight: 600; transition: all 0.3s ease; }
+        .btn-outline:hover { background: #ebf5fb; transform: translateY(-2px); }
+
+        /* ===== LOADING ===== */
         .loading-spinner { display: none; text-align: center; padding: 20px; }
-        .loading-spinner.show { display: block; }
         .spinner { border: 3px solid #ecf0f1; border-top: 3px solid #3498db; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 0 auto 10px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* Dashboard */
+        /* ===== LAYOUT DASHBOARD ===== */
         .dashboard-container { display: none; flex: 1; min-height: 100vh; }
         .dashboard-container.active { display: flex; }
-        .sidebar { width: 210px; background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%); color: white; padding: 20px; position: fixed; height: 100vh; overflow-y: auto; }
-        .sidebar-title { font-size: 18px; font-weight: 700; }
-        .sidebar-user { font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px; }
-        .nav-menu { list-style: none; margin-top: 30px; }
+        
+        .sidebar { width: 210px; background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%); color: white; padding: 20px; position: fixed; height: 100vh; overflow-y: auto; z-index: 10; }
+        .sidebar-title { font-size: 18px; font-weight: 700; margin-bottom: 20px; }
+        .sidebar-user { font-size: 12px; color: rgba(255,255,255,0.5); border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px; margin-bottom: 20px; }
+        
+        .nav-menu { list-style: none; }
         .nav-link { display: flex; align-items: center; gap: 10px; color: rgba(255,255,255,0.7); text-decoration: none; padding: 10px 12px; border-radius: 6px; font-size: 14px; cursor: pointer; border: none; background: none; width: 100%; text-align: left; margin-bottom: 5px; }
         .nav-link:hover, .nav-link.active { background-color: #3498db; color: white; }
         
@@ -41,39 +54,39 @@
         .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
         .page-title { font-size: 28px; font-weight: 700; color: #2c3e50; }
         
-        /* Cards e Grids */
-        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px; }
-        .kpi-card { background: white; border-radius: 8px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border-left: 4px solid #3498db; }
-        .kpi-value { font-size: 32px; font-weight: 700; color: #2c3e50; margin-top: 10px; }
+        .page { display: none; }
+        .page.active { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* ===== CARDS & GRIDS ===== */
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .kpi-card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-left: 5px solid #3498db; position: relative; overflow: hidden; }
+        .kpi-card.green { border-left-color: #27ae60; }
+        .kpi-card.orange { border-left-color: #e67e22; }
+        .kpi-card.purple { border-left-color: #9b59b6; }
+        
+        .kpi-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .kpi-label { font-size: 13px; color: #7f8c8d; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+        .kpi-value { font-size: 28px; font-weight: 700; color: #2c3e50; }
+        .kpi-change { font-size: 12px; color: #7f8c8d; margin-top: 5px; }
         
         .content-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .card { background: white; border-radius: 8px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 20px; }
-        .card-title { font-size: 18px; font-weight: 700; margin-bottom: 20px; color: #2c3e50; }
+        .card { background: white; border-radius: 12px; padding: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .card-title { font-size: 18px; font-weight: 700; margin-bottom: 20px; color: #2c3e50; border-bottom: 1px solid #eee; padding-bottom: 10px; }
         
-        .page { display: none; }
-        .page.active { display: block; }
-
-        /* Estilos Específicos */
         .config-box { background: #fff3cd; border: 1px solid #ffc107; border-radius: 6px; padding: 15px; margin-bottom: 20px; font-size: 13px; color: #856404; }
-        .table-container { overflow-x: auto; margin-top: 20px; }
-        table { width: 100%; border-collapse: collapse; font-size: 14px; }
-        table th { background: #f5f5f5; padding: 12px; text-align: left; border-bottom: 2px solid #ecf0f1; }
-        table td { padding: 12px; border-bottom: 1px solid #ecf0f1; }
         
-        .btn-small { padding: 8px 12px; border: none; border-radius: 4px; font-size: 12px; font-weight: 600; cursor: pointer; }
-        .btn-aprovar { background: #27ae60; color: white; }
-        .btn-rejeitar { background: #e74c3c; color: white; }
-
-        /* NOVO: Estilo Botão Outline (Email) */
-        .btn-outline { background: transparent; border: 2px solid #3498db; color: #3498db; font-weight: 600; transition: all 0.3s ease; }
-        .btn-outline:hover { background: #ebf5fb; transform: translateY(-2px); }
+        .table-container { overflow-x: auto; margin-top: 10px; }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        table th { background: #f8f9fa; padding: 12px; text-align: left; color: #2c3e50; font-weight: 600; border-bottom: 2px solid #e9ecef; }
+        table td { padding: 12px; border-bottom: 1px solid #e9ecef; color: #555; }
+        table tr:hover { background: #f1f1f1; }
 
         @media (max-width: 1024px) { .content-grid { grid-template-columns: 1fr; } }
         @media (max-width: 768px) { 
             .sidebar { width: 70px; padding: 15px; } 
-            .sidebar-title, .sidebar-user { display: none; }
-            .nav-link span:last-child { display: none; }
-            .main-content { margin-left: 70px; padding: 20px; }
+            .sidebar-title, .sidebar-user, .nav-link span { display: none; }
+            .main-content { margin-left: 70px; padding: 15px; }
         }
     </style>
 </head>
@@ -82,14 +95,14 @@
         <div class="login-box">
             <div class="login-header">
                 <h1>RH Manager</h1>
-                <p>Sistema de Gestão de RH</p>
+                <p>Sistema de Gestão Integrado</p>
             </div>
-            <div id="errorMessage" style="display:none; color:red; margin-bottom:10px; text-align:center;"></div>
-            <div id="loadingSpinner" class="loading-spinner"><div class="spinner"></div><p>Validando...</p></div>
+            <div id="errorMessage" style="display:none; color:#e74c3c; margin-bottom:15px; text-align:center; font-size:14px; background:#fadbd8; padding:10px; border-radius:4px;"></div>
+            <div id="loadingSpinner" class="loading-spinner"><div class="spinner"></div><p>Acessando...</p></div>
             <form id="loginForm" onsubmit="handleLogin(event)">
-                <div class="form-group"><label>Email</label><input type="email" id="email" required></div>
+                <div class="form-group"><label>Email Corporativo</label><input type="email" id="email" required></div>
                 <div class="form-group"><label>Senha</label><input type="password" id="password" required></div>
-                <button type="submit" class="login-btn" id="loginBtn">ENTRAR</button>
+                <button type="submit" class="login-btn" id="loginBtn">ACESSAR SISTEMA</button>
             </form>
         </div>
     </div>
@@ -97,373 +110,411 @@
     <div id="dashboardScreen" class="dashboard-container">
         <aside class="sidebar">
             <div class="sidebar-title">RH Manager</div>
-            <div class="sidebar-user" id="userEmail">Usuário</div>
-            <div class="sidebar-user" id="userName" style="border:none; margin-top:0; padding-top:0;"></div>
+            <div class="sidebar-user">
+                <div style="font-weight:bold; color:white;" id="userName">Usuário</div>
+                <div id="userEmail">email@empresa.com</div>
+            </div>
             <nav>
                 <ul class="nav-menu">
-                    <li><button class="nav-link active" onclick="showPage('dashboard')"><i class="fas fa-chart-bar"></i> <span>Dashboard</span></button></li>
+                    <li><button class="nav-link active" onclick="showPage('dashboard')"><i class="fas fa-home"></i> <span>Início</span></button></li>
                     <li><button class="nav-link" onclick="showPage('horas')"><i class="fas fa-clock"></i> <span>Horas Extras</span></button></li>
-                    <li><button class="nav-link" onclick="showPage('aprovacoes')"><i class="fas fa-check-circle"></i> <span>Aprovações</span></button></li>
+                    <li><button class="nav-link" onclick="showPage('aprovacoes')"><i class="fas fa-check-double"></i> <span>Aprovações</span></button></li>
                     <li><button class="nav-link" onclick="showPage('ferias')"><i class="fas fa-umbrella-beach"></i> <span>Férias</span></button></li>
                     <li><button class="nav-link" onclick="showPage('funcionarios')"><i class="fas fa-users"></i> <span>Funcionários</span></button></li>
                 </ul>
             </nav>
-            <button onclick="handleLogout()" class="nav-link" style="margin-top:20px; color:#e74c3c;"><i class="fas fa-sign-out-alt"></i> <span>Sair</span></button>
+            <div style="margin-top:auto; padding-top:20px;">
+                <button onclick="handleLogout()" class="nav-link" style="color:#e74c3c;"><i class="fas fa-sign-out-alt"></i> <span>Sair</span></button>
+            </div>
         </aside>
 
         <main class="main-content">
+            
             <div id="dashboard-page" class="page active">
-                <div class="page-header"><h1 class="page-title">Dashboard</h1></div>
+                
+                <div style="background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); color: white; padding: 25px; border-radius: 12px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);">
+                    <div>
+                        <h1 style="font-size: 24px; font-weight: 700; margin-bottom: 5px;">Olá, <span id="dashUserName">Colaborador</span>! 👋</h1>
+                        <p style="opacity: 0.9; font-size: 14px;">Aqui está o resumo da sua empresa hoje.</p>
+                    </div>
+                    <div style="text-align: right; background: rgba(255,255,255,0.2); padding: 10px 20px; border-radius: 8px;">
+                        <span style="font-size: 12px; display: block;">Data de Hoje</span>
+                        <strong id="dataAtual" style="font-size: 16px;">--/--/----</strong>
+                    </div>
+                </div>
+
                 <div class="kpi-grid">
-                    <div class="kpi-card"><div class="kpi-label">Funcionários</div><div class="kpi-value" id="totalFuncionarios">--</div></div>
-                    <div class="kpi-card" style="border-left-color: #27ae60;"><div class="kpi-label">Horas Extras (Mês)</div><div class="kpi-value" id="horasExtras">--</div></div>
+                    <div class="kpi-card blue">
+                        <div class="kpi-header"><span class="kpi-label">Funcionários</span><i class="fas fa-users" style="color:#3498db"></i></div>
+                        <div class="kpi-value" id="dashTotalFunc">--</div>
+                        <div class="kpi-change">Cadastrados</div>
+                    </div>
+                    <div class="kpi-card green">
+                        <div class="kpi-header"><span class="kpi-label">Horas Extras</span><i class="fas fa-clock" style="color:#27ae60"></i></div>
+                        <div class="kpi-value" id="dashHorasExtras">--</div>
+                        <div class="kpi-change">Total no mês</div>
+                    </div>
+                    <div class="kpi-card orange">
+                        <div class="kpi-header"><span class="kpi-label">Pendências</span><i class="fas fa-exclamation-circle" style="color:#e67e22"></i></div>
+                        <div class="kpi-value" id="dashPendencias">--</div>
+                        <div class="kpi-change">Aguardando aprovação</div>
+                    </div>
+                    <div class="kpi-card purple" style="border-left-color: #9b59b6;">
+                        <div class="kpi-header"><span class="kpi-label">Férias</span><i class="fas fa-plane" style="color:#9b59b6"></i></div>
+                        <div class="kpi-value" id="dashFerias">--</div>
+                        <div class="kpi-change">Ativas/Programadas</div>
+                    </div>
+                </div>
+
+                <div class="content-grid" style="grid-template-columns: 2fr 1fr;">
+                    <div class="card">
+                        <h2 class="card-title">Distribuição por Setor</h2>
+                        <div style="height: 250px; position: relative;">
+                            <canvas id="graficoDashboard"></canvas>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <h2 class="card-title">Acesso Rápido</h2>
+                        <div style="display: flex; flex-direction: column; gap: 10px;">
+                            <button onclick="showPage('ferias')" style="display: flex; align-items: center; gap: 15px; padding: 15px; border: 1px solid #eee; border-radius: 8px; background: white; cursor: pointer; transition: 0.2s; text-align: left;">
+                                <div style="background: #e8f8f5; color: #1abc9c; width: 35px; height: 35px; border-radius: 8px; display: flex; align-items: center; justify-content: center;"><i class="fas fa-plus"></i></div>
+                                <div><strong style="display: block; font-size:14px; color: #2c3e50;">Solicitar Férias</strong></div>
+                            </button>
+                            <button onclick="showPage('horas')" style="display: flex; align-items: center; gap: 15px; padding: 15px; border: 1px solid #eee; border-radius: 8px; background: white; cursor: pointer; transition: 0.2s; text-align: left;">
+                                <div style="background: #ebf5fb; color: #3498db; width: 35px; height: 35px; border-radius: 8px; display: flex; align-items: center; justify-content: center;"><i class="fas fa-eye"></i></div>
+                                <div><strong style="display: block; font-size:14px; color: #2c3e50;">Banco de Horas</strong></div>
+                            </button>
+                            <button onclick="showPage('funcionarios')" style="display: flex; align-items: center; gap: 15px; padding: 15px; border: 1px solid #eee; border-radius: 8px; background: white; cursor: pointer; transition: 0.2s; text-align: left;">
+                                <div style="background: #fef9e7; color: #f1c40f; width: 35px; height: 35px; border-radius: 8px; display: flex; align-items: center; justify-content: center;"><i class="fas fa-user-plus"></i></div>
+                                <div><strong style="display: block; font-size:14px; color: #2c3e50;">Novo Funcionário</strong></div>
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
             <div id="horas-page" class="page">
                 <div class="page-header">
                     <h1 class="page-title">Horas Extras</h1>
-                    <button onclick="recarregarHorasExtras()" class="btn-small" style="background:#3498db; color:white; font-size:14px;">Atualizar</button>
+                    <button onclick="recarregarHorasExtras()" class="btn-small" style="background:#3498db; color:white;">Atualizar Dados</button>
                 </div>
                 <div class="kpi-grid">
-                    <div class="kpi-card"><div class="kpi-label">Total Horas</div><div class="kpi-value" id="totalHorasExtras">--</div></div>
-                    <div class="kpi-card" style="border-left-color: #27ae60;"><div class="kpi-label">Maior Saldo</div><div class="kpi-value" id="colaboradorMaisHoras">--</div><small id="colaboradorChange"></small></div>
+                    <div class="kpi-card blue"><div class="kpi-label">Total Acumulado</div><div class="kpi-value" id="totalHorasExtras">--</div></div>
+                    <div class="kpi-card green"><div class="kpi-label">Maior Saldo</div><div class="kpi-value" id="colaboradorMaisHoras">--</div><small id="colaboradorChange"></small></div>
                 </div>
-                <div class="card"><h2 class="card-title">Por Setor</h2><div style="height:300px;"><canvas id="graficoHorasPorSetor"></canvas></div></div>
-                <div class="card"><h2 class="card-title">Por Colaborador</h2><div id="tabelaColaboradores">Carregando...</div></div>
+                <div class="content-grid">
+                    <div class="card"><h2 class="card-title">Por Setor</h2><div style="height:250px;"><canvas id="graficoHorasPorSetor"></canvas></div></div>
+                    <div class="card"><h2 class="card-title">Colaboradores</h2><div id="tabelaColaboradores">Carregando...</div></div>
+                </div>
             </div>
 
             <div id="ferias-page" class="page">
-                <div class="page-header"><h1 class="page-title">Agendamento de Férias</h1></div>
-                
+                <div class="page-header"><h1 class="page-title">Gestão de Férias</h1></div>
                 <div class="content-grid">
                     <div class="card">
                         <h2 class="card-title">Nova Solicitação</h2>
                         <form id="formFerias" onsubmit="event.preventDefault(); solicitarFerias();">
-                            
                             <div class="form-group">
                                 <label>Colaborador</label>
-                                <select id="feriasNomeColaborador" required style="width: 100%; padding: 12px 15px; border: 2px solid #ecf0f1; border-radius: 6px; font-size: 14px; background-color: white;">
-                                    <option value="">Carregando funcionários...</option>
+                                <select id="feriasNomeColaborador" required>
+                                    <option value="">Carregando lista...</option>
                                 </select>
-                                <input type="hidden" id="feriasEmailColaborador">
                             </div>
-
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                                 <div class="form-group">
-                                    <label>Modelo de Gozo</label>
+                                    <label>Modelo</label>
                                     <select id="modeloFerias" onchange="calcularVolta()" required>
                                         <option value="">Selecione...</option>
                                         <option value="30">30 dias corridos</option>
-                                        <option value="20_10_venda">20 dias + Venda de 10</option>
-                                        <option value="20_10_gozo">20 dias (1º período)</option>
-                                        <option value="15_9_7">15 dias (1º período)</option>
+                                        <option value="20_10_venda">20 dias + Venda 10</option>
+                                        <option value="20_10_gozo">20 dias (1º per.)</option>
+                                        <option value="15_9_7">15 dias (1º per.)</option>
                                     </select>
                                 </div>
                                 <div class="form-group">
-                                    <label>Data de Início</label>
+                                    <label>Início</label>
                                     <input type="date" id="dataSaida" onchange="calcularVolta()" required>
                                 </div>
                             </div>
-
-                            <div class="config-box" id="boxPrevisao" style="display:none; margin-top: 0;">
-                                <div style="display: flex; justify-content: space-between; align-items: center;">
-                                    <div><strong>Retorno:</strong> <span id="textoDataRetorno" style="font-weight: bold;">--/--/----</span></div>
-                                    <div style="text-align: right;"><small id="textoDiasGozo" style="color: #e67e22;"></small></div>
+                            <div class="config-box" id="boxPrevisao" style="display:none;">
+                                <div style="display:flex; justify-content:space-between;">
+                                    <span>Retorno: <strong id="textoDataRetorno">--/--/--</strong></span>
+                                    <small id="textoDiasGozo"></small>
                                 </div>
                                 <input type="hidden" id="dataRetornoCalculada">
                             </div>
-
                             <div class="form-group">
                                 <label>Observações</label>
-                                <textarea id="obsFerias" rows="2" placeholder="Ex: Gostaria de adiantar a 1ª parcela do 13º..."></textarea>
+                                <textarea id="obsFerias" rows="2"></textarea>
                             </div>
-
-                            <div style="margin-top: 20px; display: flex; flex-direction: column; gap: 10px;">
-                                <button type="submit" id="btnSalvarFerias" style="width: 100%; background: #3498db; color: white; padding: 12px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">
-                                    Solicitar Agendamento (Sistema)
+                            <div style="display:flex; flex-direction:column; gap:10px; margin-top:20px;">
+                                <button type="submit" id="btnSalvarFerias" class="login-btn" style="margin:0;">Agendar no Sistema</button>
+                                <button type="button" onclick="abrirEmailRH()" class="btn-outline" style="padding:12px; border-radius:6px; cursor:pointer;">
+                                    <i class="far fa-envelope"></i> Solicitar via E-mail
                                 </button>
-                                
-                                <button type="button" onclick="abrirEmailRH()" class="btn-outline" style="width: 100%; padding: 12px; border-radius: 6px; cursor: pointer;">
-                                    <i class="far fa-envelope"></i> Solicitar ao RH (E-mail)
-                                </button>
-
                                 <div id="loadingFerias" class="loading-spinner"><div class="spinner"></div></div>
                             </div>
                         </form>
                     </div>
-
                     <div class="card">
                         <h2 class="card-title">Minhas Solicitações</h2>
-                        <div id="historicoFeriasContainer"><p style="text-align:center; color:#999;">Carregando...</p></div>
-                        <div class="config-box" style="margin-top: 20px; background: #e8f4fd; border-color: #3498db; color: #2980b9;">
+                        <div id="historicoFeriasContainer">Aguardando...</div>
+                        <div class="config-box" style="margin-top:20px; background:#e8f4fd; border-color:#3498db; color:#2980b9;">
                             <strong>Regras:</strong>
-                            <ul style="margin-top: 5px; margin-left: 20px; font-size: 12px;">
-                                <li>Férias não podem iniciar em sextas-feiras.</li>
-                                <li>Solicitar com no mínimo 30 dias de antecedência.</li>
-                            </ul>
+                            <ul style="margin-left:20px; margin-top:5px;"><li>Proibido início em sextas-feiras.</li><li>Antecedência mínima de 30 dias.</li></ul>
                         </div>
                     </div>
                 </div>
             </div>
 
             <div id="aprovacoes-page" class="page">
-                <div class="page-header"><h1 class="page-title">Aprovações</h1></div>
-                <div id="acessoNegado" style="display:none; text-align:center; padding:20px; background:white; border-radius:8px;">Acesso Negado</div>
+                <div class="page-header"><h1 class="page-title">Central de Aprovações</h1></div>
+                <div id="acessoNegado" style="display:none; text-align:center; padding:40px;" class="card"><i class="fas fa-lock fa-2x" style="color:#e74c3c; margin-bottom:10px;"></i><p>Acesso restrito a Gestores.</p></div>
                 <div id="containerAprovacoes">
-                    <div class="kpi-grid"><div class="kpi-card"><div class="kpi-label">Pendente</div><div class="kpi-value" id="totalHorasPendentes">00:00</div></div></div>
-                    <div class="card"><h2 class="card-title">Pendências <button onclick="carregarSolicitacoesPendentes()" style="border:none; background:none; cursor:pointer;"><i class="fas fa-sync"></i></button></h2>
-                    <div id="solicitacoesPendentes"><div class="loading-spinner" style="display:block"><div class="spinner"></div></div></div></div>
+                    <div class="kpi-grid"><div class="kpi-card orange"><div class="kpi-label">Horas Pendentes</div><div class="kpi-value" id="totalHorasPendentes">00:00</div></div></div>
+                    <div class="card">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                            <h2 class="card-title" style="margin:0;">Solicitações</h2>
+                            <button onclick="carregarSolicitacoesPendentes()" style="border:none; background:none; cursor:pointer;"><i class="fas fa-sync"></i></button>
+                        </div>
+                        <div id="solicitacoesPendentes"><div class="loading-spinner" style="display:block"><div class="spinner"></div></div></div>
+                    </div>
                 </div>
             </div>
 
             <div id="funcionarios-page" class="page">
                 <div class="page-header"><h1 class="page-title">Funcionários</h1></div>
-                <button onclick="abrirModalAdicionarFuncionario()" class="btn-small" style="background:#27ae60; color:white; margin-bottom:20px; font-size:14px;">+ Adicionar</button>
+                <button onclick="abrirModalAdicionarFuncionario()" class="btn-small btn-aprovar" style="padding:10px 20px; margin-bottom:20px;">+ Novo Cadastro</button>
                 <div class="card"><div id="funcionariosContainer"><div class="loading-spinner" style="display:block"><div class="spinner"></div></div></div></div>
             </div>
-
+            
             <div id="modalFuncionario" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center;">
-                <div style="background:white; padding:30px; border-radius:8px; width:90%; max-width:500px;">
-                    <h2>Funcionário</h2>
-                    <form onsubmit="event.preventDefault(); salvarFuncionario();" style="margin-top:20px;">
+                <div style="background:white; padding:30px; border-radius:8px; width:90%; max-width:400px;">
+                    <h2 style="margin-bottom:20px;">Funcionário</h2>
+                    <form onsubmit="event.preventDefault(); salvarFuncionario();">
                         <input type="hidden" id="linhaFuncionario">
-                        <div class="form-group"><label>Nome</label><input id="inputNome" required></div>
+                        <div class="form-group"><label>Nome Completo</label><input id="inputNome" required></div>
                         <div class="form-group"><label>Cargo</label><input id="inputCargo"></div>
                         <div class="form-group"><label>Setor</label><input id="inputSetor"></div>
                         <div class="form-group"><label>Turno</label><input id="inputTurno"></div>
-                        <div style="display:flex; gap:10px;">
-                            <button type="submit" style="flex:1; background:#3498db; color:white; padding:10px; border:none; border-radius:6px;">Salvar</button>
-                            <button type="button" onclick="document.getElementById('modalFuncionario').style.display='none'" style="flex:1; background:#95a5a6; color:white; padding:10px; border:none; border-radius:6px;">Cancelar</button>
+                        <div style="display:flex; gap:10px; margin-top:20px;">
+                            <button type="submit" class="btn-small btn-aprovar" style="flex:1; padding:12px;">Salvar</button>
+                            <button type="button" onclick="document.getElementById('modalFuncionario').style.display='none'" class="btn-small" style="flex:1; background:#95a5a6; color:white; padding:12px;">Cancelar</button>
                         </div>
                     </form>
                 </div>
             </div>
+
         </main>
     </div>
 
     <script>
-        // URL DO SEU BACKEND (Google Apps Script)
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyFxQeuMozOpkKV4dwsY471jHgfFIL2NYUgzlp8O9N4b33N1SylVFSIDVlcBNVsvBB3/exec';
-        
+        // CONFIGURAÇÃO
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwRu9P2RyyPrXdIMN1-STllDowXZunPeAUK0ipW3_JUXXL76CJ8dCdGrYfvE1Q5QEug/exec';
         const INACTIVITY_TIMEOUT = 300000; 
         let inactivityTimer;
+        let dashboardChartInstance = null;
+        let horasChartInstance = null;
 
-        // ===== LÓGICA DE FÉRIAS =====
-
-        // 1. Carrega lista suspensa de funcionários
-        async function carregarSelectFuncionarios() {
-            const select = document.getElementById('feriasNomeColaborador');
-            const usuarioLogado = localStorage.getItem('userName');
-            select.innerHTML = '<option value="">Carregando...</option>';
+        // ===== LÓGICA DO DASHBOARD (NOVO) =====
+        async function loadDashboardData() {
+            // Header
+            const nome = localStorage.getItem('userName') || 'Colaborador';
+            document.getElementById('dashUserName').textContent = nome.split(' ')[0];
+            document.getElementById('dataAtual').textContent = new Date().toLocaleDateString('pt-BR');
 
             try {
-                const response = await fetch(`${SCRIPT_URL}?action=obterFuncionarios`);
-                const data = await response.json();
-
-                if (data.sucesso && data.dados.funcionarios) {
-                    select.innerHTML = '<option value="">Selecione o Colaborador...</option>';
-                    data.dados.funcionarios.forEach(func => {
-                        const option = document.createElement('option');
-                        option.value = func.nome; 
-                        option.textContent = func.nome;
-                        if (usuarioLogado && func.nome.toLowerCase() === usuarioLogado.toLowerCase()) {
-                            option.selected = true;
-                        }
-                        select.appendChild(option);
+                // 1. Funcionários & Gráfico
+                const resFunc = await fetch(`${SCRIPT_URL}?action=obterFuncionarios`);
+                const dataFunc = await resFunc.json();
+                let setores = {};
+                
+                if(dataFunc.sucesso) {
+                    document.getElementById('dashTotalFunc').textContent = dataFunc.dados.funcionarios.length;
+                    dataFunc.dados.funcionarios.forEach(f => {
+                        const s = f.setor || 'Geral';
+                        setores[s] = (setores[s] || 0) + 1;
                     });
-                } else {
-                    select.innerHTML = '<option value="">Erro ao carregar</option>';
+                    renderizarGraficoDashboard(setores);
                 }
-            } catch (error) {
-                console.error(error);
-                select.innerHTML = '<option value="">Erro de conexão</option>';
-            }
+
+                // 2. Horas Extras
+                const resHoras = await fetch(`${SCRIPT_URL}?action=obterDadosHorasExtras`);
+                const dataHoras = await resHoras.json();
+                if(dataHoras.sucesso) document.getElementById('dashHorasExtras').textContent = dataHoras.dados.totalHoras;
+
+                // 3. Pendências
+                const resPend = await fetch(`${SCRIPT_URL}?action=obterSolicitacoesPendentes`);
+                const dataPend = await resPend.json();
+                if(dataPend.sucesso && dataPend.dados.solicitacoes) {
+                    document.getElementById('dashPendencias').textContent = dataPend.dados.solicitacoes.length;
+                }
+
+                // 4. Férias (Placeholder ou busca real se houver endpoint geral)
+                document.getElementById('dashFerias').textContent = '--'; 
+
+            } catch(e) { console.error("Erro Dashboard", e); }
+        }
+
+        function renderizarGraficoDashboard(setoresData) {
+            const ctx = document.getElementById('graficoDashboard');
+            if(!ctx) return;
+            const labels = Object.keys(setoresData);
+            const values = Object.values(setoresData);
+
+            if(dashboardChartInstance) dashboardChartInstance.destroy();
+            dashboardChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels.length ? labels : ['Sem dados'],
+                    datasets: [{
+                        data: values.length ? values : [1],
+                        backgroundColor: ['#3498db', '#e74c3c', '#2ecc71', '#f1c40f', '#9b59b6', '#34495e'],
+                        borderWidth: 0
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'right' } } }
+            });
+        }
+
+        // ===== LÓGICA DE FÉRIAS (ATUALIZADA) =====
+        async function carregarSelectFuncionarios() {
+            const select = document.getElementById('feriasNomeColaborador');
+            const user = localStorage.getItem('userName');
+            select.innerHTML = '<option value="">Carregando...</option>';
+            try {
+                const res = await fetch(`${SCRIPT_URL}?action=obterFuncionarios`);
+                const data = await res.json();
+                if(data.sucesso) {
+                    select.innerHTML = '<option value="">Selecione...</option>';
+                    data.dados.funcionarios.forEach(f => {
+                        const opt = document.createElement('option');
+                        opt.value = f.nome; 
+                        opt.textContent = f.nome;
+                        if(user && f.nome.toLowerCase() === user.toLowerCase()) opt.selected = true;
+                        select.appendChild(opt);
+                    });
+                }
+            } catch(e) { select.innerHTML = '<option>Erro ao carregar</option>'; }
         }
 
         function calcularVolta() {
-            const dataSaidaInput = document.getElementById('dataSaida').value;
+            const saida = document.getElementById('dataSaida').value;
             const modelo = document.getElementById('modeloFerias').value;
-            const boxPrevisao = document.getElementById('boxPrevisao');
+            const box = document.getElementById('boxPrevisao');
+            if(!saida || !modelo) { box.style.display = 'none'; return; }
+
+            let dias = 0;
+            if(modelo == '30') dias = 30;
+            else if(modelo == '20_10_venda' || modelo == '20_10_gozo') dias = 20;
+            else if(modelo == '15_9_7') dias = 15;
+
+            const dt = new Date(saida + 'T00:00:00');
+            if(dt.getDay() === 5) alert("Evite iniciar férias na sexta-feira!");
+
+            const dtRet = new Date(dt);
+            dtRet.setDate(dt.getDate() + dias);
             
-            if (!dataSaidaInput || !modelo) { boxPrevisao.style.display = 'none'; return; }
-
-            let diasDuracao = 0;
-            let textoExtra = "";
-            switch (modelo) {
-                case '30': diasDuracao = 30; textoExtra = "30 dias"; break;
-                case '20_10_venda': diasDuracao = 20; textoExtra = "20 dias + Abono"; break;
-                case '20_10_gozo': diasDuracao = 20; textoExtra = "20 dias (Saldo: 10)"; break;
-                case '15_9_7': diasDuracao = 15; textoExtra = "15 dias (Saldo: 16)"; break;
-            }
-
-            const dataObj = new Date(dataSaidaInput + 'T00:00:00');
-            if (dataObj.getDay() === 5) alert("Atenção: Férias não devem iniciar na sexta-feira.");
-
-            const dataRetornoObj = new Date(dataObj);
-            dataRetornoObj.setDate(dataObj.getDate() + diasDuracao); 
-            
-            const dia = String(dataRetornoObj.getDate()).padStart(2, '0');
-            const mes = String(dataRetornoObj.getMonth() + 1).padStart(2, '0');
-            const ano = dataRetornoObj.getFullYear();
-
-            document.getElementById('dataRetornoCalculada').value = dataRetornoObj.toISOString().split('T')[0];
-            document.getElementById('textoDataRetorno').textContent = `${dia}/${mes}/${ano}`;
-            document.getElementById('textoDiasGozo').textContent = textoExtra;
-            boxPrevisao.style.display = 'block';
+            document.getElementById('dataRetornoCalculada').value = dtRet.toISOString().split('T')[0];
+            document.getElementById('textoDataRetorno').textContent = dtRet.toLocaleDateString('pt-BR');
+            document.getElementById('textoDiasGozo').textContent = `${dias} dias de gozo`;
+            box.style.display = 'block';
         }
 
         async function solicitarFerias() {
             resetInactivityTimer();
             const btn = document.getElementById('btnSalvarFerias');
-            const loading = document.getElementById('loadingFerias');
+            const load = document.getElementById('loadingFerias');
             
-            // Pega o nome do SELECT
-            const nomeSelecionado = document.getElementById('feriasNomeColaborador').value;
+            const nome = document.getElementById('feriasNomeColaborador').value;
             const modelo = document.getElementById('modeloFerias').value;
-            const dataSaida = document.getElementById('dataSaida').value;
-            const dataRetorno = document.getElementById('dataRetornoCalculada').value;
+            const saida = document.getElementById('dataSaida').value;
+            const retorno = document.getElementById('dataRetornoCalculada').value;
             const obs = document.getElementById('obsFerias').value;
 
-            if (!nomeSelecionado || !modelo || !dataSaida) { alert("Preencha todos os campos."); return; }
+            if(!nome || !modelo || !saida) { alert("Preencha tudo!"); return; }
 
-            btn.style.display = 'none';
-            loading.style.display = 'block';
-
+            btn.style.display = 'none'; load.style.display = 'block';
             try {
-                // Envia o nome no campo 'email' pois o backend espera um identificador na coluna B
-                const url = `${SCRIPT_URL}?action=agendarFerias&email=${encodeURIComponent(nomeSelecionado)}&modelo=${modelo}&dataSaida=${dataSaida}&dataRetorno=${dataRetorno}&obs=${encodeURIComponent(obs)}`;
-                
-                const response = await fetch(url);
-                const data = await response.json();
-
-                if (data.sucesso) {
-                    alert('✅ ' + data.mensagem);
+                // Envia nome como email pois o backend espera ID na coluna B
+                const url = `${SCRIPT_URL}?action=agendarFerias&email=${encodeURIComponent(nome)}&modelo=${modelo}&dataSaida=${saida}&dataRetorno=${retorno}&obs=${encodeURIComponent(obs)}`;
+                const res = await fetch(url);
+                const data = await res.json();
+                if(data.sucesso) {
+                    alert('✅ Agendado!');
                     document.getElementById('formFerias').reset();
                     document.getElementById('boxPrevisao').style.display = 'none';
                     carregarHistoricoFerias();
-                } else {
-                    alert('❌ Erro: ' + data.mensagem);
-                }
-            } catch (error) {
-                console.error(error);
-                alert("Erro ao conectar.");
-            } finally {
-                btn.style.display = 'block';
-                loading.style.display = 'none';
-            }
+                } else alert('Erro: ' + data.mensagem);
+            } catch(e) { alert("Erro de conexão"); }
+            finally { btn.style.display = 'block'; load.style.display = 'none'; }
         }
 
-        // 2. Função Botão Email RH
         function abrirEmailRH() {
             const nome = document.getElementById('feriasNomeColaborador').value;
             const modelo = document.getElementById('modeloFerias').value;
-            const dataInicio = document.getElementById('dataSaida').value;
-            const dataRetorno = document.getElementById('dataRetornoCalculada').value;
+            const saida = document.getElementById('dataSaida').value;
             const obs = document.getElementById('obsFerias').value;
-
-            if (!nome || !modelo || !dataInicio) { alert("Preencha o formulário antes de gerar o e-mail."); return; }
-
-            let modeloTexto = modelo;
-            if (modelo === '30') modeloTexto = '30 dias corridos';
-            else if (modelo === '20_10_venda') modeloTexto = '20 dias + Abono Pecuniário';
             
-            const dataInicioFormatada = dataInicio.split('-').reverse().join('/');
-            const dataRetornoFormatada = dataRetorno ? dataRetorno.split('-').reverse().join('/') : 'A calcular';
-            const emailRH = "rh@suaempresa.com"; // Defina o email do RH aqui se quiser fixo
-
-            const assunto = encodeURIComponent(`Solicitação de Férias - ${nome}`);
-            const corpo = encodeURIComponent(`Olá RH,\n\nGostaria de solicitar o agendamento das minhas férias:\n\n👤 Colaborador: ${nome}\n📅 Modelo: ${modeloTexto}\n🚀 Início: ${dataInicioFormatada}\n🔙 Retorno: ${dataRetornoFormatada}\n\n📝 Obs:\n${obs}\n\nAtenciosamente,\n${nome}`);
-
-            window.open(`mailto:${emailRH}?subject=${assunto}&body=${corpo}`);
+            if(!nome || !saida) { alert("Preencha o formulário."); return; }
+            
+            const corpo = `Solicitação de Férias\n\nColaborador: ${nome}\nModelo: ${modelo}\nInício: ${saida}\nObs: ${obs}`;
+            window.open(`mailto:rh@empresa.com?subject=Férias - ${nome}&body=${encodeURIComponent(corpo)}`);
         }
 
         async function carregarHistoricoFerias() {
-            const usuarioLogado = localStorage.getItem('userName'); // Filtra pelo nome do usuário logado se possível
-            const container = document.getElementById('historicoFeriasContainer');
-            container.innerHTML = '<p style="text-align:center; color:#999;">Carregando...</p>';
-
+            const user = localStorage.getItem('userName');
+            const div = document.getElementById('historicoFeriasContainer');
+            div.innerHTML = '<div class="loading-spinner" style="display:block"><div class="spinner"></div></div>';
             try {
-                // Aqui estamos passando o Nome do usuário logado para filtrar
-                const url = `${SCRIPT_URL}?action=obterMinhasFerias&email=${encodeURIComponent(usuarioLogado)}`;
-                const response = await fetch(url);
-                const data = await response.json();
-
-                if (data.sucesso && data.dados && data.dados.length > 0) {
-                    let html = '<ul class="vacation-list" style="list-style:none;">';
-                    data.dados.forEach(ferias => {
-                        let corStatus = '#f39c12'; 
-                        if(ferias.status === 'Aprovada') corStatus = '#27ae60';
-                        if(ferias.status === 'Rejeitada') corStatus = '#c0392b';
-                        const dataSaidaFormatada = ferias.saida.split('-').reverse().join('/');
-                        
-                        html += `<li style="border-bottom:1px solid #eee; padding:10px 0; display:flex; justify-content:space-between;">
-                            <div><div style="font-weight:bold;">${ferias.modelo}</div><div style="font-size:12px; color:#777;">Início: ${dataSaidaFormatada}</div></div>
-                            <div><span style="background:${corStatus}; color:white; padding:2px 8px; border-radius:10px; font-size:10px;">${ferias.status}</span></div>
-                        </li>`;
+                // Filtra pelo nome do usuário logado
+                const res = await fetch(`${SCRIPT_URL}?action=obterMinhasFerias&email=${encodeURIComponent(user)}`);
+                const data = await res.json();
+                if(data.sucesso && data.dados.length) {
+                    let html = '<div style="display:flex; flex-direction:column; gap:10px;">';
+                    data.dados.forEach(f => {
+                        let cor = '#f39c12';
+                        if(f.status == 'Aprovada') cor = '#27ae60';
+                        if(f.status == 'Rejeitada') cor = '#e74c3c';
+                        html += `<div style="border-bottom:1px solid #eee; padding-bottom:5px; display:flex; justify-content:space-between;">
+                            <div><strong>${f.modelo}</strong><br><span style="font-size:12px; color:#777">Início: ${f.saida.split('-').reverse().join('/')}</span></div>
+                            <span style="background:${cor}; color:white; padding:2px 8px; border-radius:10px; font-size:11px; height:fit-content;">${f.status}</span>
+                        </div>`;
                     });
-                    html += '</ul>';
-                    container.innerHTML = html;
-                } else {
-                    container.innerHTML = '<p style="text-align: center; color: #7f8c8d; padding: 20px;">Nenhuma solicitação encontrada.</p>';
-                }
-            } catch (error) { container.innerHTML = '<p style="color:red; text-align:center;">Erro ao carregar histórico.</p>'; }
+                    div.innerHTML = html + '</div>';
+                } else div.innerHTML = '<p style="text-align:center; color:#999;">Sem histórico</p>';
+            } catch(e) { div.innerHTML = 'Erro ao carregar'; }
         }
 
-        // ===== OUTRAS FUNÇÕES DO SISTEMA (Login, Navegação, etc) =====
-
-        function showPage(pageName) {
-            resetInactivityTimer();
-            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
-            document.getElementById(pageName + '-page').classList.add('active');
-            
-            document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
-            // Adicione a classe active no botão clicado (simplificado aqui)
-
-            if (pageName === 'aprovacoes') verificarPermissaoAprovacao();
-            else if (pageName === 'funcionarios') carregarFuncionarios();
-            else if (pageName === 'horas') carregarDadosHorasExtras();
-            else if (pageName === 'ferias') {
-                carregarSelectFuncionarios(); // Carrega o select
-                carregarHistoricoFerias();    // Carrega a lista
-            }
-        }
-
-        async function handleLogin(event) {
-            event.preventDefault();
+        // ===== LÓGICA GERAL (Login, Horas, Func) =====
+        async function handleLogin(e) {
+            e.preventDefault();
             const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
+            const pass = document.getElementById('password').value;
             
             document.getElementById('loginBtn').disabled = true;
             document.getElementById('loadingSpinner').style.display = 'block';
-            document.getElementById('errorMessage').style.display = 'none';
 
             try {
-                const url = `${SCRIPT_URL}?action=validarCredenciais&email=${encodeURIComponent(email)}&senha=${encodeURIComponent(password)}`;
-                const response = await fetch(url);
-                const data = await response.json();
-
-                if (data.sucesso) {
-                    localStorage.setItem('isLoggedIn', 'true');
+                const res = await fetch(`${SCRIPT_URL}?action=validarCredenciais&email=${encodeURIComponent(email)}&senha=${encodeURIComponent(pass)}`);
+                const data = await res.json();
+                if(data.sucesso) {
                     localStorage.setItem('userEmail', data.dados.email);
                     localStorage.setItem('userName', data.dados.nome);
-                    
-                    document.getElementById('userEmail').textContent = data.dados.email;
                     document.getElementById('userName').textContent = data.dados.nome;
-                    document.getElementById('loginScreen').style.display = 'none';
-                    document.getElementById('dashboardScreen').style.display = 'flex';
+                    document.getElementById('userEmail').textContent = data.dados.email;
                     
+                    document.getElementById('loginScreen').style.display = 'none';
+                    document.getElementById('dashboardScreen').classList.add('active');
                     loadDashboardData();
                     resetInactivityTimer();
                 } else {
-                    document.getElementById('errorMessage').textContent = 'Email ou senha inválidos';
+                    document.getElementById('errorMessage').textContent = 'Dados inválidos';
                     document.getElementById('errorMessage').style.display = 'block';
                 }
-            } catch (error) {
-                document.getElementById('errorMessage').textContent = 'Erro de conexão';
-                document.getElementById('errorMessage').style.display = 'block';
-            } finally {
-                document.getElementById('loginBtn').disabled = false;
+            } catch(e) { alert('Erro de conexão'); }
+            finally { 
+                document.getElementById('loginBtn').disabled = false; 
                 document.getElementById('loadingSpinner').style.display = 'none';
             }
         }
@@ -474,60 +525,57 @@
             location.reload();
         }
 
+        function showPage(pageId) {
+            resetInactivityTimer();
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(pageId + '-page').classList.add('active');
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+            
+            // Lógica específica por página
+            if(pageId === 'dashboard') loadDashboardData();
+            if(pageId === 'ferias') { carregarSelectFuncionarios(); carregarHistoricoFerias(); }
+            if(pageId === 'horas') recarregarHorasExtras();
+            if(pageId === 'aprovacoes') verificarPermissaoAprovacao();
+            if(pageId === 'funcionarios') carregarFuncionarios();
+        }
+
         function resetInactivityTimer() {
             clearTimeout(inactivityTimer);
             inactivityTimer = setTimeout(handleLogout, INACTIVITY_TIMEOUT);
         }
 
-        // Dashboard Data
-        async function loadDashboardData() {
-            try {
-                const res = await fetch(`${SCRIPT_URL}?action=obterFuncionarios`);
-                const data = await res.json();
-                if(data.sucesso) document.getElementById('totalFuncionarios').textContent = data.dados.funcionarios.length;
-            } catch(e) {}
-        }
-        
-        // Horas Extras Data
-        async function carregarDadosHorasExtras() {
+        // Funções Auxiliares (Horas, Aprovação, Func) - Simplificadas
+        async function recarregarHorasExtras() {
             try {
                 const res = await fetch(`${SCRIPT_URL}?action=obterDadosHorasExtras`);
                 const data = await res.json();
                 if(data.sucesso) {
                     document.getElementById('totalHorasExtras').textContent = data.dados.totalHoras;
                     if(data.dados.colaboradorMaisHoras) document.getElementById('colaboradorMaisHoras').textContent = data.dados.colaboradorMaisHoras.horas;
-                    if(data.dados.horasPorSetor) atualizarGrafico(data.dados.horasPorSetor);
+                    renderChartHoras(data.dados.horasPorSetor);
                 }
                 const resTab = await fetch(`${SCRIPT_URL}?action=obterHorasPorColaborador`);
                 const dataTab = await resTab.json();
-                renderizarTabelaHoras(dataTab.dados || []);
-            } catch(e) {}
+                let html = '<div class="table-container"><table><thead><tr><th>Email</th><th>Horas</th></tr></thead><tbody>';
+                if(dataTab.dados) dataTab.dados.forEach(c => html += `<tr><td>${c[0]}</td><td>${c[1]}</td></tr>`);
+                document.getElementById('tabelaColaboradores').innerHTML = html + '</tbody></table></div>';
+            } catch(e){}
         }
 
-        let chartInstance = null;
-        function atualizarGrafico(setores) {
+        function renderChartHoras(setores) {
             const ctx = document.getElementById('graficoHorasPorSetor');
-            if(chartInstance) chartInstance.destroy();
-            chartInstance = new Chart(ctx, {
+            if(!ctx) return;
+            if(horasChartInstance) horasChartInstance.destroy();
+            horasChartInstance = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: setores.map(s => s.setor),
-                    datasets: [{ label: 'Horas', data: setores.map(s => parseInt(s.horas.split(':')[0]) + parseInt(s.horas.split(':')[1])/60), backgroundColor: '#3498db' }]
+                    datasets: [{ label: 'Horas', data: setores.map(s => parseInt(s.horas.split(':')[0])), backgroundColor: '#3498db' }]
                 },
                 options: { responsive: true, maintainAspectRatio: false }
             });
         }
 
-        function renderizarTabelaHoras(colaboradores) {
-            const container = document.getElementById('tabelaColaboradores');
-            if(!colaboradores.length) { container.innerHTML = 'Sem dados'; return; }
-            let html = '<div class="table-container"><table><thead><tr><th>Email</th><th>Horas</th></tr></thead><tbody>';
-            colaboradores.forEach(c => html += `<tr><td>${c[0]}</td><td>${c[1]}</td></tr>`);
-            html += '</tbody></table></div>';
-            container.innerHTML = html;
-        }
-
-        // Aprovações
         async function verificarPermissaoAprovacao() {
             const email = localStorage.getItem('userEmail');
             const res = await fetch(`${SCRIPT_URL}?action=verificarPermissaoAprovacao&email=${encodeURIComponent(email)}`);
@@ -543,55 +591,36 @@
         }
 
         async function carregarSolicitacoesPendentes() {
-            const container = document.getElementById('solicitacoesPendentes');
-            container.innerHTML = '<p>Carregando...</p>';
+            const div = document.getElementById('solicitacoesPendentes');
+            div.innerHTML = 'Carregando...';
             const res = await fetch(`${SCRIPT_URL}?action=obterSolicitacoesPendentes`);
             const data = await res.json();
             if(data.sucesso) {
-                document.getElementById('totalHorasPendentes').innerText = data.dados.totalHoras;
-                if(!data.dados.solicitacoes.length) { container.innerHTML = 'Nenhuma pendência'; return; }
+                document.getElementById('totalHorasPendentes').textContent = data.dados.totalHoras;
+                if(!data.dados.solicitacoes.length) { div.innerHTML = 'Nenhuma pendência'; return; }
                 let html = '<div class="table-container"><table><thead><tr><th>Nome</th><th>Data</th><th>Horas</th><th>Ações</th></tr></thead><tbody>';
                 data.dados.solicitacoes.forEach(s => {
                     html += `<tr><td>${s.nome}</td><td>${s.data.split('T')[0]}</td><td>${s.horas}</td>
-                    <td><button class="btn-small btn-aprovar" onclick="acaoAprovar('${s.linha}')">✓</button> <button class="btn-small btn-rejeitar" onclick="acaoRejeitar('${s.linha}')">✕</button></td></tr>`;
+                    <td><button onclick="acaoAprovar('${s.linha}')" class="btn-small btn-aprovar">✓</button> <button onclick="acaoRejeitar('${s.linha}')" class="btn-small btn-rejeitar">✕</button></td></tr>`;
                 });
-                html += '</tbody></table></div>';
-                container.innerHTML = html;
+                div.innerHTML = html + '</tbody></table></div>';
             }
         }
 
-        async function acaoAprovar(linha) {
-            if(!confirm('Aprovar?')) return;
-            const email = localStorage.getItem('userEmail');
-            await fetch(`${SCRIPT_URL}?action=aprovarSolicitacao&linha=${linha}&emailAprovador=${encodeURIComponent(email)}`);
-            carregarSolicitacoesPendentes();
-        }
+        async function acaoAprovar(lin) { if(confirm('Aprovar?')) await fetch(`${SCRIPT_URL}?action=aprovarSolicitacao&linha=${lin}&emailAprovador=${localStorage.getItem('userEmail')}`); carregarSolicitacoesPendentes(); }
+        async function acaoRejeitar(lin) { const m = prompt('Motivo:'); if(m) await fetch(`${SCRIPT_URL}?action=rejeitarSolicitacao&linha=${lin}&emailAprovador=${localStorage.getItem('userEmail')}&motivo=${encodeURIComponent(m)}`); carregarSolicitacoesPendentes(); }
 
-        async function acaoRejeitar(linha) {
-            const motivo = prompt('Motivo:'); if(!motivo) return;
-            const email = localStorage.getItem('userEmail');
-            await fetch(`${SCRIPT_URL}?action=rejeitarSolicitacao&linha=${linha}&emailAprovador=${encodeURIComponent(email)}&motivo=${encodeURIComponent(motivo)}`);
-            carregarSolicitacoesPendentes();
-        }
-
-        // Funcionários CRUD
         async function carregarFuncionarios() {
-            const container = document.getElementById('funcionariosContainer');
+            const div = document.getElementById('funcionariosContainer');
             const res = await fetch(`${SCRIPT_URL}?action=obterFuncionarios`);
             const data = await res.json();
             if(data.sucesso) {
-                let html = '<div class="table-container"><table><thead><tr><th>Nome</th><th>Cargo</th><th>Ações</th></tr></thead><tbody>';
-                data.dados.funcionarios.forEach(f => html += `<tr><td>${f.nome}</td><td>${f.cargo}</td><td><button class="btn-small btn-rejeitar" onclick="deletarFuncionario('${f.linha}')">Excluir</button></td></tr>`);
-                html += '</tbody></table></div>';
-                container.innerHTML = html;
+                let html = '<div class="table-container"><table><thead><tr><th>Nome</th><th>Cargo</th><th>Ação</th></tr></thead><tbody>';
+                data.dados.funcionarios.forEach(f => html += `<tr><td>${f.nome}</td><td>${f.cargo}</td><td><button onclick="delFunc('${f.linha}')" class="btn-small btn-rejeitar">Excluir</button></td></tr>`);
+                div.innerHTML = html + '</tbody></table></div>';
             }
         }
-
-        function abrirModalAdicionarFuncionario() {
-            document.getElementById('modalFuncionario').style.display = 'flex';
-            document.getElementById('linhaFuncionario').value = '';
-        }
-
+        function abrirModalAdicionarFuncionario() { document.getElementById('modalFuncionario').style.display = 'flex'; }
         async function salvarFuncionario() {
             const nome = document.getElementById('inputNome').value;
             const cargo = document.getElementById('inputCargo').value;
@@ -601,18 +630,10 @@
             document.getElementById('modalFuncionario').style.display = 'none';
             carregarFuncionarios();
         }
+        async function delFunc(lin) { if(confirm('Excluir?')) { await fetch(`${SCRIPT_URL}?action=deletarFuncionario&linha=${lin}`); carregarFuncionarios(); } }
 
-        async function deletarFuncionario(linha) {
-            if(confirm('Excluir?')) {
-                await fetch(`${SCRIPT_URL}?action=deletarFuncionario&linha=${linha}`);
-                carregarFuncionarios();
-            }
-        }
-
-        function recarregarHorasExtras() { carregarDadosHorasExtras(); }
-
+        // Init
         document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('dashboardScreen').style.display = 'none';
             document.addEventListener('mousemove', resetInactivityTimer);
             document.addEventListener('click', resetInactivityTimer);
         });
