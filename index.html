@@ -145,22 +145,37 @@
 
                 <div class="kpi-grid">
                     <div class="kpi-card blue">
-                        <div class="kpi-header"><span class="kpi-label">Funcionários</span><i class="fas fa-users" style="color:#3498db"></i></div>
+                        <div class="kpi-header">
+                            <span class="kpi-label">Funcionários</span>
+                            <div style="background: #ebf5fb; color: #3498db; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center;"><i class="fas fa-users"></i></div>
+                        </div>
                         <div class="kpi-value" id="dashTotalFunc">--</div>
                         <div class="kpi-change">Cadastrados</div>
                     </div>
+
                     <div class="kpi-card green">
-                        <div class="kpi-header"><span class="kpi-label">Horas Extras</span><i class="fas fa-clock" style="color:#27ae60"></i></div>
+                        <div class="kpi-header">
+                            <span class="kpi-label">Horas Extras</span>
+                            <div style="background: #e9f7ef; color: #27ae60; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center;"><i class="fas fa-clock"></i></div>
+                        </div>
                         <div class="kpi-value" id="dashHorasExtras">--</div>
                         <div class="kpi-change">Total no mês</div>
                     </div>
+
                     <div class="kpi-card orange">
-                        <div class="kpi-header"><span class="kpi-label">Pendências</span><i class="fas fa-exclamation-circle" style="color:#e67e22"></i></div>
+                        <div class="kpi-header">
+                            <span class="kpi-label">Pendências</span>
+                            <div style="background: #fef5e7; color: #e67e22; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center;"><i class="fas fa-exclamation-circle"></i></div>
+                        </div>
                         <div class="kpi-value" id="dashPendencias">--</div>
                         <div class="kpi-change">Aguardando aprovação</div>
                     </div>
+
                     <div class="kpi-card purple" style="border-left-color: #9b59b6;">
-                        <div class="kpi-header"><span class="kpi-label">Férias</span><i class="fas fa-plane" style="color:#9b59b6"></i></div>
+                        <div class="kpi-header">
+                            <span class="kpi-label">Férias</span>
+                            <div style="background: #f4ecf7; color: #9b59b6; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center;"><i class="fas fa-plane"></i></div>
+                        </div>
                         <div class="kpi-value" id="dashFerias">--</div>
                         <div class="kpi-change">Ativas/Programadas</div>
                     </div>
@@ -309,14 +324,15 @@
     </div>
 
     <script>
-        // CONFIGURAÇÃO
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzF3GzLR6C3jKZ-m_gum3VuNuArxU0TKDIKRHqcefyDZvKWjm3SsKa7Cwqos4iZoPrq/exec';
+        // CONFIGURAÇÃO - URL do seu Backend (Apps Script)
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzGBCmNPWcBd-1niPdJ21FRuhm5qCSDqaepoonpISaQTu3KQN72Y_kXvCleEFO5A9BW/exec';
+        
         const INACTIVITY_TIMEOUT = 300000; 
         let inactivityTimer;
         let dashboardChartInstance = null;
         let horasChartInstance = null;
 
-        // ===== LÓGICA DO DASHBOARD (NOVO) =====
+        // ===== LÓGICA DO DASHBOARD (ATUALIZADA) =====
         async function loadDashboardData() {
             // Header
             const nome = localStorage.getItem('userName') || 'Colaborador';
@@ -350,7 +366,7 @@
                     document.getElementById('dashPendencias').textContent = dataPend.dados.solicitacoes.length;
                 }
 
-                // 4. Férias (Placeholder ou busca real se houver endpoint geral)
+                // 4. Férias
                 document.getElementById('dashFerias').textContent = '--'; 
 
             } catch(e) { console.error("Erro Dashboard", e); }
