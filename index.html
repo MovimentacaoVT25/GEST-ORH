@@ -3,658 +3,1845 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RH Manager - Sistema de Gestão</title>
+    <title>RH Manager - Sistema de Gestão de RH</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5; color: #333; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-        /* ===== LOGIN ===== */
-        .login-container { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%); padding: 20px; }
-        .login-box { background: white; border-radius: 12px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2); padding: 40px; width: 100%; max-width: 400px; }
-        .login-header { text-align: center; margin-bottom: 30px; }
-        .login-header h1 { font-size: 28px; color: #2c3e50; margin-bottom: 10px; }
-        
-        /* ===== FORMULÁRIOS ===== */
-        .form-group { margin-bottom: 20px; }
-        .form-group label { display: block; margin-bottom: 8px; color: #2c3e50; font-weight: 600; font-size: 14px; }
-        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px 15px; border: 2px solid #ecf0f1; border-radius: 6px; font-size: 14px; transition: 0.3s; font-family: inherit; background-color: white; }
-        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: #3498db; box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1); }
-        
-        /* ===== BOTÕES ===== */
-        .login-btn { width: 100%; padding: 12px; background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%); color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: 600; cursor: pointer; transition: 0.3s; margin-top: 10px; }
-        .login-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(44, 62, 80, 0.3); }
-        
-        .btn-small { padding: 8px 12px; border: none; border-radius: 4px; font-size: 12px; font-weight: 600; cursor: pointer; }
-        .btn-aprovar { background: #27ae60; color: white; }
-        .btn-rejeitar { background: #e74c3c; color: white; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
 
-        .btn-outline { background: transparent; border: 2px solid #3498db; color: #3498db; font-weight: 600; transition: all 0.3s ease; }
-        .btn-outline:hover { background: #ebf5fb; transform: translateY(-2px); }
+        /* ===== LOGIN SCREEN ===== */
+        .login-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            padding: 20px;
+        }
 
-        /* ===== LOADING ===== */
-        .loading-spinner { display: none; text-align: center; padding: 20px; }
-        .spinner { border: 3px solid #ecf0f1; border-top: 3px solid #3498db; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 0 auto 10px; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .login-box {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
+        }
 
-        /* ===== LAYOUT DASHBOARD ===== */
-        .dashboard-container { display: none; flex: 1; min-height: 100vh; }
-        .dashboard-container.active { display: flex; }
-        
-        .sidebar { width: 210px; background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%); color: white; padding: 20px; position: fixed; height: 100vh; overflow-y: auto; z-index: 10; }
-        .sidebar-title { font-size: 18px; font-weight: 700; margin-bottom: 20px; }
-        .sidebar-user { font-size: 12px; color: rgba(255,255,255,0.5); border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px; margin-bottom: 20px; }
-        
-        .nav-menu { list-style: none; }
-        .nav-link { display: flex; align-items: center; gap: 10px; color: rgba(255,255,255,0.7); text-decoration: none; padding: 10px 12px; border-radius: 6px; font-size: 14px; cursor: pointer; border: none; background: none; width: 100%; text-align: left; margin-bottom: 5px; }
-        .nav-link:hover, .nav-link.active { background-color: #3498db; color: white; }
-        
-        .main-content { margin-left: 210px; flex: 1; padding: 30px; }
-        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-        .page-title { font-size: 28px; font-weight: 700; color: #2c3e50; }
-        
-        .page { display: none; }
-        .page.active { display: block; animation: fadeIn 0.3s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
 
-        /* ===== CARDS & GRIDS ===== */
-        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 30px; }
-        .kpi-card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-left: 5px solid #3498db; position: relative; overflow: hidden; }
-        .kpi-card.green { border-left-color: #27ae60; }
-        .kpi-card.orange { border-left-color: #e67e22; }
-        .kpi-card.purple { border-left-color: #9b59b6; }
-        
-        .kpi-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .kpi-label { font-size: 13px; color: #7f8c8d; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
-        .kpi-value { font-size: 28px; font-weight: 700; color: #2c3e50; }
-        .kpi-change { font-size: 12px; color: #7f8c8d; margin-top: 5px; }
-        
-        .content-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .card { background: white; border-radius: 12px; padding: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; }
-        .card-title { font-size: 18px; font-weight: 700; margin-bottom: 20px; color: #2c3e50; border-bottom: 1px solid #eee; padding-bottom: 10px; }
-        
-        .config-box { background: #fff3cd; border: 1px solid #ffc107; border-radius: 6px; padding: 15px; margin-bottom: 20px; font-size: 13px; color: #856404; }
-        
-        .table-container { overflow-x: auto; margin-top: 10px; }
-        table { width: 100%; border-collapse: collapse; font-size: 14px; }
-        table th { background: #f8f9fa; padding: 12px; text-align: left; color: #2c3e50; font-weight: 600; border-bottom: 2px solid #e9ecef; }
-        table td { padding: 12px; border-bottom: 1px solid #e9ecef; color: #555; }
-        table tr:hover { background: #f1f1f1; }
+        .login-header h1 {
+            font-size: 28px;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
 
-        @media (max-width: 1024px) { .content-grid { grid-template-columns: 1fr; } }
-        @media (max-width: 768px) { 
-            .sidebar { width: 70px; padding: 15px; } 
-            .sidebar-title, .sidebar-user, .nav-link span { display: none; }
-            .main-content { margin-left: 70px; padding: 15px; }
+        .login-header p {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #2c3e50;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ecf0f1;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(44, 62, 80, 0.3);
+        }
+
+        .login-btn:active {
+            transform: translateY(0);
+        }
+
+        .login-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .error-message {
+            display: none;
+            background: #fee;
+            color: #c33;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            border-left: 4px solid #c33;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .success-message {
+            display: none;
+            background: #efe;
+            color: #3c3;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            border-left: 4px solid #3c3;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading-spinner.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 3px solid #ecf0f1;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes rotate-sync {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .rotating .fa-sync-alt {
+            animation: rotate-sync 1s linear infinite;
+        }
+
+        /* ===== DASHBOARD SCREEN ===== */
+        .dashboard-container {
+            display: none;
+            flex: 1;
+            min-height: 100vh;
+        }
+
+        .dashboard-container.active {
+            display: flex;
+        }
+
+        .sidebar {
+            width: 210px;
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 20px;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar-header {
+            margin-bottom: 30px;
+            border-bottom: 2px dashed rgba(255, 255, 255, 0.2);
+            padding-bottom: 15px;
+        }
+
+        .sidebar-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .sidebar-subtitle {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .sidebar-user {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.5);
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-menu {
+            list-style: none;
+            margin-bottom: 30px;
+        }
+
+        .nav-item {
+            margin-bottom: 15px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            padding: 10px 12px;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+        }
+
+        .nav-link:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .nav-link.active {
+            background-color: #3498db;
+            color: white;
+            font-weight: 600;
+        }
+
+        .nav-icon {
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logout-btn {
+            width: 100%;
+            padding: 10px 12px;
+            background: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.7);
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 0, 0, 0.2);
+            color: #ff6b6b;
+        }
+
+        .main-content {
+            margin-left: 210px;
+            flex: 1;
+            padding: 30px;
+        }
+
+        .page-header {
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .page-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+
+        .page-subtitle {
+            font-size: 14px;
+            color: #7f8c8d;
+        }
+
+        .sync-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: #7f8c8d;
+        }
+
+        .sync-status.syncing {
+            color: #3498db;
+        }
+
+        .sync-status.synced {
+            color: #27ae60;
+        }
+
+        .sync-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #27ae60;
+        }
+
+        .sync-indicator.syncing {
+            background: #3498db;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .kpi-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            border-left: 4px solid #3498db;
+            transition: all 0.3s ease;
+        }
+
+        .kpi-card:hover {
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+            transform: translateY(-2px);
+        }
+
+        .kpi-card.green {
+            border-left-color: #27ae60;
+        }
+
+        .kpi-card.blue {
+            border-left-color: #3498db;
+        }
+
+        .kpi-card.orange {
+            border-left-color: #e67e22;
+        }
+
+        .kpi-card.purple {
+            border-left-color: #9b59b6;
+        }
+
+        .kpi-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .kpi-label {
+            font-size: 13px;
+            color: #7f8c8d;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .kpi-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .kpi-card.blue .kpi-icon {
+            background-color: rgba(52, 152, 219, 0.1);
+            color: #3498db;
+        }
+
+        .kpi-card.green .kpi-icon {
+            background-color: rgba(39, 174, 96, 0.1);
+            color: #27ae60;
+        }
+
+        .kpi-card.orange .kpi-icon {
+            background-color: rgba(230, 126, 34, 0.1);
+            color: #e67e22;
+        }
+
+        .kpi-card.purple .kpi-icon {
+            background-color: rgba(155, 89, 182, 0.1);
+            color: #9b59b6;
+        }
+
+        .kpi-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+
+        .kpi-change {
+            font-size: 12px;
+            color: #7f8c8d;
+        }
+
+        .kpi-change.positive {
+            color: #27ae60;
+        }
+
+        .kpi-change.negative {
+            color: #e74c3c;
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+
+        .activity-list, .vacation-list {
+            list-style: none;
+        }
+
+        .activity-item, .vacation-item {
+            padding: 15px 0;
+            border-bottom: 1px solid #ecf0f1;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .activity-item:last-child, .vacation-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-info, .vacation-info {
+            flex: 1;
+        }
+
+        .activity-name, .vacation-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 4px;
+        }
+
+        .activity-description, .vacation-dates {
+            font-size: 13px;
+            color: #7f8c8d;
+        }
+
+        .activity-time, .vacation-days {
+            font-size: 12px;
+            color: #3498db;
+            font-weight: 600;
+            white-space: nowrap;
+            margin-left: 10px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px 0;
+            color: #7f8c8d;
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @media (max-width: 1024px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 70px;
+                padding: 15px;
+            }
+
+            .sidebar-title, .sidebar-subtitle, .sidebar-user {
+                display: none;
+            }
+
+            .nav-link {
+                justify-content: center;
+                padding: 12px;
+            }
+
+            .nav-icon {
+                width: 24px;
+                height: 24px;
+            }
+
+            .main-content {
+                margin-left: 70px;
+                padding: 20px;
+            }
+
+            .page-title {
+                font-size: 24px;
+            }
+
+            .kpi-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .logout-btn {
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .sidebar {
+                width: 60px;
+            }
+
+            .main-content {
+                margin-left: 60px;
+                padding: 15px;
+            }
+
+            .page-title {
+                font-size: 20px;
+            }
+
+            .kpi-value {
+                font-size: 24px;
+            }
+
+            .kpi-card {
+                padding: 15px;
+            }
+        }
+
+        .config-box {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            color: #856404;
+        }
+
+        select, textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ecf0f1;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: all 0.3s ease;
+        }
+
+        select:focus, textarea:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        table th {
+            background: #f5f5f5;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #2c3e50;
+            border-bottom: 2px solid #ecf0f1;
+        }
+
+        table td {
+            padding: 12px;
+            border-bottom: 1px solid #ecf0f1;
+        }
+
+        table tr:hover {
+            background: #f9f9f9;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-pendente {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-aprovada {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-rejeitada {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .action-spinner {
+            display: none;
+            margin-left: 10px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            animation: spin 1s linear infinite;
+        }
+
+        .action-spinner.show {
+            display: block;
+        }
+
+        .btn-small {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-aprovar {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-aprovar:hover {
+            background: #229954;
+        }
+
+        .btn-rejeitar {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-rejeitar:hover {
+            background: #c0392b;
+        }
+
+        /* Estilos adicionais para a página de Horas Extras */
+        .chart-container {
+            position: relative;
+            height: 350px;
+            margin-bottom: 30px;
+        }
+
+        .colaboradores-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .colaborador-card {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            border-top: 4px solid #3498db;
+        }
+
+        .colaborador-nome {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .colaborador-setor {
+            font-size: 12px;
+            color: #7f8c8d;
+            margin-bottom: 10px;
+        }
+
+        .colaborador-horas {
+            font-size: 20px;
+            font-weight: 700;
+            color: #3498db;
         }
     </style>
 </head>
 <body>
+    <!-- LOGIN SCREEN -->
     <div id="loginScreen" class="login-container">
         <div class="login-box">
             <div class="login-header">
                 <h1>RH Manager</h1>
-                <p>Sistema de Gestão Integrado</p>
+                <p>Sistema de Gestão de RH</p>
             </div>
-            <div id="errorMessage" style="display:none; color:#e74c3c; margin-bottom:15px; text-align:center; font-size:14px; background:#fadbd8; padding:10px; border-radius:4px;"></div>
-            <div id="loadingSpinner" class="loading-spinner"><div class="spinner"></div><p>Acessando...</p></div>
+
+            <div id="errorMessage" class="error-message"></div>
+            <div id="successMessage" class="success-message"></div>
+            <div id="loadingSpinner" class="loading-spinner">
+                <div class="spinner"></div>
+                <p>Validando credenciais...</p>
+            </div>
+
             <form id="loginForm" onsubmit="handleLogin(event)">
-                <div class="form-group"><label>Email Corporativo</label><input type="email" id="email" required></div>
-                <div class="form-group"><label>Senha</label><input type="password" id="password" required></div>
-                <button type="submit" class="login-btn" id="loginBtn">ACESSAR SISTEMA</button>
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input 
+                        type="email" 
+                        id="email" 
+                        placeholder="seu.email@empresa.com" 
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Senha</label>
+                    <input 
+                        type="password" 
+                        id="password" 
+                        placeholder="Digite sua senha" 
+                        required
+                    >
+                </div>
+
+                <button type="submit" class="login-btn" id="loginBtn">
+                    <i class="fas fa-sign-in-alt"></i> ENTRAR
+                </button>
             </form>
         </div>
     </div>
 
+    <!-- DASHBOARD SCREEN -->
     <div id="dashboardScreen" class="dashboard-container">
+        <!-- Sidebar -->
         <aside class="sidebar">
-            <div class="sidebar-title">RH Manager</div>
-            <div class="sidebar-user">
-                <div style="font-weight:bold; color:white;" id="userName">Usuário</div>
-                <div id="userEmail">email@empresa.com</div>
+            <div class="sidebar-header">
+                <div class="sidebar-title">RH Manager</div>
+                <div class="sidebar-subtitle">Sistema de Gestão</div>
+                <div class="sidebar-user" id="userEmail">Usuário</div>
+                <div class="sidebar-user" id="userName" style="margin-top: 5px;"></div>
             </div>
+
             <nav>
                 <ul class="nav-menu">
-                    <li><button class="nav-link active" onclick="showPage('dashboard')"><i class="fas fa-home"></i> <span>Início</span></button></li>
-                    <li><button class="nav-link" onclick="showPage('horas')"><i class="fas fa-clock"></i> <span>Horas Extras</span></button></li>
-                    <li><button class="nav-link" onclick="showPage('aprovacoes')"><i class="fas fa-check-double"></i> <span>Aprovações</span></button></li>
-                    <li><button class="nav-link" onclick="showPage('ferias')"><i class="fas fa-umbrella-beach"></i> <span>Férias</span></button></li>
-                    <li><button class="nav-link" onclick="showPage('funcionarios')"><i class="fas fa-users"></i> <span>Funcionários</span></button></li>
+                    <li class="nav-item">
+                        <button class="nav-link active" onclick="showPage('dashboard')">
+                            <span class="nav-icon">📊</span>
+                            <span>Dashboard</span>
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" onclick="showPage('horas')">
+                            <span class="nav-icon">⏱️</span>
+                            <span>Horas Extras</span>
+                        </button>
+                    </li>
+
+                    <li class="nav-item">
+                        <button class="nav-link" onclick="showPage('aprovacoes')">
+                            <span class="nav-icon">✅</span>
+                            <span>Aprovações</span>
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" onclick="showPage('ferias')">
+                            <span class="nav-icon">🏖️</span>
+                            <span>Férias</span>
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" onclick="showPage('funcionarios')">
+                            <span class="nav-icon">👥</span>
+                            <span>Funcionários</span>
+                        </button>
+                    </li>
                 </ul>
             </nav>
-            <div style="margin-top:auto; padding-top:20px;">
-                <button onclick="handleLogout()" class="nav-link" style="color:#e74c3c;"><i class="fas fa-sign-out-alt"></i> <span>Sair</span></button>
-            </div>
+
+            <button class="logout-btn" onclick="handleLogout()">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Sair</span>
+            </button>
         </aside>
 
+        <!-- Main Content -->
         <main class="main-content">
-            
+            <!-- Dashboard Page -->
             <div id="dashboard-page" class="page active">
-                
-                <div style="background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); color: white; padding: 25px; border-radius: 12px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);">
+                <div class="page-header">
                     <div>
-                        <h1 style="font-size: 24px; font-weight: 700; margin-bottom: 5px;">Olá, <span id="dashUserName">Colaborador</span>! 👋</h1>
-                        <p style="opacity: 0.9; font-size: 14px;">Aqui está o resumo da sua empresa hoje.</p>
+                        <h1 class="page-title">Dashboard</h1>
+                        <p class="page-subtitle">Visão geral do sistema de gestão de recursos humanos</p>
                     </div>
-                    <div style="text-align: right; background: rgba(255,255,255,0.2); padding: 10px 20px; border-radius: 8px;">
-                        <span style="font-size: 12px; display: block;">Data de Hoje</span>
-                        <strong id="dataAtual" style="font-size: 16px;">--/--/----</strong>
+                    <div class="sync-status synced" id="syncStatus">
+                        <div class="sync-indicator"></div>
+                        <span>Sincronizado</span>
                     </div>
                 </div>
 
+                <!-- KPI Cards -->
                 <div class="kpi-grid">
                     <div class="kpi-card blue">
                         <div class="kpi-header">
-                            <span class="kpi-label">Funcionários</span>
-                            <div style="background: #ebf5fb; color: #3498db; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center;"><i class="fas fa-users"></i></div>
+                            <span class="kpi-label">Total de Funcionários</span>
+                            <div class="kpi-icon">👥</div>
                         </div>
-                        <div class="kpi-value" id="dashTotalFunc">--</div>
-                        <div class="kpi-change">Cadastrados</div>
+                        <div class="kpi-value" id="totalFuncionarios">--</div>
+                        <div class="kpi-change positive" id="totalChange">Carregando...</div>
                     </div>
 
                     <div class="kpi-card green">
                         <div class="kpi-header">
-                            <span class="kpi-label">Horas Extras</span>
-                            <div style="background: #e9f7ef; color: #27ae60; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center;"><i class="fas fa-clock"></i></div>
+                            <span class="kpi-label">Horas Extras (Mês)</span>
+                            <div class="kpi-icon">⏱️</div>
                         </div>
-                        <div class="kpi-value" id="dashHorasExtras">--</div>
-                        <div class="kpi-change">Total no mês</div>
+                        <div class="kpi-value" id="horasExtras">--</div>
+                        <div class="kpi-change negative" id="horasChange">Carregando...</div>
                     </div>
 
                     <div class="kpi-card orange">
                         <div class="kpi-header">
-                            <span class="kpi-label">Pendências</span>
-                            <div style="background: #fef5e7; color: #e67e22; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center;"><i class="fas fa-exclamation-circle"></i></div>
+                            <span class="kpi-label">Férias Programadas</span>
+                            <div class="kpi-icon">🏖️</div>
                         </div>
-                        <div class="kpi-value" id="dashPendencias">--</div>
-                        <div class="kpi-change">Aguardando aprovação</div>
+                        <div class="kpi-value" id="feriasProgramadas">--</div>
+                        <div class="kpi-change" id="feriasChange">Carregando...</div>
                     </div>
 
-                    <div class="kpi-card purple" style="border-left-color: #9b59b6;">
+                    <div class="kpi-card purple">
                         <div class="kpi-header">
-                            <span class="kpi-label">Férias</span>
-                            <div style="background: #f4ecf7; color: #9b59b6; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center;"><i class="fas fa-plane"></i></div>
+                            <span class="kpi-label">Taxa de Presença</span>
+                            <div class="kpi-icon">✅</div>
                         </div>
-                        <div class="kpi-value" id="dashFerias">--</div>
-                        <div class="kpi-change">Ativas/Programadas</div>
+                        <div class="kpi-value" id="taxaPresenca">--</div>
+                        <div class="kpi-change positive" id="presencaChange">Carregando...</div>
                     </div>
                 </div>
 
-                <div class="content-grid" style="grid-template-columns: 2fr 1fr;">
+                <div class="content-grid">
                     <div class="card">
-                        <h2 class="card-title">Distribuição por Setor</h2>
-                        <div style="height: 250px; position: relative;">
-                            <canvas id="graficoDashboard"></canvas>
+                        <h2 class="card-title">Atividades Recentes</h2>
+                        <div id="atividadesContainer">
+                            <div class="loading">
+                                <div class="spinner"></div>
+                                <p>Carregando atividades...</p>
+                            </div>
                         </div>
                     </div>
+
                     <div class="card">
-                        <h2 class="card-title">Acesso Rápido</h2>
-                        <div style="display: flex; flex-direction: column; gap: 10px;">
-                            <button onclick="showPage('ferias')" style="display: flex; align-items: center; gap: 15px; padding: 15px; border: 1px solid #eee; border-radius: 8px; background: white; cursor: pointer; transition: 0.2s; text-align: left;">
-                                <div style="background: #e8f8f5; color: #1abc9c; width: 35px; height: 35px; border-radius: 8px; display: flex; align-items: center; justify-content: center;"><i class="fas fa-plus"></i></div>
-                                <div><strong style="display: block; font-size:14px; color: #2c3e50;">Solicitar Férias</strong></div>
-                            </button>
-                            <button onclick="showPage('horas')" style="display: flex; align-items: center; gap: 15px; padding: 15px; border: 1px solid #eee; border-radius: 8px; background: white; cursor: pointer; transition: 0.2s; text-align: left;">
-                                <div style="background: #ebf5fb; color: #3498db; width: 35px; height: 35px; border-radius: 8px; display: flex; align-items: center; justify-content: center;"><i class="fas fa-eye"></i></div>
-                                <div><strong style="display: block; font-size:14px; color: #2c3e50;">Banco de Horas</strong></div>
-                            </button>
-                            <button onclick="showPage('funcionarios')" style="display: flex; align-items: center; gap: 15px; padding: 15px; border: 1px solid #eee; border-radius: 8px; background: white; cursor: pointer; transition: 0.2s; text-align: left;">
-                                <div style="background: #fef9e7; color: #f1c40f; width: 35px; height: 35px; border-radius: 8px; display: flex; align-items: center; justify-content: center;"><i class="fas fa-user-plus"></i></div>
-                                <div><strong style="display: block; font-size:14px; color: #2c3e50;">Novo Funcionário</strong></div>
-                            </button>
+                        <h2 class="card-title">Próximas Férias</h2>
+                        <div id="feriasContainer">
+                            <div class="loading">
+                                <div class="spinner"></div>
+                                <p>Carregando férias...</p>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
+            <!-- Horas Extras Page -->
             <div id="horas-page" class="page">
                 <div class="page-header">
-                    <h1 class="page-title">Horas Extras</h1>
-                    <button onclick="recarregarHorasExtras()" class="btn-small" style="background:#3498db; color:white;">Atualizar Dados</button>
+                    <div>
+                        <h1 class="page-title">Horas Extras</h1>
+                        <p class="page-subtitle">Acompanhamento de horas extras por área e colaborador</p>
+                    </div>
+                    <button onclick="recarregarHorasExtras()" style="background: #3498db; color: white; padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">
+                        <i class="fas fa-sync-alt"></i> Atualizar
+                    </button>
                 </div>
+                
+                <!-- KPI Cards -->
                 <div class="kpi-grid">
-                    <div class="kpi-card blue"><div class="kpi-label">Total Acumulado</div><div class="kpi-value" id="totalHorasExtras">--</div></div>
-                    <div class="kpi-card green"><div class="kpi-label">Maior Saldo</div><div class="kpi-value" id="colaboradorMaisHoras">--</div><small id="colaboradorChange"></small></div>
+                    <div class="kpi-card blue">
+                        <div class="kpi-header">
+                            <span class="kpi-label">Total de Horas Extras</span>
+                            <div class="kpi-icon">⏱️</div>
+                        </div>
+                        <div class="kpi-value" id="totalHorasExtras">--</div>
+                        <div class="kpi-change" id="totalHorasChange">Carregando...</div>
+                    </div>
+
+                    <div class="kpi-card green">
+                        <div class="kpi-header">
+                            <span class="kpi-label">Colaborador com Mais Horas</span>
+                            <div class="kpi-icon">⭐</div>
+                        </div>
+                        <div class="kpi-value" id="colaboradorMaisHoras">--</div>
+                        <div class="kpi-change" id="colaboradorChange">Carregando...</div>
+                    </div>
+
+                    <div class="kpi-card orange">
+                        <div class="kpi-header">
+                            <span class="kpi-label">Número de Setores</span>
+                            <div class="kpi-icon">🏢</div>
+                        </div>
+                        <div class="kpi-value" id="numeroSetores">--</div>
+                        <div class="kpi-change" id="setoresChange">Com horas extras</div>
+                    </div>
                 </div>
-                <div class="content-grid">
-                    <div class="card"><h2 class="card-title">Por Setor</h2><div style="height:250px;"><canvas id="graficoHorasPorSetor"></canvas></div></div>
-                    <div class="card"><h2 class="card-title">Colaboradores</h2><div id="tabelaColaboradores">Carregando...</div></div>
+                
+                <!-- Gráfico de Horas por Setor -->
+                <div class="card">
+                    <h2 class="card-title">Horas Extras por Setor</h2>
+                    <div class="chart-container">
+                        <canvas id="graficoHorasPorSetor"></canvas>
+                    </div>
+                </div>
+
+                <!-- Tabela de Colaboradores -->
+                <div class="card">
+                    <h2 class="card-title">Horas Extras por Colaborador</h2>
+                    <div id="tabelaColaboradores">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            <p>Carregando dados...</p>
+                        </div>
+                    </div>
                 </div>
             </div>
 
+            <!-- Férias Page -->
             <div id="ferias-page" class="page">
-                <div class="page-header"><h1 class="page-title">Gestão de Férias</h1></div>
-                <div class="content-grid">
-                    <div class="card">
-                        <h2 class="card-title">Nova Solicitação</h2>
-                        <form id="formFerias" onsubmit="event.preventDefault(); solicitarFerias();">
-                            <div class="form-group">
-                                <label>Colaborador</label>
-                                <select id="feriasNomeColaborador" required>
-                                    <option value="">Carregando lista...</option>
-                                </select>
-                            </div>
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                                <div class="form-group">
-                                    <label>Modelo</label>
-                                    <select id="modeloFerias" onchange="calcularVolta()" required>
-                                        <option value="">Selecione...</option>
-                                        <option value="30">30 dias corridos</option>
-                                        <option value="20_10_venda">20 dias + Venda 10</option>
-                                        <option value="20_10_gozo">20 dias (1º per.)</option>
-                                        <option value="15_9_7">15 dias (1º per.)</option>
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label>Início</label>
-                                    <input type="date" id="dataSaida" onchange="calcularVolta()" required>
-                                </div>
-                            </div>
-                            <div class="config-box" id="boxPrevisao" style="display:none;">
-                                <div style="display:flex; justify-content:space-between;">
-                                    <span>Retorno: <strong id="textoDataRetorno">--/--/--</strong></span>
-                                    <small id="textoDiasGozo"></small>
-                                </div>
-                                <input type="hidden" id="dataRetornoCalculada">
-                            </div>
-                            <div class="form-group">
-                                <label>Observações</label>
-                                <textarea id="obsFerias" rows="2"></textarea>
-                            </div>
-                            <div style="display:flex; flex-direction:column; gap:10px; margin-top:20px;">
-                                <button type="submit" id="btnSalvarFerias" class="login-btn" style="margin:0;">Agendar no Sistema</button>
-                                <button type="button" onclick="abrirEmailRH()" class="btn-outline" style="padding:12px; border-radius:6px; cursor:pointer;">
-                                    <i class="far fa-envelope"></i> Solicitar via E-mail
-                                </button>
-                                <div id="loadingFerias" class="loading-spinner"><div class="spinner"></div></div>
-                            </div>
-                        </form>
+                <div class="page-header">
+                    <div>
+                        <h1 class="page-title">Férias</h1>
+                        <p class="page-subtitle">Gestão de férias dos funcionários</p>
                     </div>
-                    <div class="card">
-                        <h2 class="card-title">Minhas Solicitações</h2>
-                        <div id="historicoFeriasContainer">Aguardando...</div>
-                        <div class="config-box" style="margin-top:20px; background:#e8f4fd; border-color:#3498db; color:#2980b9;">
-                            <strong>Regras:</strong>
-                            <ul style="margin-left:20px; margin-top:5px;"><li>Proibido início em sextas-feiras.</li><li>Antecedência mínima de 30 dias.</li></ul>
-                        </div>
+                </div>
+                <div class="card">
+                    <div id="feriasDetailContainer">
+                        <p style="text-align: center; color: #7f8c8d; padding: 40px;">🚧 Funcionalidade em desenvolvimento. Em breve você poderá gerenciar as férias dos funcionários aqui.</p>
                     </div>
                 </div>
             </div>
 
+            <!-- Aprovações Page -->
             <div id="aprovacoes-page" class="page">
-                <div class="page-header"><h1 class="page-title">Central de Aprovações</h1></div>
-                <div id="acessoNegado" style="display:none; text-align:center; padding:40px;" class="card"><i class="fas fa-lock fa-2x" style="color:#e74c3c; margin-bottom:10px;"></i><p>Acesso restrito a Gestores.</p></div>
-                <div id="containerAprovacoes">
-                    <div class="kpi-grid"><div class="kpi-card orange"><div class="kpi-label">Horas Pendentes</div><div class="kpi-value" id="totalHorasPendentes">00:00</div></div></div>
+                <div class="page-header">
+                    <div>
+                        <h1 class="page-title">Aprovações de Horas Extras</h1>
+                        <p class="page-subtitle">Aprove ou rejeite solicitações de horas extras</p>
+                    </div>
+                </div>
+
+                <div id="acessoNegado" style="display: none;">
                     <div class="card">
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                            <h2 class="card-title" style="margin:0;">Solicitações</h2>
-                            <button onclick="carregarSolicitacoesPendentes()" style="border:none; background:none; cursor:pointer;"><i class="fas fa-sync"></i></button>
+                        <p style="text-align: center; color: #e74c3c; font-size: 16px;">
+                            <i class="fas fa-lock"></i> Você não tem permissão para acessar esta página.
+                        </p>
+                    </div>
+                </div>
+
+                <div id="containerAprovacoes">
+                    <!-- Painel de Total de Horas Pendentes -->
+                    <div class="kpi-grid" style="margin-bottom: 20px;">
+                        <div class="kpi-card blue">
+                            <div class="kpi-header">
+                                <div class="kpi-label">TOTAL DE HORAS PENDENTES</div>
+                                <div class="kpi-icon"><button id="refreshButton" onclick="carregarSolicitacoesPendentes()" style="background:none; border:none; color:white; cursor:pointer; font-size:16px;"><i class="fas fa-sync-alt"></i></button></div>
+                            </div>
+                            <div class="kpi-value" id="totalHorasPendentes">00:00</div>
+                            <div class="kpi-change">Soma das horas em aprovação</div>
                         </div>
-                        <div id="solicitacoesPendentes"><div class="loading-spinner" style="display:block"><div class="spinner"></div></div></div>
+                    </div>
+                    <!-- Fim Painel de Total de Horas Pendentes -->
+                    <div class="card">
+                        <h2 class="card-title">Solicitações Pendentes</h2>
+                        <div id="solicitacoesPendentes">
+                            <div class="loading">
+                                <div class="spinner"></div>
+                                <p>Carregando solicitações...</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
 
+            <!-- Funcionários Page -->
             <div id="funcionarios-page" class="page">
-                <div class="page-header"><h1 class="page-title">Funcionários</h1></div>
-                <button onclick="abrirModalAdicionarFuncionario()" class="btn-small btn-aprovar" style="padding:10px 20px; margin-bottom:20px;">+ Novo Cadastro</button>
-                <div class="card"><div id="funcionariosContainer"><div class="loading-spinner" style="display:block"><div class="spinner"></div></div></div></div>
+                <div class="page-header">
+                    <div>
+                        <h1 class="page-title">Funcionários</h1>
+                        <p class="page-subtitle">Gestão de funcionários da empresa</p>
+                    </div>
+                </div>
+                
+                <!-- Filtro e Botão -->
+                <div style="display: flex; gap: 15px; margin-bottom: 20px; align-items: center;">
+                    <div style="flex: 1;">
+                        <label style="display: block; font-size: 13px; font-weight: 600; color: #2c3e50; margin-bottom: 8px;">Filtrar por Setor:</label>
+                        <select id="filtroSetor" onchange="aplicarFiltroSetor()" style="width: 100%; padding: 10px; border: 2px solid #ecf0f1; border-radius: 6px; font-size: 14px; cursor: pointer;">
+                            <option value="">Todos os Setores</option>
+                        </select>
+                    </div>
+                    <button onclick="abrirModalAdicionarFuncionario()" style="background: #27ae60; color: white; padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; align-self: flex-end;">
+                        + Adicionar Funcionário
+                    </button>
+                </div>
+                
+                <!-- Tabela de funcionários -->
+                <div class="card">
+                    <div id="funcionariosContainer">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            <p>Carregando funcionários...</p>
+                        </div>
+                    </div>
+                </div>
             </div>
             
-            <div id="modalFuncionario" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center;">
-                <div style="background:white; padding:30px; border-radius:8px; width:90%; max-width:400px;">
-                    <h2 style="margin-bottom:20px;">Funcionário</h2>
-                    <form onsubmit="event.preventDefault(); salvarFuncionario();">
-                        <input type="hidden" id="linhaFuncionario">
-                        <div class="form-group"><label>Nome Completo</label><input id="inputNome" required></div>
-                        <div class="form-group"><label>Cargo</label><input id="inputCargo"></div>
-                        <div class="form-group"><label>Setor</label><input id="inputSetor"></div>
-                        <div class="form-group"><label>Turno</label><input id="inputTurno"></div>
-                        <div style="display:flex; gap:10px; margin-top:20px;">
-                            <button type="submit" class="btn-small btn-aprovar" style="flex:1; padding:12px;">Salvar</button>
-                            <button type="button" onclick="document.getElementById('modalFuncionario').style.display='none'" class="btn-small" style="flex:1; background:#95a5a6; color:white; padding:12px;">Cancelar</button>
+            <!-- Modal para adicionar/editar funcionário -->
+            <div id="modalFuncionario" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); z-index: 1000; align-items: center; justify-content: center;">
+                <div style="background: white; border-radius: 8px; padding: 30px; max-width: 500px; width: 90%; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);">
+                    <h2 id="modalTitulo" style="font-size: 20px; font-weight: 700; margin-bottom: 20px; color: #2c3e50;">Adicionar Funcionário</h2>
+                    
+                    <form id="formFuncionario" onsubmit="event.preventDefault(); salvarFuncionario();">
+                        <input type="hidden" id="linhaFuncionario" value="">
+                        
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; font-size: 14px; font-weight: 600; color: #2c3e50; margin-bottom: 8px;">Nome *</label>
+                            <input type="text" id="inputNome" style="width: 100%; padding: 10px; border: 2px solid #ecf0f1; border-radius: 6px; font-size: 14px;" required>
+                        </div>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; font-size: 14px; font-weight: 600; color: #2c3e50; margin-bottom: 8px;">Cargo</label>
+                            <input type="text" id="inputCargo" style="width: 100%; padding: 10px; border: 2px solid #ecf0f1; border-radius: 6px; font-size: 14px;">
+                        </div>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; font-size: 14px; font-weight: 600; color: #2c3e50; margin-bottom: 8px;">Setor</label>
+                            <input type="text" id="inputSetor" style="width: 100%; padding: 10px; border: 2px solid #ecf0f1; border-radius: 6px; font-size: 14px;">
+                        </div>
+                        
+                        <div style="margin-bottom: 20px;">
+                            <label style="display: block; font-size: 14px; font-weight: 600; color: #2c3e50; margin-bottom: 8px;">Turno</label>
+                            <input type="text" id="inputTurno" style="width: 100%; padding: 10px; border: 2px solid #ecf0f1; border-radius: 6px; font-size: 14px;">
+                        </div>
+                        
+                        <div style="display: flex; gap: 10px;">
+                            <button type="submit" style="flex: 1; background: #3498db; color: white; padding: 10px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">
+                                Salvar
+                            </button>
+                            <button type="button" onclick="fecharModalFuncionario()" style="flex: 1; background: #95a5a6; color: white; padding: 10px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">
+                                Cancelar
+                            </button>
                         </div>
                     </form>
                 </div>
             </div>
-
         </main>
     </div>
 
     <script>
-        // CONFIGURAÇÃO - URL do seu Backend (Apps Script)
+        // ===== CONFIGURAÇÃO DO GOOGLE APPS SCRIPT =====
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwonxyQbGs6GXc_3BOLv0r7oo0mwGNkwA8zelPYs07sNjxUQUb_NP_dIfxcP4WMIPc-/exec';
-        
+
+        // Constante para o tempo limite de inatividade (5 minutos em milissegundos)
         const INACTIVITY_TIMEOUT = 300000; 
         let inactivityTimer;
-        let dashboardChartInstance = null;
-        let horasChartInstance = null;
 
-        // ===== LÓGICA DO DASHBOARD (ATUALIZADA) =====
-        async function loadDashboardData() {
-            // Header
-            const nome = localStorage.getItem('userName') || 'Colaborador';
-            document.getElementById('dashUserName').textContent = nome.split(' ')[0];
-            document.getElementById('dataAtual').textContent = new Date().toLocaleDateString('pt-BR');
-
+        // Função auxiliar para formatar a data
+        function formatarData(dataString) {
             try {
-                // 1. Funcionários & Gráfico
-                const resFunc = await fetch(`${SCRIPT_URL}?action=obterFuncionarios`);
-                const dataFunc = await resFunc.json();
-                let setores = {};
-                
-                if(dataFunc.sucesso) {
-                    document.getElementById('dashTotalFunc').textContent = dataFunc.dados.funcionarios.length;
-                    dataFunc.dados.funcionarios.forEach(f => {
-                        const s = f.setor || 'Geral';
-                        setores[s] = (setores[s] || 0) + 1;
-                    });
-                    renderizarGraficoDashboard(setores);
+                const data = new Date(dataString);
+                if (isNaN(data)) {
+                    return dataString;
                 }
-
-                // 2. Horas Extras
-                const resHoras = await fetch(`${SCRIPT_URL}?action=obterDadosHorasExtras`);
-                const dataHoras = await resHoras.json();
-                if(dataHoras.sucesso) document.getElementById('dashHorasExtras').textContent = dataHoras.dados.totalHoras;
-
-                // 3. Pendências
-                const resPend = await fetch(`${SCRIPT_URL}?action=obterSolicitacoesPendentes`);
-                const dataPend = await resPend.json();
-                if(dataPend.sucesso && dataPend.dados.solicitacoes) {
-                    document.getElementById('dashPendencias').textContent = dataPend.dados.solicitacoes.length;
-                }
-
-                // 4. Férias
-                document.getElementById('dashFerias').textContent = '--'; 
-
-            } catch(e) { console.error("Erro Dashboard", e); }
+                const dia = String(data.getDate()).padStart(2, '0');
+                const mes = String(data.getMonth() + 1).padStart(2, '0');
+                const ano = data.getFullYear();
+                return `${dia}/${mes}/${ano}`;
+            } catch (e) {
+                return dataString;
+            }
         }
 
-        function renderizarGraficoDashboard(setoresData) {
-            const ctx = document.getElementById('graficoDashboard');
-            if(!ctx) return;
-            const labels = Object.keys(setoresData);
-            const values = Object.values(setoresData);
+        // ===== VARIÁVEIS GLOBAIS =====
+        let usuarioAtual = {};
+        let graficoHorasPorSetor = null;
 
-            if(dashboardChartInstance) dashboardChartInstance.destroy();
-            dashboardChartInstance = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: labels.length ? labels : ['Sem dados'],
-                    datasets: [{
-                        data: values.length ? values : [1],
-                        backgroundColor: ['#3498db', '#e74c3c', '#2ecc71', '#f1c40f', '#9b59b6', '#34495e'],
-                        borderWidth: 0
-                    }]
-                },
-                options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'right' } } }
-            });
-        }
-
-        // ===== LÓGICA DE FÉRIAS (ATUALIZADA) =====
-        async function carregarSelectFuncionarios() {
-            const select = document.getElementById('feriasNomeColaborador');
-            const user = localStorage.getItem('userName');
-            select.innerHTML = '<option value="">Carregando...</option>';
-            try {
-                const res = await fetch(`${SCRIPT_URL}?action=obterFuncionarios`);
-                const data = await res.json();
-                if(data.sucesso) {
-                    select.innerHTML = '<option value="">Selecione...</option>';
-                    data.dados.funcionarios.forEach(f => {
-                        const opt = document.createElement('option');
-                        opt.value = f.nome; 
-                        opt.textContent = f.nome;
-                        if(user && f.nome.toLowerCase() === user.toLowerCase()) opt.selected = true;
-                        select.appendChild(opt);
-                    });
-                }
-            } catch(e) { select.innerHTML = '<option>Erro ao carregar</option>'; }
-        }
-
-        function calcularVolta() {
-            const saida = document.getElementById('dataSaida').value;
-            const modelo = document.getElementById('modeloFerias').value;
-            const box = document.getElementById('boxPrevisao');
-            if(!saida || !modelo) { box.style.display = 'none'; return; }
-
-            let dias = 0;
-            if(modelo == '30') dias = 30;
-            else if(modelo == '20_10_venda' || modelo == '20_10_gozo') dias = 20;
-            else if(modelo == '15_9_7') dias = 15;
-
-            const dt = new Date(saida + 'T00:00:00');
-            if(dt.getDay() === 5) alert("Evite iniciar férias na sexta-feira!");
-
-            const dtRet = new Date(dt);
-            dtRet.setDate(dt.getDate() + dias);
-            
-            document.getElementById('dataRetornoCalculada').value = dtRet.toISOString().split('T')[0];
-            document.getElementById('textoDataRetorno').textContent = dtRet.toLocaleDateString('pt-BR');
-            document.getElementById('textoDiasGozo').textContent = `${dias} dias de gozo`;
-            box.style.display = 'block';
-        }
-
-        async function solicitarFerias() {
-            resetInactivityTimer();
-            const btn = document.getElementById('btnSalvarFerias');
-            const load = document.getElementById('loadingFerias');
-            
-            const nome = document.getElementById('feriasNomeColaborador').value;
-            const modelo = document.getElementById('modeloFerias').value;
-            const saida = document.getElementById('dataSaida').value;
-            const retorno = document.getElementById('dataRetornoCalculada').value;
-            const obs = document.getElementById('obsFerias').value;
-
-            if(!nome || !modelo || !saida) { alert("Preencha tudo!"); return; }
-
-            btn.style.display = 'none'; load.style.display = 'block';
-            try {
-                // Envia nome como email pois o backend espera ID na coluna B
-                const url = `${SCRIPT_URL}?action=agendarFerias&email=${encodeURIComponent(nome)}&modelo=${modelo}&dataSaida=${saida}&dataRetorno=${retorno}&obs=${encodeURIComponent(obs)}`;
-                const res = await fetch(url);
-                const data = await res.json();
-                if(data.sucesso) {
-                    alert('✅ Agendado!');
-                    document.getElementById('formFerias').reset();
-                    document.getElementById('boxPrevisao').style.display = 'none';
-                    carregarHistoricoFerias();
-                } else alert('Erro: ' + data.mensagem);
-            } catch(e) { alert("Erro de conexão"); }
-            finally { btn.style.display = 'block'; load.style.display = 'none'; }
-        }
-
-        function abrirEmailRH() {
-            const nome = document.getElementById('feriasNomeColaborador').value;
-            const modelo = document.getElementById('modeloFerias').value;
-            const saida = document.getElementById('dataSaida').value;
-            const obs = document.getElementById('obsFerias').value;
-            
-            if(!nome || !saida) { alert("Preencha o formulário."); return; }
-            
-            const corpo = `Solicitação de Férias\n\nColaborador: ${nome}\nModelo: ${modelo}\nInício: ${saida}\nObs: ${obs}`;
-            window.open(`mailto:rh@empresa.com?subject=Férias - ${nome}&body=${encodeURIComponent(corpo)}`);
-        }
-
-        async function carregarHistoricoFerias() {
-            const user = localStorage.getItem('userName');
-            const div = document.getElementById('historicoFeriasContainer');
-            div.innerHTML = '<div class="loading-spinner" style="display:block"><div class="spinner"></div></div>';
-            try {
-                // Filtra pelo nome do usuário logado
-                const res = await fetch(`${SCRIPT_URL}?action=obterMinhasFerias&email=${encodeURIComponent(user)}`);
-                const data = await res.json();
-                if(data.sucesso && data.dados.length) {
-                    let html = '<div style="display:flex; flex-direction:column; gap:10px;">';
-                    data.dados.forEach(f => {
-                        let cor = '#f39c12';
-                        if(f.status == 'Aprovada') cor = '#27ae60';
-                        if(f.status == 'Rejeitada') cor = '#e74c3c';
-                        html += `<div style="border-bottom:1px solid #eee; padding-bottom:5px; display:flex; justify-content:space-between;">
-                            <div><strong>${f.modelo}</strong><br><span style="font-size:12px; color:#777">Início: ${f.saida.split('-').reverse().join('/')}</span></div>
-                            <span style="background:${cor}; color:white; padding:2px 8px; border-radius:10px; font-size:11px; height:fit-content;">${f.status}</span>
-                        </div>`;
-                    });
-                    div.innerHTML = html + '</div>';
-                } else div.innerHTML = '<p style="text-align:center; color:#999;">Sem histórico</p>';
-            } catch(e) { div.innerHTML = 'Erro ao carregar'; }
-        }
-
-        // ===== LÓGICA GERAL (Login, Horas, Func) =====
-        async function handleLogin(e) {
-            e.preventDefault();
+        // ===== AUTENTICAÇÃO =====
+        async function handleLogin(event) {
+            event.preventDefault();
             const email = document.getElementById('email').value;
-            const pass = document.getElementById('password').value;
-            
-            document.getElementById('loginBtn').disabled = true;
-            document.getElementById('loadingSpinner').style.display = 'block';
+            const password = document.getElementById('password').value;
+            const loginBtn = document.getElementById('loginBtn');
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            const errorMessage = document.getElementById('errorMessage');
+
+            loginBtn.disabled = true;
+            loadingSpinner.classList.add('show');
+            errorMessage.classList.remove('show');
 
             try {
-                const res = await fetch(`${SCRIPT_URL}?action=validarCredenciais&email=${encodeURIComponent(email)}&senha=${encodeURIComponent(pass)}`);
-                const data = await res.json();
-                if(data.sucesso) {
+                const url = `${SCRIPT_URL}?action=validarCredenciais&email=${encodeURIComponent(email)}&senha=${encodeURIComponent(password)}`;
+                const response = await fetch(url);
+                const data = await response.json();
+
+                if (data.sucesso) {
+                    // Armazena apenas o necessário para a sessão
+                    localStorage.setItem('isLoggedIn', 'true');
                     localStorage.setItem('userEmail', data.dados.email);
                     localStorage.setItem('userName', data.dados.nome);
-                    document.getElementById('userName').textContent = data.dados.nome;
-                    document.getElementById('userEmail').textContent = data.dados.email;
                     
+                    usuarioAtual = data.dados;
+                    document.getElementById('userEmail').textContent = data.dados.email;
+                    document.getElementById('userName').textContent = data.dados.nome;
+
                     document.getElementById('loginScreen').style.display = 'none';
                     document.getElementById('dashboardScreen').classList.add('active');
+                    
                     loadDashboardData();
-                    resetInactivityTimer();
+                    resetInactivityTimer(); // Inicia o timer após o login
                 } else {
-                    document.getElementById('errorMessage').textContent = 'Dados inválidos';
-                    document.getElementById('errorMessage').style.display = 'block';
+                    errorMessage.textContent = 'Email ou senha inválidos';
+                    errorMessage.classList.add('show');
                 }
-            } catch(e) { alert('Erro de conexão'); }
-            finally { 
-                document.getElementById('loginBtn').disabled = false; 
-                document.getElementById('loadingSpinner').style.display = 'none';
+            } catch (error) {
+                console.error('Erro ao fazer login:', error);
+                errorMessage.textContent = 'Erro ao conectar com o servidor';
+                errorMessage.classList.add('show');
+            } finally {
+                loginBtn.disabled = false;
+                loadingSpinner.classList.remove('show');
             }
         }
 
         function handleLogout() {
+            // Limpa o timer de inatividade
             clearTimeout(inactivityTimer);
-            localStorage.clear();
-            location.reload();
-        }
-
-        function showPage(pageId) {
-            resetInactivityTimer();
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.getElementById(pageId + '-page').classList.add('active');
-            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
             
-            // Lógica específica por página
-            if(pageId === 'dashboard') loadDashboardData();
-            if(pageId === 'ferias') { carregarSelectFuncionarios(); carregarHistoricoFerias(); }
-            if(pageId === 'horas') recarregarHorasExtras();
-            if(pageId === 'aprovacoes') verificarPermissaoAprovacao();
-            if(pageId === 'funcionarios') carregarFuncionarios();
+            // Limpa o localStorage
+            localStorage.removeItem('isLoggedIn');
+            localStorage.removeItem('userEmail');
+            localStorage.removeItem('userName');
+            
+            // Volta para a tela de login
+            document.getElementById('loginScreen').style.display = 'flex';
+            document.getElementById('dashboardScreen').classList.remove('active');
+            document.getElementById('email').value = '';
+            document.getElementById('password').value = '';
+            
+            // Opcional: Alerta para o usuário
+            alert('Sessão expirada por inatividade ou logout manual.');
         }
 
+        // ===== TIMER DE INATIVIDADE =====
         function resetInactivityTimer() {
+            // Limpa o timer anterior
             clearTimeout(inactivityTimer);
+            
+            // Configura um novo timer
             inactivityTimer = setTimeout(handleLogout, INACTIVITY_TIMEOUT);
         }
 
-        // Funções Auxiliares (Horas, Aprovação, Func) - Simplificadas
-        async function recarregarHorasExtras() {
-            try {
-                const res = await fetch(`${SCRIPT_URL}?action=obterDadosHorasExtras`);
-                const data = await res.json();
-                if(data.sucesso) {
-                    document.getElementById('totalHorasExtras').textContent = data.dados.totalHoras;
-                    if(data.dados.colaboradorMaisHoras) document.getElementById('colaboradorMaisHoras').textContent = data.dados.colaboradorMaisHoras.horas;
-                    renderChartHoras(data.dados.horasPorSetor);
-                }
-                const resTab = await fetch(`${SCRIPT_URL}?action=obterHorasPorColaborador`);
-                const dataTab = await resTab.json();
-                let html = '<div class="table-container"><table><thead><tr><th>Email</th><th>Horas</th></tr></thead><tbody>';
-                if(dataTab.dados) dataTab.dados.forEach(c => html += `<tr><td>${c[0]}</td><td>${c[1]}</td></tr>`);
-                document.getElementById('tabelaColaboradores').innerHTML = html + '</tbody></table></div>';
-            } catch(e){}
+        // ===== NAVEGAÇÃO ENTRE PÁGINAS =====
+        function showPage(pageName) {
+            resetInactivityTimer(); // Reseta o timer em cada navegação
+            
+            const pages = document.querySelectorAll('.page');
+            pages.forEach(page => page.classList.remove('active'));
+            const pageId = pageName + '-page';
+            const selectedPage = document.getElementById(pageId);
+            if (selectedPage) {
+                selectedPage.classList.add('active');
+            }
+            const navLinks = document.querySelectorAll('.nav-link');
+            navLinks.forEach(link => link.classList.remove('active'));
+            
+            const activeLink = document.querySelector(`[onclick="showPage('${pageName}')"]`);
+            if (activeLink) {
+                activeLink.classList.add('active');
+            }
+
+            // Ação específica ao mudar de página
+            if (pageName === 'aprovacoes') {
+                verificarPermissaoAprovacao();
+            } else if (pageName === 'funcionarios') {
+                carregarFuncionarios();
+            } else if (pageName === 'horas') {
+                carregarDadosHorasExtras();
+            }
         }
 
-        function renderChartHoras(setores) {
-            const ctx = document.getElementById('graficoHorasPorSetor');
-            if(!ctx) return;
-            if(horasChartInstance) horasChartInstance.destroy();
-            horasChartInstance = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: setores.map(s => s.setor),
-                    datasets: [{ label: 'Horas', data: setores.map(s => parseInt(s.horas.split(':')[0])), backgroundColor: '#3498db' }]
-                },
-                options: { responsive: true, maintainAspectRatio: false }
+        // ===== CARREGAR DADOS DO DASHBOARD =====
+        async function loadDashboardData() {
+            resetInactivityTimer(); // Reseta o timer ao carregar dados
+            try {
+                const url = `${SCRIPT_URL}?action=obterFuncionarios`;
+                const response = await fetch(url);
+                const data = await response.json();
+
+                if (data.sucesso) {
+                    const totalFuncionarios = data.dados.funcionarios.length;
+                    document.getElementById('totalFuncionarios').textContent = totalFuncionarios;
+                    document.getElementById('totalChange').textContent = 'Funcionarios cadastrados';
+                }
+            } catch (error) {
+                console.error('Erro ao carregar dados:', error);
+            }
+
+            // Dados de exemplo
+            const atividades = [
+                { nome: 'Maria Silva', descricao: 'registrou 8h extras', tempo: '2h atrás' },
+                { nome: 'João Santos', descricao: 'solicitou férias', tempo: '5h atrás' },
+                { nome: 'Ana Costa', descricao: 'atualizou cadastro', tempo: '1d atrás' },
+                { nome: 'Pedro Lima', descricao: 'registrou ponto', tempo: '1d atrás' }
+            ];
+            const ferias = [
+                { nome: 'Carlos Mendes', datas: '15-29 Dez', dias: '15 dias' },
+                { nome: 'Lucia Ferreira', datas: '20-27 Dez', dias: '8 dias' },
+                { nome: 'Roberto Alves', datas: '2-16 Jan', dias: '15 dias' },
+                { nome: 'Fernanda Rocha', datas: '8-22 Jan', dias: '15 dias' }
+            ];
+
+            renderAtividades(atividades);
+            renderFerias(ferias);
+        }
+
+        function renderAtividades(atividades) {
+            const container = document.getElementById('atividadesContainer');
+            const html = `
+                <ul class="activity-list">
+                    ${atividades.map(a => `
+                        <li class="activity-item">
+                            <div class="activity-info">
+                                <div class="activity-name">${a.nome}</div>
+                                <div class="activity-description">${a.descricao}</div>
+                            </div>
+                            <div class="activity-time">${a.tempo}</div>
+                        </li>
+                    `).join('')}
+                </ul>
+            `;
+            container.innerHTML = html;
+        }
+
+        function renderFerias(ferias) {
+            const container = document.getElementById('feriasContainer');
+            const html = `
+                <ul class="vacation-list">
+                    ${ferias.map(f => `
+                        <li class="vacation-item">
+                            <div class="vacation-info">
+                                <div class="vacation-name">${f.nome}</div>
+                                <div class="vacation-dates">${f.datas}</div>
+                            </div>
+                            <div class="vacation-days">${f.dias}</div>
+                        </li>
+                    `).join('')}
+                </ul>
+            `;
+            container.innerHTML = html;
+        }
+
+        // ===== SINCRONIZAÇÃO EM TEMPO REAL =====
+        function setupRealtimeSync() {
+            setInterval(() => {
+                syncData();
+            }, 30000);
+            window.addEventListener('focus', () => {
+                syncData();
             });
         }
 
-        async function verificarPermissaoAprovacao() {
-            const email = localStorage.getItem('userEmail');
-            const res = await fetch(`${SCRIPT_URL}?action=verificarPermissaoAprovacao&email=${encodeURIComponent(email)}`);
-            const data = await res.json();
-            if(data.sucesso && data.dados.podeAprovar) {
-                document.getElementById('containerAprovacoes').style.display = 'block';
-                document.getElementById('acessoNegado').style.display = 'none';
-                carregarSolicitacoesPendentes();
+        function syncData() {
+            const syncStatus = document.getElementById('syncStatus');
+            syncStatus.classList.remove('synced');
+            syncStatus.classList.add('syncing');
+            syncStatus.innerHTML = '<div class="sync-indicator syncing"></div><span>Sincronizando...</span>';
+            setTimeout(() => {
+                syncStatus.classList.remove('syncing');
+                syncStatus.classList.add('synced');
+                syncStatus.innerHTML = '<div class="sync-indicator"></div><span>Sincronizado</span>';
+            }, 1000);
+        }
+
+        // ===== FUNÇÕES PARA HORAS EXTRAS =====
+        async function carregarDadosHorasExtras() {
+            resetInactivityTimer(); // Reseta o timer ao carregar dados
+            try {
+                const url = `${SCRIPT_URL}?action=obterDadosHorasExtras`;
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (data.sucesso) {
+                    exibirDadosHorasExtras(data.dados);
+                    carregarTabelaHorasExtras();
+                } else {
+                    console.error('Erro ao carregar dados:', data.mensagem);
+                }
+            } catch (error) {
+                console.error('Erro ao carregar dados de horas extras:', error);
+            }
+        }
+
+        function exibirDadosHorasExtras(dados) {
+            // Atualizar KPI de Total de Horas
+            document.getElementById('totalHorasExtras').textContent = dados.totalHoras || '00:00';
+            document.getElementById('totalHorasChange').textContent = 'Total de horas extras aprovadas';
+            
+            // Atualizar KPI de Colaborador com Mais Horas
+            if (dados.colaboradorMaisHoras) {
+                document.getElementById('colaboradorMaisHoras').textContent = dados.colaboradorMaisHoras.horas || '00:00';
+                document.getElementById('colaboradorChange').textContent = dados.colaboradorMaisHoras.nome || 'Nenhum';
             } else {
+                document.getElementById('colaboradorMaisHoras').textContent = '--';
+                document.getElementById('colaboradorChange').textContent = 'Nenhum colaborador';
+            }
+
+            // Atualizar número de setores
+            const numSetores = (dados.horasPorSetor || []).length;
+            document.getElementById('numeroSetores').textContent = numSetores;
+            
+            // Atualizar gráfico
+            atualizarGraficoHorasPorSetor(dados.horasPorSetor || []);
+        }
+
+        function atualizarGraficoHorasPorSetor(setores) {
+            const ctx = document.getElementById('graficoHorasPorSetor');
+            if (!ctx) return;
+            
+            // Destruir gráfico anterior se existir
+            if (graficoHorasPorSetor) {
+                graficoHorasPorSetor.destroy();
+            }
+            
+            // Preparar dados para o gráfico
+            const labels = setores.map(s => s.setor);
+            const horasEmNumeros = setores.map(s => {
+                const partes = s.horas.split(':');
+                return parseInt(partes[0]) + parseInt(partes[1]) / 60;
+            });
+            
+            // Cores para o gráfico
+            const cores = [
+                '#3498db', '#e74c3c', '#2ecc71', '#f39c12', '#9b59b6',
+                '#1abc9c', '#34495e', '#e67e22', '#95a5a6', '#c0392b'
+            ];
+            
+            // Criar novo gráfico
+            graficoHorasPorSetor = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Horas Extras',
+                        data: horasEmNumeros,
+                        backgroundColor: cores.slice(0, labels.length),
+                        borderColor: cores.slice(0, labels.length),
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Horas'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        async function carregarTabelaHorasExtras() {
+            resetInactivityTimer(); // Reseta o timer ao carregar dados
+            try {
+                const url = `${SCRIPT_URL}?action=obterTabelaHorasExtras`;
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (data.sucesso) {
+                    renderizarTabelaHorasExtras(data.dados.colaboradores || []);
+                }
+            } catch (error) {
+                console.error('Erro ao carregar tabela de horas extras:', error);
+            }
+        }
+
+        function renderizarTabelaHorasExtras(colaboradores) {
+            const container = document.getElementById('tabelaColaboradores');
+            
+            if (colaboradores.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #7f8c8d; padding: 40px;">Nenhuma hora extra registrada</p>';
+                return;
+            }
+            
+            let html = '<div class="table-container"><table>';
+            html += '<thead><tr><th>Colaborador</th><th>Setor</th><th>Horas Extras</th></tr></thead><tbody>';
+            
+            colaboradores.forEach(col => {
+                html += `
+                    <tr>
+                        <td><strong>${col.nome}</strong></td>
+                        <td>${col.setor || '--'}</td>
+                        <td style="color: #3498db; font-weight: 600;">${col.horas}</td>
+                    </tr>
+                `;
+            });
+            
+            html += '</tbody></table></div>';
+            container.innerHTML = html;
+        }
+
+        function recarregarHorasExtras() {
+            carregarDadosHorasExtras();
+        }
+
+        // ===== VERIFICAR PERMISSÃO DE APROVAÇÃO =====
+        async function verificarPermissaoAprovacao() {
+            resetInactivityTimer(); // Reseta o timer ao carregar dados
+            const loading = document.querySelector('#solicitacoesPendentes .loading');
+            if (loading) loading.style.display = 'block';
+
+            try {
+                const userEmail = localStorage.getItem('userEmail');
+                if (!userEmail) {
+                    document.getElementById('containerAprovacoes').style.display = 'none';
+                    document.getElementById('acessoNegado').style.display = 'block';
+                    return;
+                }
+
+                const url = `${SCRIPT_URL}?action=verificarPermissaoAprovacao&email=${encodeURIComponent(userEmail)}`;
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (data.sucesso && data.dados.podeAprovar) {
+                    document.getElementById('containerAprovacoes').style.display = 'block';
+                    document.getElementById('acessoNegado').style.display = 'none';
+                    carregarSolicitacoesPendentes();
+                } else {
+                    document.getElementById('containerAprovacoes').style.display = 'none';
+                    document.getElementById('acessoNegado').style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Erro ao verificar permissão:', error);
                 document.getElementById('containerAprovacoes').style.display = 'none';
                 document.getElementById('acessoNegado').style.display = 'block';
+            } finally {
+                if (loading) loading.style.display = 'none';
             }
         }
 
+        // ===== CARREGAR SOLICITAÇÕES PENDENTES =====
         async function carregarSolicitacoesPendentes() {
-            const div = document.getElementById('solicitacoesPendentes');
-            div.innerHTML = 'Carregando...';
-            const res = await fetch(`${SCRIPT_URL}?action=obterSolicitacoesPendentes`);
-            const data = await res.json();
-            if(data.sucesso) {
-                document.getElementById('totalHorasPendentes').textContent = data.dados.totalHoras;
-                if(!data.dados.solicitacoes.length) { div.innerHTML = 'Nenhuma pendência'; return; }
-                let html = '<div class="table-container"><table><thead><tr><th>Nome</th><th>Data</th><th>Horas</th><th>Ações</th></tr></thead><tbody>';
-                data.dados.solicitacoes.forEach(s => {
-                    html += `<tr><td>${s.nome}</td><td>${s.data.split('T')[0]}</td><td>${s.horas}</td>
-                    <td><button onclick="acaoAprovar('${s.linha}')" class="btn-small btn-aprovar">✓</button> <button onclick="acaoRejeitar('${s.linha}')" class="btn-small btn-rejeitar">✕</button></td></tr>`;
-                });
-                div.innerHTML = html + '</tbody></table></div>';
+            resetInactivityTimer(); // Reseta o timer ao carregar dados
+            const container = document.getElementById('solicitacoesPendentes');
+            const refreshButton = document.getElementById('refreshButton');
+
+            refreshButton.classList.add('rotating');
+
+            container.innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Carregando solicitações...</p>
+                </div>
+            `;
+
+            try {
+                const url = `${SCRIPT_URL}?action=obterSolicitacoesPendentes`;
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (data.sucesso) {
+                    renderizarSolicitacoesPendentes(data.dados);
+                } else {
+                    container.innerHTML = `<p style="color: red; text-align: center;">Erro: ${data.mensagem}</p>`;
+                }
+                document.getElementById('refreshButton').classList.remove('rotating');
+            } catch (error) {
+                console.error('Erro ao carregar solicitações pendentes:', error);
+                document.getElementById('refreshButton').classList.remove('rotating');
+                container.innerHTML = '<p style="color: red; text-align: center;">Erro ao carregar solicitações. Verifique a URL do Apps Script.</p>';
             }
         }
 
-        async function acaoAprovar(lin) { if(confirm('Aprovar?')) await fetch(`${SCRIPT_URL}?action=aprovarSolicitacao&linha=${lin}&emailAprovador=${localStorage.getItem('userEmail')}`); carregarSolicitacoesPendentes(); }
-        async function acaoRejeitar(lin) { const m = prompt('Motivo:'); if(m) await fetch(`${SCRIPT_URL}?action=rejeitarSolicitacao&linha=${lin}&emailAprovador=${localStorage.getItem('userEmail')}&motivo=${encodeURIComponent(m)}`); carregarSolicitacoesPendentes(); }
+        // ===== RENDERIZAR SOLICITAÇÕES PENDENTES =====
+        function renderizarSolicitacoesPendentes(dados) {
+            const totalHoras = dados.totalHoras || '0.0';
+            document.getElementById('totalHorasPendentes').innerText = totalHoras;
 
+            const solicitacoes = dados.solicitacoes || [];
+            const container = document.getElementById('solicitacoesPendentes');
+            
+            if (solicitacoes.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #7f8c8d; padding: 40px;">Nenhuma solicitação pendente</p>';
+                return;
+            }
+            
+            let html = '<div class="table-container"><table>';
+            html += '<thead><tr><th>Funcionário</th><th>Data</th><th>Horas</th><th>Motivo</th><th>Ações</th></tr></thead><tbody>';
+            
+            solicitacoes.forEach(sol => {
+                const colaboradorInfo = sol.nome; 
+
+                html += `
+                    <tr>
+                        <td><strong>${colaboradorInfo}</strong></td>
+                        <td>${formatarData(sol.data)}</td>
+                        <td>${sol.horas}h</td>
+                        <td>${sol.motivo}</td>
+                        <td>
+                            <div class="btn-group" id="actionGroup-${sol.linha}">
+                                <button class="btn-small btn-aprovar" onclick="aprovarSolicitacao('${sol.linha}')">Aprovar</button>
+                                <button class="btn-small btn-rejeitar" onclick="mostrarRejeicao('${sol.linha}')">Rejeitar</button>
+                                <div class="action-spinner" id="spinner-${sol.linha}"></div>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            html += '</tbody></table></div>';
+            container.innerHTML = html;
+        }
+
+        // ===== APROVAR SOLICITAÇÃO =====
+        async function aprovarSolicitacao(linha) {
+            resetInactivityTimer(); // Reseta o timer ao interagir
+            const userEmail = localStorage.getItem('userEmail');
+            const spinner = document.getElementById(`spinner-${linha}`);
+            const actionGroup = document.getElementById(`actionGroup-${linha}`);
+            
+            spinner.classList.add('show');
+            actionGroup.style.opacity = '0.5';
+
+            try {
+                const url = `${SCRIPT_URL}?action=aprovarSolicitacao&linha=${linha}&emailAprovador=${encodeURIComponent(userEmail)}`;
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (data.sucesso) {
+                    alert('Solicitação aprovada com sucesso!');
+                    carregarSolicitacoesPendentes();
+                } else {
+                    alert('Erro ao aprovar: ' + data.mensagem);
+                }
+            } catch (error) {
+                console.error('Erro ao aprovar:', error);
+                alert('Erro ao aprovar solicitação');
+            } finally {
+                spinner.classList.remove('show');
+                actionGroup.style.opacity = '1';
+            }
+        }
+
+        // ===== MOSTRAR MODAL DE REJEIÇÃO =====
+        function mostrarRejeicao(linha) {
+            resetInactivityTimer(); // Reseta o timer ao interagir
+            const motivo = prompt('Digite o motivo da rejeição:');
+            if (motivo !== null) {
+                rejeitarSolicitacao(linha, motivo);
+            }
+        }
+
+        // ===== REJEITAR SOLICITAÇÃO =====
+        async function rejeitarSolicitacao(linha, motivo) {
+            resetInactivityTimer(); // Reseta o timer ao interagir
+            const userEmail = localStorage.getItem('userEmail');
+            const spinner = document.getElementById(`spinner-${linha}`);
+            const actionGroup = document.getElementById(`actionGroup-${linha}`);
+            
+            spinner.classList.add('show');
+            actionGroup.style.opacity = '0.5';
+
+            try {
+                const url = `${SCRIPT_URL}?action=rejeitarSolicitacao&linha=${linha}&emailAprovador=${encodeURIComponent(userEmail)}&motivo=${encodeURIComponent(motivo)}`;
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (data.sucesso) {
+                    alert('Solicitação rejeitada com sucesso!');
+                    carregarSolicitacoesPendentes();
+                } else {
+                    alert('Erro ao rejeitar: ' + data.mensagem);
+                }
+            } catch (error) {
+                console.error('Erro ao rejeitar:', error);
+                alert('Erro ao rejeitar solicitação');
+            } finally {
+                spinner.classList.remove('show');
+                actionGroup.style.opacity = '1';
+            }
+        }
+
+        // ===== CARREGAR FUNCIONÁRIOS =====
         async function carregarFuncionarios() {
-            const div = document.getElementById('funcionariosContainer');
-            const res = await fetch(`${SCRIPT_URL}?action=obterFuncionarios`);
-            const data = await res.json();
-            if(data.sucesso) {
-                let html = '<div class="table-container"><table><thead><tr><th>Nome</th><th>Cargo</th><th>Ação</th></tr></thead><tbody>';
-                data.dados.funcionarios.forEach(f => html += `<tr><td>${f.nome}</td><td>${f.cargo}</td><td><button onclick="delFunc('${f.linha}')" class="btn-small btn-rejeitar">Excluir</button></td></tr>`);
-                div.innerHTML = html + '</tbody></table></div>';
+            resetInactivityTimer(); // Reseta o timer ao carregar dados
+            try {
+                const url = `${SCRIPT_URL}?action=obterFuncionarios`;
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (data.sucesso) {
+                    renderizarFuncionarios(data.dados.funcionarios || []);
+                    preencherFiltroSetor(data.dados.funcionarios || []);
+                }
+            } catch (error) {
+                console.error('Erro ao carregar funcionários:', error);
             }
         }
-        function abrirModalAdicionarFuncionario() { document.getElementById('modalFuncionario').style.display = 'flex'; }
+
+        function renderizarFuncionarios(funcionarios) {
+            const container = document.getElementById('funcionariosContainer');
+            
+            if (funcionarios.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #7f8c8d; padding: 40px;">Nenhum funcionário cadastrado</p>';
+                return;
+            }
+            
+            let html = '<div class="table-container"><table>';
+            html += '<thead><tr><th>Nome</th><th>Cargo</th><th>Setor</th><th>Turno</th><th>Ações</th></tr></thead><tbody>';
+            
+            funcionarios.forEach(func => {
+                html += `
+                    <tr>
+                        <td><strong>${func.nome}</strong></td>
+                        <td>${func.cargo || '--'}</td>
+                        <td>${func.setor || '--'}</td>
+                        <td>${func.turno || '--'}</td>
+                        <td>
+                            <button class="btn-small" onclick="editarFuncionarioModal(${func.linha}, '${func.nome}', '${func.cargo}', '${func.setor}', '${func.turno}')" style="background: #3498db; color: white; margin-right: 5px;">Editar</button>
+                            <button class="btn-small" onclick="deletarFuncionarioConfirm(${func.linha})" style="background: #e74c3c; color: white;">Deletar</button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            html += '</tbody></table></div>';
+            container.innerHTML = html;
+        }
+
+        function preencherFiltroSetor(funcionarios) {
+            const setores = [...new Set(funcionarios.map(f => f.setor).filter(s => s))];
+            const filtro = document.getElementById('filtroSetor');
+            setores.forEach(setor => {
+                const option = document.createElement('option');
+                option.value = setor;
+                option.textContent = setor;
+                filtro.appendChild(option);
+            });
+        }
+
+        function aplicarFiltroSetor() {
+            resetInactivityTimer(); // Reseta o timer ao interagir
+            const setor = document.getElementById('filtroSetor').value;
+            // Implementar filtro se necessário
+        }
+
+        function abrirModalAdicionarFuncionario() {
+            resetInactivityTimer(); // Reseta o timer ao interagir
+            document.getElementById('modalTitulo').textContent = 'Adicionar Funcionário';
+            document.getElementById('linhaFuncionario').value = '';
+            document.getElementById('inputNome').value = '';
+            document.getElementById('inputCargo').value = '';
+            document.getElementById('inputSetor').value = '';
+            document.getElementById('inputTurno').value = '';
+            document.getElementById('modalFuncionario').style.display = 'flex';
+        }
+
+        function editarFuncionarioModal(linha, nome, cargo, setor, turno) {
+            resetInactivityTimer(); // Reseta o timer ao interagir
+            document.getElementById('modalTitulo').textContent = 'Editar Funcionário';
+            document.getElementById('linhaFuncionario').value = linha;
+            document.getElementById('inputNome').value = nome;
+            document.getElementById('inputCargo').value = cargo;
+            document.getElementById('inputSetor').value = setor;
+            document.getElementById('inputTurno').value = turno;
+            document.getElementById('modalFuncionario').style.display = 'flex';
+        }
+
+        function fecharModalFuncionario() {
+            resetInactivityTimer(); // Reseta o timer ao interagir
+            document.getElementById('modalFuncionario').style.display = 'none';
+        }
+
         async function salvarFuncionario() {
+            resetInactivityTimer(); // Reseta o timer ao interagir
+            const linha = document.getElementById('linhaFuncionario').value;
             const nome = document.getElementById('inputNome').value;
             const cargo = document.getElementById('inputCargo').value;
             const setor = document.getElementById('inputSetor').value;
             const turno = document.getElementById('inputTurno').value;
-            await fetch(`${SCRIPT_URL}?action=adicionarFuncionario&nome=${encodeURIComponent(nome)}&cargo=${encodeURIComponent(cargo)}&setor=${encodeURIComponent(setor)}&turno=${encodeURIComponent(turno)}`);
-            document.getElementById('modalFuncionario').style.display = 'none';
-            carregarFuncionarios();
-        }
-        async function delFunc(lin) { if(confirm('Excluir?')) { await fetch(`${SCRIPT_URL}?action=deletarFuncionario&linha=${lin}`); carregarFuncionarios(); } }
 
-        // Init
+            if (!nome) {
+                alert('Nome é obrigatório');
+                return;
+            }
+
+            try {
+                let url;
+                if (linha) {
+                    url = `${SCRIPT_URL}?action=editarFuncionario&linha=${linha}&nome=${encodeURIComponent(nome)}&cargo=${encodeURIComponent(cargo)}&setor=${encodeURIComponent(setor)}&turno=${encodeURIComponent(turno)}`;
+                } else {
+                    url = `${SCRIPT_URL}?action=adicionarFuncionario&nome=${encodeURIComponent(nome)}&cargo=${encodeURIComponent(cargo)}&setor=${encodeURIComponent(setor)}&turno=${encodeURIComponent(turno)}`;
+                }
+
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (data.sucesso) {
+                    alert(data.mensagem);
+                    fecharModalFuncionario();
+                    carregarFuncionarios();
+                } else {
+                    alert('Erro: ' + data.mensagem);
+                }
+            } catch (error) {
+                console.error('Erro ao salvar funcionário:', error);
+                alert('Erro ao salvar funcionário');
+            }
+        }
+
+        async function deletarFuncionarioConfirm(linha) {
+            resetInactivityTimer(); // Reseta o timer ao interagir
+            if (confirm('Tem certeza que deseja deletar este funcionário?')) {
+                try {
+                    const url = `${SCRIPT_URL}?action=deletarFuncionario&linha=${linha}`;
+                    const response = await fetch(url);
+                    const data = await response.json();
+                    
+                    if (data.sucesso) {
+                        alert(data.mensagem);
+                        carregarFuncionarios();
+                    } else {
+                        alert('Erro: ' + data.mensagem);
+                    }
+                } catch (error) {
+                    console.error('Erro ao deletar funcionário:', error);
+                    alert('Erro ao deletar funcionário');
+                }
+            }
+        }
+
+        // ===== INICIALIZAÇÃO =====
         document.addEventListener('DOMContentLoaded', () => {
+            // 1. Logout ao recarregar a página (limpa a sessão)
+            localStorage.removeItem('isLoggedIn');
+            localStorage.removeItem('userEmail');
+            localStorage.removeItem('userName');
+
+            // 2. Garante que a tela de login seja exibida
+            document.getElementById('loginScreen').style.display = 'flex';
+            document.getElementById('dashboardScreen').classList.remove('active');
+            
+            setupRealtimeSync();
+            
+            // 3. Configura os listeners para resetar o timer de inatividade
             document.addEventListener('mousemove', resetInactivityTimer);
+            document.addEventListener('keypress', resetInactivityTimer);
             document.addEventListener('click', resetInactivityTimer);
         });
     </script>
 </body>
 </html>
-
-
