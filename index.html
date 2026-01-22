@@ -26,9 +26,10 @@
         .login-btn { width: 100%; padding: 12px; background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%); color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: 600; cursor: pointer; transition: 0.3s; margin-top: 10px; }
         .login-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(44, 62, 80, 0.3); }
         
-        .btn-small { padding: 8px 12px; border: none; border-radius: 4px; font-size: 12px; font-weight: 600; cursor: pointer; }
+        .btn-small { padding: 8px 12px; border: none; border-radius: 4px; font-size: 12px; font-weight: 600; cursor: pointer; transition: 0.2s; }
         .btn-aprovar { background: #27ae60; color: white; }
         .btn-rejeitar { background: #e74c3c; color: white; }
+        .btn-small:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 
         .btn-outline { background: transparent; border: 2px solid #3498db; color: #3498db; font-weight: 600; transition: all 0.3s ease; }
         .btn-outline:hover { background: #ebf5fb; transform: translateY(-2px); }
@@ -36,8 +37,7 @@
         /* ===== CONTROLES DE CABEÇALHO (FILTRO) ===== */
         .header-controls { display: flex; gap: 10px; align-items: center; }
         .select-periodo { padding: 8px 12px; border-radius: 4px; border: 1px solid #ddd; background-color: white; font-family: inherit; color: #333; cursor: pointer; font-size: 14px; }
-        .select-periodo:focus { outline: none; border-color: #3498db; }
-
+        
         /* ===== LOADING ===== */
         .loading-spinner { display: none; text-align: center; padding: 20px; }
         .spinner { border: 3px solid #ecf0f1; border-top: 3px solid #3498db; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 0 auto 10px; }
@@ -84,10 +84,12 @@
         .table-container { overflow-x: auto; margin-top: 10px; }
         table { width: 100%; border-collapse: collapse; font-size: 14px; }
         table th { background: #f8f9fa; padding: 12px; text-align: left; color: #2c3e50; font-weight: 600; border-bottom: 2px solid #e9ecef; }
-        table td { padding: 12px; border-bottom: 1px solid #e9ecef; color: #555; }
+        table td { padding: 12px; border-bottom: 1px solid #e9ecef; color: #555; vertical-align: middle; }
         table tr:hover { background: #f1f1f1; }
+        
+        /* Estado de processamento na linha */
+        .row-processing { opacity: 0.5; pointer-events: none; background-color: #f9f9f9; }
 
-        /* Ranking Badges */
         .rank-badge { display: inline-block; width: 24px; height: 24px; line-height: 24px; text-align: center; border-radius: 50%; font-size: 12px; font-weight: bold; color: white; background: #bdc3c7; }
         .rank-1 { background: #f1c40f; box-shadow: 0 2px 5px rgba(241, 196, 15, 0.4); }
         .rank-2 { background: #95a5a6; }
@@ -157,22 +159,18 @@
                     <div class="kpi-card blue">
                         <div class="kpi-header"><span class="kpi-label">Funcionários</span><div style="background: #ebf5fb; color: #3498db; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center;"><i class="fas fa-users"></i></div></div>
                         <div class="kpi-value" id="dashTotalFunc">--</div>
-                        <div class="kpi-change">Cadastrados</div>
                     </div>
                     <div class="kpi-card green">
                         <div class="kpi-header"><span class="kpi-label">Horas Extras</span><div style="background: #e9f7ef; color: #27ae60; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center;"><i class="fas fa-clock"></i></div></div>
                         <div class="kpi-value" id="dashHorasExtras">--</div>
-                        <div class="kpi-change">Total no mês</div>
                     </div>
                     <div class="kpi-card orange">
                         <div class="kpi-header"><span class="kpi-label">Pendências</span><div style="background: #fef5e7; color: #e67e22; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center;"><i class="fas fa-exclamation-circle"></i></div></div>
                         <div class="kpi-value" id="dashPendencias">--</div>
-                        <div class="kpi-change">Aguardando aprovação</div>
                     </div>
                     <div class="kpi-card purple" style="border-left-color: #9b59b6;">
                         <div class="kpi-header"><span class="kpi-label">Férias</span><div style="background: #f4ecf7; color: #9b59b6; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center;"><i class="fas fa-plane"></i></div></div>
                         <div class="kpi-value" id="dashFerias">--</div>
-                        <div class="kpi-change">Ativas/Programadas</div>
                     </div>
                 </div>
 
@@ -199,7 +197,7 @@
                     <h1 class="page-title">Horas Extras</h1>
                     <div class="header-controls">
                         <select id="filtroPeriodo" class="select-periodo" onchange="recarregarHorasExtras()"></select>
-                        <button onclick="recarregarHorasExtras()" class="btn-small" style="background:#3498db; color:white;">Atualizar Dados</button>
+                        <button onclick="recarregarHorasExtras()" class="btn-small" style="background:#3498db; color:white;">Atualizar</button>
                     </div>
                 </div>
                 <div class="kpi-grid">
@@ -243,10 +241,6 @@
                     <div class="card">
                         <h2 class="card-title">Minhas Solicitações</h2>
                         <div id="historicoFeriasContainer">Aguardando...</div>
-                        <div class="config-box" style="margin-top:20px; background:#e8f4fd; border-color:#3498db; color:#2980b9;">
-                            <strong>Regras:</strong>
-                            <ul style="margin-left:20px; margin-top:5px;"><li>Proibido início em sextas-feiras.</li><li>Antecedência mínima de 30 dias.</li></ul>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -278,7 +272,10 @@
                         <div class="form-group"><label>Cargo</label><input id="inputCargo"></div>
                         <div class="form-group"><label>Setor</label><input id="inputSetor"></div>
                         <div class="form-group"><label>Turno</label><input id="inputTurno"></div>
-                        <div style="display:flex; gap:10px; margin-top:20px;"><button type="submit" class="btn-small btn-aprovar" style="flex:1; padding:12px;">Salvar</button><button type="button" onclick="document.getElementById('modalFuncionario').style.display='none'" class="btn-small" style="flex:1; background:#95a5a6; color:white; padding:12px;">Cancelar</button></div>
+                        <div style="display:flex; gap:10px; margin-top:20px;">
+                            <button type="submit" class="btn-small btn-aprovar" style="flex:1; padding:12px;">Salvar</button>
+                            <button type="button" onclick="document.getElementById('modalFuncionario').style.display='none'" class="btn-small" style="flex:1; background:#95a5a6; color:white; padding:12px;">Cancelar</button>
+                        </div>
                     </form>
                 </div>
             </div>
@@ -287,7 +284,6 @@
     </div>
 
     <script>
-        // CONFIGURAÇÃO - Atualize se necessário
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzSYIdjU8LBk12xlIerY7qHb-GFMY7m_5q0PkAiypPdwYE7emyYGlQllunzqLBDMPov/exec';
         
         const INACTIVITY_TIMEOUT = 300000; 
@@ -296,188 +292,164 @@
         let horasChartInstance = null;
 
         // ===== INICIALIZAÇÃO =====
-        function init() {
-            preencherPeriodos(); // Gera os meses no dropdown
-        }
+        function init() { preencherPeriodos(); }
 
-        // ===== FUNÇÃO PARA PREENCHER O DROPDOWN =====
         function preencherPeriodos() {
             const sel = document.getElementById('filtroPeriodo');
             if(!sel) return;
             sel.innerHTML = '';
-            
             const hoje = new Date();
             const nomesMeses = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
-            
-            // Gera últimos 12 meses
             for (let i = 0; i < 12; i++) {
                 let d = new Date(hoje.getFullYear(), hoje.getMonth() - i, 1);
-                let mesIndex = d.getMonth();
-                let ano = d.getFullYear();
-                
                 let opt = document.createElement('option');
-                opt.value = `${mesIndex}-${ano}`; // Formato que o backend espera: 0-2026
-                opt.text = `${nomesMeses[mesIndex]}/${ano}`;
+                opt.value = `${d.getMonth()}-${d.getFullYear()}`;
+                opt.text = `${nomesMeses[d.getMonth()]}/${d.getFullYear()}`;
                 sel.add(opt);
             }
         }
 
-        // ===== LÓGICA DO DASHBOARD =====
+        // ===== DASHBOARD =====
         async function loadDashboardData() {
             const nome = localStorage.getItem('userName') || 'Colaborador';
             document.getElementById('dashUserName').textContent = nome.split(' ')[0];
             document.getElementById('dataAtual').textContent = new Date().toLocaleDateString('pt-BR');
-
             try {
-                // 1. Funcionários & Gráfico
                 const resFunc = await fetch(`${SCRIPT_URL}?action=obterFuncionarios`);
                 const dataFunc = await resFunc.json();
                 let setores = {};
-                
                 if(dataFunc.sucesso) {
                     document.getElementById('dashTotalFunc').textContent = dataFunc.dados.funcionarios.length;
                     dataFunc.dados.funcionarios.forEach(f => {
-                        const s = f.setor || 'Geral';
-                        setores[s] = (setores[s] || 0) + 1;
+                        const s = f.setor || 'Geral'; setores[s] = (setores[s] || 0) + 1;
                     });
                     renderizarGraficoDashboard(setores);
                 }
-
-                // 2. Horas Extras (Dashboard Geral usa automático)
                 const resHoras = await fetch(`${SCRIPT_URL}?action=obterDadosHorasExtras`);
                 const dataHoras = await resHoras.json();
                 if(dataHoras.sucesso) document.getElementById('dashHorasExtras').textContent = dataHoras.dados.totalHoras;
-
-                // 3. Pendências
+                
                 const resPend = await fetch(`${SCRIPT_URL}?action=obterSolicitacoesPendentes`);
                 const dataPend = await resPend.json();
-                if(dataPend.sucesso) document.getElementById('dashPendencias').textContent = dataPend.dados.totalHoras;
-
+                if(dataPend.sucesso) document.getElementById('dashPendencias').textContent = dataPend.dados.totalHoras; // Total de horas pendentes
+                
                 document.getElementById('dashFerias').textContent = '--'; 
-
-            } catch(e) { console.error("Erro Dashboard", e); }
+            } catch(e) { console.error(e); }
         }
 
         function renderizarGraficoDashboard(setoresData) {
-            const ctx = document.getElementById('graficoDashboard');
-            if(!ctx) return;
-            const labels = Object.keys(setoresData);
-            const values = Object.values(setoresData);
-
+            const ctx = document.getElementById('graficoDashboard'); if(!ctx) return;
+            const labels = Object.keys(setoresData); const values = Object.values(setoresData);
             if(dashboardChartInstance) dashboardChartInstance.destroy();
-            dashboardChartInstance = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: labels.length ? labels : ['Sem dados'],
-                    datasets: [{
-                        data: values.length ? values : [1],
-                        backgroundColor: ['#3498db', '#e74c3c', '#2ecc71', '#f1c40f', '#9b59b6', '#34495e'],
-                        borderWidth: 0
-                    }]
-                },
-                options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'right' } } }
-            });
+            dashboardChartInstance = new Chart(ctx, { type: 'doughnut', data: { labels: labels.length?labels:['Vazio'], datasets: [{ data: values.length?values:[1], backgroundColor: ['#3498db', '#e74c3c', '#2ecc71', '#f1c40f', '#9b59b6', '#34495e'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'right' } } } });
         }
 
-        // ===== LÓGICA DE HORAS EXTRAS (COM FILTRO) =====
+        // ===== HORAS EXTRAS =====
         async function recarregarHorasExtras() {
             try {
-                // Lê o filtro
                 const val = document.getElementById('filtroPeriodo').value;
                 let url = `${SCRIPT_URL}?action=obterDadosHorasExtras`;
-                
-                // Adiciona parâmetros se existirem
-                if(val) {
-                    const [m, a] = val.split('-');
-                    url += `&mes=${m}&ano=${a}`;
-                }
+                if(val) { const [m, a] = val.split('-'); url += `&mes=${m}&ano=${a}`; }
 
                 const res = await fetch(url);
                 const data = await res.json();
                 
                 if(data.sucesso) {
                     document.getElementById('totalHorasExtras').textContent = data.dados.totalHoras;
-                    document.getElementById('periodoDisplay').textContent = "Ciclo: " + data.dados.periodo; // Mostra data exata
+                    document.getElementById('periodoDisplay').textContent = "Ciclo: " + data.dados.periodo;
                     
                     if(data.dados.colaboradorMaisHoras) {
                         document.getElementById('colaboradorMaisHoras').textContent = data.dados.colaboradorMaisHoras.horas;
                         const elNome = document.getElementById('colaboradorChange');
-                        if(elNome) { 
-                            elNome.textContent = data.dados.colaboradorMaisHoras.nome;
-                            elNome.style.display = 'block'; 
-                        }
+                        if(elNome) { elNome.textContent = data.dados.colaboradorMaisHoras.nome; elNome.style.display = 'block'; }
                     }
                     renderChartHoras(data.dados.horasPorSetor);
 
-                    // Tabela de Ranking
                     let html = '<div class="table-container"><table><thead><tr><th style="width:50px">#</th><th>Nome</th><th>Horas</th></tr></thead><tbody>';
                     if(data.dados.ranking && data.dados.ranking.length > 0) {
                         data.dados.ranking.forEach((c, index) => {
                             let rankClass = index === 0 ? 'rank-1' : (index === 1 ? 'rank-2' : (index === 2 ? 'rank-3' : 'rank-badge'));
                             let badge = index < 3 ? `<span class="rank-badge ${rankClass}">${index+1}</span>` : `<span style="color:#bdc3c7; font-weight:bold; margin-left:8px;">${index+1}</span>`;
-                            
-                            html += `<tr>
-                                <td>${badge}</td>
-                                <td>${c.nome}</td>
-                                <td style="font-weight:bold; color:#2c3e50;">${c.horas}</td>
-                            </tr>`;
+                            html += `<tr><td>${badge}</td><td>${c.nome}</td><td style="font-weight:bold; color:#2c3e50;">${c.horas}</td></tr>`;
                         });
-                    } else {
-                        html += '<tr><td colspan="3">Nenhum registro encontrado neste período.</td></tr>';
-                    }
+                    } else { html += '<tr><td colspan="3">Nenhum registro encontrado neste período.</td></tr>'; }
                     document.getElementById('tabelaColaboradores').innerHTML = html + '</tbody></table></div>';
                 }
-            } catch(e) { console.error("Erro recarregarHorasExtras", e); }
+            } catch(e) { console.error(e); }
         }
 
         function renderChartHoras(setores) {
-            const ctx = document.getElementById('graficoHorasPorSetor');
-            if(!ctx) return;
-            
-            if (!setores || setores.length === 0) {
-                if(horasChartInstance) horasChartInstance.destroy();
-                return;
-            }
-
-            const labels = setores.map(s => s.setor);
-            const dataMinutes = setores.map(s => s.minutos);
-
+            const ctx = document.getElementById('graficoHorasPorSetor'); if(!ctx) return;
+            if (!setores || setores.length === 0) { if(horasChartInstance) horasChartInstance.destroy(); return; }
+            const labels = setores.map(s => s.setor); const dataMinutes = setores.map(s => s.minutos);
             if(horasChartInstance) horasChartInstance.destroy();
-            
-            horasChartInstance = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Minutos', 
-                        data: dataMinutes,
-                        backgroundColor: '#3498db',
-                        borderRadius: 4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    let min = context.raw;
-                                    let h = Math.floor(min / 60);
-                                    let m = Math.round(min % 60);
-                                    return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')} hs`;
-                                }
-                            }
-                        }
-                    },
-                    scales: { y: { beginAtZero: true } }
-                }
-            });
+            horasChartInstance = new Chart(ctx, { type: 'bar', data: { labels: labels, datasets: [{ label: 'Minutos', data: dataMinutes, backgroundColor: '#3498db', borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: function(context) { let min = context.raw; let h = Math.floor(min / 60); let m = Math.round(min % 60); return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')} hs`; } } } }, scales: { y: { beginAtZero: true } } } });
         }
 
-        // ===== LÓGICA DE FÉRIAS E OUTRAS =====
-        // (Mantendo o código que já funcionava e estava no seu arquivo)
+        // ===== APROVAÇÕES (COM SUTIL LOADING) =====
+        async function carregarSolicitacoesPendentes() {
+            const div = document.getElementById('solicitacoesPendentes');
+            // Só mostra o spinner se estiver vazio ou com texto de carregando
+            if(div.innerHTML.includes('Carregando...') || div.innerHTML.trim() === '') {
+                div.innerHTML = '<div class="loading-spinner" style="display:block"><div class="spinner"></div></div>';
+            }
+            
+            try {
+                const res = await fetch(`${SCRIPT_URL}?action=obterSolicitacoesPendentes`);
+                const data = await res.json();
+                
+                if(data.sucesso) {
+                    document.getElementById('totalHorasPendentes').textContent = data.dados.totalHoras;
+                    if(!data.dados.solicitacoes || data.dados.solicitacoes.length === 0) {
+                        div.innerHTML = '<div style="text-align:center; padding:20px; color:#7f8c8d;">Nenhuma solicitação pendente.</div>';
+                        return;
+                    }
+                    let html = '<div class="table-container"><table><thead><tr><th>Nome</th><th>Data</th><th>Horas</th><th>Ações</th></tr></thead><tbody>';
+                    data.dados.solicitacoes.forEach(s => {
+                        html += `<tr>
+                            <td>${s.nome}</td>
+                            <td>${s.data.split('T')[0]}</td>
+                            <td style="font-weight:bold;">${s.horas}</td>
+                            <td>
+                                <button onclick="acaoAprovar('${s.linha}', this)" class="btn-small btn-aprovar"><i class="fas fa-check"></i></button> 
+                                <button onclick="acaoRejeitar('${s.linha}', this)" class="btn-small btn-rejeitar"><i class="fas fa-times"></i></button>
+                            </td>
+                        </tr>`;
+                    });
+                    div.innerHTML = html + '</tbody></table></div>';
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        // AÇÃO SUTIL: Desabilita botão e "apaga" a linha visualmente antes de recarregar
+        async function acaoAprovar(lin, btn) { 
+            if(!confirm('Aprovar?')) return;
+            
+            // Feedback Visual Imediato
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            btn.disabled = true;
+            const row = btn.closest('tr');
+            if(row) row.classList.add('row-processing');
+
+            await fetch(`${SCRIPT_URL}?action=aprovarSolicitacao&linha=${lin}&emailAprovador=${localStorage.getItem('userEmail')}`); 
+            carregarSolicitacoesPendentes(); 
+        }
+
+        async function acaoRejeitar(lin, btn) { 
+            const m = prompt('Motivo:'); 
+            if(!m) return;
+
+            // Feedback Visual Imediato
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            btn.disabled = true;
+            const row = btn.closest('tr');
+            if(row) row.classList.add('row-processing');
+
+            await fetch(`${SCRIPT_URL}?action=rejeitarSolicitacao&linha=${lin}&emailAprovador=${localStorage.getItem('userEmail')}&motivo=${encodeURIComponent(m)}`); 
+            carregarSolicitacoesPendentes(); 
+        }
+
+        // ===== OUTROS (FÉRIAS, FUNCIONÁRIOS, LOGIN) =====
         async function carregarSelectFuncionarios() {
             const select = document.getElementById('feriasNomeColaborador');
             const user = localStorage.getItem('userName');
@@ -489,69 +461,44 @@
                     select.innerHTML = '<option value="">Selecione...</option>';
                     data.dados.funcionarios.forEach(f => {
                         const opt = document.createElement('option');
-                        opt.value = f.nome; 
-                        opt.textContent = f.nome;
+                        opt.value = f.nome; opt.textContent = f.nome;
                         if(user && f.nome.toLowerCase() === user.toLowerCase()) opt.selected = true;
                         select.appendChild(opt);
                     });
                 }
             } catch(e) { select.innerHTML = '<option>Erro ao carregar</option>'; }
         }
-
         function calcularVolta() {
             const saida = document.getElementById('dataSaida').value;
             const modelo = document.getElementById('modeloFerias').value;
             const box = document.getElementById('boxPrevisao');
             if(!saida || !modelo) { box.style.display = 'none'; return; }
-            let dias = 0;
-            if(modelo == '30') dias = 30;
-            else if(modelo == '20_10_venda' || modelo == '20_10_gozo') dias = 20;
-            else if(modelo == '15_9_7') dias = 15;
+            let dias = 0; if(modelo == '30') dias = 30; else if(modelo == '20_10_venda' || modelo == '20_10_gozo') dias = 20; else if(modelo == '15_9_7') dias = 15;
             const dt = new Date(saida + 'T00:00:00');
             if(dt.getDay() === 5) alert("Evite iniciar férias na sexta-feira!");
-            const dtRet = new Date(dt);
-            dtRet.setDate(dt.getDate() + dias);
+            const dtRet = new Date(dt); dtRet.setDate(dt.getDate() + dias);
             document.getElementById('dataRetornoCalculada').value = dtRet.toISOString().split('T')[0];
             document.getElementById('textoDataRetorno').textContent = dtRet.toLocaleDateString('pt-BR');
             document.getElementById('textoDiasGozo').textContent = `${dias} dias de gozo`;
             box.style.display = 'block';
         }
-
         async function solicitarFerias() {
             resetInactivityTimer();
-            const btn = document.getElementById('btnSalvarFerias');
-            const load = document.getElementById('loadingFerias');
-            const nome = document.getElementById('feriasNomeColaborador').value;
-            const modelo = document.getElementById('modeloFerias').value;
-            const saida = document.getElementById('dataSaida').value;
-            const retorno = document.getElementById('dataRetornoCalculada').value;
-            const obs = document.getElementById('obsFerias').value;
-            if(!nome || !modelo || !saida) { alert("Preencha tudo!"); return; }
+            const btn = document.getElementById('btnSalvarFerias'); const load = document.getElementById('loadingFerias');
+            const n = document.getElementById('feriasNomeColaborador').value; const m = document.getElementById('modeloFerias').value;
+            const s = document.getElementById('dataSaida').value; const r = document.getElementById('dataRetornoCalculada').value; const o = document.getElementById('obsFerias').value;
+            if(!n || !m || !s) { alert("Preencha tudo!"); return; }
             btn.style.display = 'none'; load.style.display = 'block';
             try {
-                const url = `${SCRIPT_URL}?action=agendarFerias&email=${encodeURIComponent(nome)}&modelo=${modelo}&dataSaida=${saida}&dataRetorno=${retorno}&obs=${encodeURIComponent(obs)}`;
-                const res = await fetch(url);
-                const data = await res.json();
-                if(data.sucesso) {
-                    alert('✅ Agendado!');
-                    document.getElementById('formFerias').reset();
-                    document.getElementById('boxPrevisao').style.display = 'none';
-                    carregarHistoricoFerias();
-                } else alert('Erro: ' + data.mensagem);
-            } catch(e) { alert("Erro de conexão"); }
-            finally { btn.style.display = 'block'; load.style.display = 'none'; }
+                await fetch(`${SCRIPT_URL}?action=agendarFerias&email=${encodeURIComponent(n)}&modelo=${m}&dataSaida=${s}&dataRetorno=${r}&obs=${encodeURIComponent(o)}`);
+                alert('✅ Agendado!'); document.getElementById('formFerias').reset(); document.getElementById('boxPrevisao').style.display = 'none'; carregarHistoricoFerias();
+            } catch(e) { alert("Erro de conexão"); } finally { btn.style.display = 'block'; load.style.display = 'none'; }
         }
-
         function abrirEmailRH() {
-            const nome = document.getElementById('feriasNomeColaborador').value;
-            const modelo = document.getElementById('modeloFerias').value;
-            const saida = document.getElementById('dataSaida').value;
-            const obs = document.getElementById('obsFerias').value;
-            if(!nome || !saida) { alert("Preencha o formulário."); return; }
-            const corpo = `Solicitação de Férias\n\nColaborador: ${nome}\nModelo: ${modelo}\nInício: ${saida}\nObs: ${obs}`;
-            window.open(`mailto:rh@empresa.com?subject=Férias - ${nome}&body=${encodeURIComponent(corpo)}`);
+            const n = document.getElementById('feriasNomeColaborador').value; const m = document.getElementById('modeloFerias').value; const s = document.getElementById('dataSaida').value; const o = document.getElementById('obsFerias').value;
+            if(!n || !s) { alert("Preencha o formulário."); return; }
+            window.open(`mailto:rh@empresa.com?subject=Férias - ${n}&body=${encodeURIComponent(`Solicitação de Férias\n\nColaborador: ${n}\nModelo: ${m}\nInício: ${s}\nObs: ${o}`)}`);
         }
-
         async function carregarHistoricoFerias() {
             const user = localStorage.getItem('userName');
             const div = document.getElementById('historicoFeriasContainer');
@@ -562,104 +509,20 @@
                 if(data.sucesso && data.dados.length) {
                     let html = '<div style="display:flex; flex-direction:column; gap:10px;">';
                     data.dados.forEach(f => {
-                        let cor = '#f39c12';
-                        if(f.status == 'Aprovada') cor = '#27ae60';
-                        if(f.status == 'Rejeitada') cor = '#e74c3c';
-                        html += `<div style="border-bottom:1px solid #eee; padding-bottom:5px; display:flex; justify-content:space-between;">
-                            <div><strong>${f.modelo}</strong><br><span style="font-size:12px; color:#777">Início: ${f.saida.split('-').reverse().join('/')}</span></div>
-                            <span style="background:${cor}; color:white; padding:2px 8px; border-radius:10px; font-size:11px; height:fit-content;">${f.status}</span>
-                        </div>`;
+                        let cor = '#f39c12'; if(f.status == 'Aprovada') cor = '#27ae60'; if(f.status == 'Rejeitada') cor = '#e74c3c';
+                        html += `<div style="border-bottom:1px solid #eee; padding-bottom:5px; display:flex; justify-content:space-between;"><div><strong>${f.modelo}</strong><br><span style="font-size:12px; color:#777">Início: ${f.saida.split('-').reverse().join('/')}</span></div><span style="background:${cor}; color:white; padding:2px 8px; border-radius:10px; font-size:11px; height:fit-content;">${f.status}</span></div>`;
                     });
                     div.innerHTML = html + '</div>';
                 } else div.innerHTML = '<p style="text-align:center; color:#999;">Sem histórico</p>';
             } catch(e) { div.innerHTML = 'Erro ao carregar'; }
         }
-
-        async function handleLogin(e) {
-            e.preventDefault();
-            const email = document.getElementById('email').value;
-            const pass = document.getElementById('password').value;
-            document.getElementById('loginBtn').disabled = true;
-            document.getElementById('loadingSpinner').style.display = 'block';
-            try {
-                const res = await fetch(`${SCRIPT_URL}?action=validarCredenciais&email=${encodeURIComponent(email)}&senha=${encodeURIComponent(pass)}`);
-                const data = await res.json();
-                if(data.sucesso) {
-                    localStorage.setItem('userEmail', data.dados.email);
-                    localStorage.setItem('userName', data.dados.nome);
-                    document.getElementById('userName').textContent = data.dados.nome;
-                    document.getElementById('userEmail').textContent = data.dados.email;
-                    document.getElementById('loginScreen').style.display = 'none';
-                    document.getElementById('dashboardScreen').classList.add('active');
-                    init(); // Inicia filtros
-                    loadDashboardData();
-                    resetInactivityTimer();
-                } else {
-                    document.getElementById('errorMessage').textContent = 'Dados inválidos';
-                    document.getElementById('errorMessage').style.display = 'block';
-                }
-            } catch(e) { alert('Erro de conexão'); }
-            finally { 
-                document.getElementById('loginBtn').disabled = false; 
-                document.getElementById('loadingSpinner').style.display = 'none';
-            }
-        }
-
-        function handleLogout() { clearTimeout(inactivityTimer); localStorage.clear(); location.reload(); }
-
-        function showPage(pageId) {
-            resetInactivityTimer();
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.getElementById(pageId + '-page').classList.add('active');
-            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-            
-            // Lógica específica
-            if(pageId === 'dashboard') loadDashboardData();
-            if(pageId === 'ferias') { carregarSelectFuncionarios(); carregarHistoricoFerias(); }
-            if(pageId === 'horas') {
-                preencherPeriodos(); // Garante que o dropdown esteja cheio
-                recarregarHorasExtras();
-            }
-            if(pageId === 'aprovacoes') verificarPermissaoAprovacao();
-            if(pageId === 'funcionarios') carregarFuncionarios();
-        }
-
-        function resetInactivityTimer() { clearTimeout(inactivityTimer); inactivityTimer = setTimeout(handleLogout, INACTIVITY_TIMEOUT); }
-
         async function verificarPermissaoAprovacao() {
             const email = localStorage.getItem('userEmail');
             const res = await fetch(`${SCRIPT_URL}?action=verificarPermissaoAprovacao&email=${encodeURIComponent(email)}`);
             const data = await res.json();
-            if(data.sucesso && data.dados.podeAprovar) {
-                document.getElementById('containerAprovacoes').style.display = 'block';
-                document.getElementById('acessoNegado').style.display = 'none';
-                carregarSolicitacoesPendentes();
-            } else {
-                document.getElementById('containerAprovacoes').style.display = 'none';
-                document.getElementById('acessoNegado').style.display = 'block';
-            }
+            if(data.sucesso && data.dados.podeAprovar) { document.getElementById('containerAprovacoes').style.display = 'block'; document.getElementById('acessoNegado').style.display = 'none'; carregarSolicitacoesPendentes(); } 
+            else { document.getElementById('containerAprovacoes').style.display = 'none'; document.getElementById('acessoNegado').style.display = 'block'; }
         }
-
-        async function carregarSolicitacoesPendentes() {
-            const div = document.getElementById('solicitacoesPendentes');
-            div.innerHTML = 'Carregando...';
-            const res = await fetch(`${SCRIPT_URL}?action=obterSolicitacoesPendentes`);
-            const data = await res.json();
-            if(data.sucesso) {
-                document.getElementById('totalHorasPendentes').textContent = data.dados.totalHoras;
-                if(!data.dados.solicitacoes.length) { div.innerHTML = 'Nenhuma pendência'; return; }
-                let html = '<div class="table-container"><table><thead><tr><th>Nome</th><th>Data</th><th>Horas</th><th>Ações</th></tr></thead><tbody>';
-                data.dados.solicitacoes.forEach(s => {
-                    html += `<tr><td>${s.nome}</td><td>${s.data.split('T')[0]}</td><td>${s.horas}</td>
-                    <td><button onclick="acaoAprovar('${s.linha}')" class="btn-small btn-aprovar">✓</button> <button onclick="acaoRejeitar('${s.linha}')" class="btn-small btn-rejeitar">✕</button></td></tr>`;
-                });
-                div.innerHTML = html + '</tbody></table></div>';
-            }
-        }
-
-        async function acaoAprovar(lin) { if(confirm('Aprovar?')) await fetch(`${SCRIPT_URL}?action=aprovarSolicitacao&linha=${lin}&emailAprovador=${localStorage.getItem('userEmail')}`); carregarSolicitacoesPendentes(); }
-        async function acaoRejeitar(lin) { const m = prompt('Motivo:'); if(m) await fetch(`${SCRIPT_URL}?action=rejeitarSolicitacao&linha=${lin}&emailAprovador=${localStorage.getItem('userEmail')}&motivo=${encodeURIComponent(m)}`); carregarSolicitacoesPendentes(); }
-
         async function carregarFuncionarios() {
             const div = document.getElementById('funcionariosContainer');
             const res = await fetch(`${SCRIPT_URL}?action=obterFuncionarios`);
@@ -672,23 +535,39 @@
         }
         function abrirModalAdicionarFuncionario() { document.getElementById('modalFuncionario').style.display = 'flex'; }
         async function salvarFuncionario() {
-            const nome = document.getElementById('inputNome').value;
-            const cargo = document.getElementById('inputCargo').value;
-            const setor = document.getElementById('inputSetor').value;
-            const turno = document.getElementById('inputTurno').value;
-            await fetch(`${SCRIPT_URL}?action=adicionarFuncionario&nome=${encodeURIComponent(nome)}&cargo=${encodeURIComponent(cargo)}&setor=${encodeURIComponent(setor)}&turno=${encodeURIComponent(turno)}`);
-            document.getElementById('modalFuncionario').style.display = 'none';
-            carregarFuncionarios();
+            const n = document.getElementById('inputNome').value; const c = document.getElementById('inputCargo').value; const s = document.getElementById('inputSetor').value; const t = document.getElementById('inputTurno').value;
+            await fetch(`${SCRIPT_URL}?action=adicionarFuncionario&nome=${encodeURIComponent(n)}&cargo=${encodeURIComponent(c)}&setor=${encodeURIComponent(s)}&turno=${encodeURIComponent(t)}`);
+            document.getElementById('modalFuncionario').style.display = 'none'; carregarFuncionarios();
         }
         async function delFunc(lin) { if(confirm('Excluir?')) { await fetch(`${SCRIPT_URL}?action=deletarFuncionario&linha=${lin}`); carregarFuncionarios(); } }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            document.addEventListener('mousemove', resetInactivityTimer);
-            document.addEventListener('click', resetInactivityTimer);
-        });
+        async function handleLogin(e) {
+            e.preventDefault();
+            document.getElementById('loginBtn').disabled = true; document.getElementById('loadingSpinner').style.display = 'block';
+            try {
+                const res = await fetch(`${SCRIPT_URL}?action=validarCredenciais&email=${encodeURIComponent(document.getElementById('email').value)}&senha=${encodeURIComponent(document.getElementById('password').value)}`);
+                const data = await res.json();
+                if(data.sucesso) {
+                    localStorage.setItem('userEmail', data.dados.email); localStorage.setItem('userName', data.dados.nome);
+                    document.getElementById('userName').textContent = data.dados.nome; document.getElementById('userEmail').textContent = data.dados.email;
+                    document.getElementById('loginScreen').style.display = 'none'; document.getElementById('dashboardScreen').classList.add('active');
+                    init(); loadDashboardData(); resetInactivityTimer();
+                } else { document.getElementById('errorMessage').textContent = 'Dados inválidos'; document.getElementById('errorMessage').style.display = 'block'; }
+            } catch(e) { alert('Erro de conexão'); } finally { document.getElementById('loginBtn').disabled = false; document.getElementById('loadingSpinner').style.display = 'none'; }
+        }
+        function handleLogout() { clearTimeout(inactivityTimer); localStorage.clear(); location.reload(); }
+        function showPage(pageId) {
+            resetInactivityTimer();
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(pageId + '-page').classList.add('active');
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+            if(pageId === 'dashboard') loadDashboardData();
+            if(pageId === 'ferias') { carregarSelectFuncionarios(); carregarHistoricoFerias(); }
+            if(pageId === 'horas') { preencherPeriodos(); recarregarHorasExtras(); }
+            if(pageId === 'aprovacoes') verificarPermissaoAprovacao();
+            if(pageId === 'funcionarios') carregarFuncionarios();
+        }
+        function resetInactivityTimer() { clearTimeout(inactivityTimer); inactivityTimer = setTimeout(handleLogout, INACTIVITY_TIMEOUT); }
+        document.addEventListener('DOMContentLoaded', () => { document.addEventListener('mousemove', resetInactivityTimer); document.addEventListener('click', resetInactivityTimer); });
     </script>
 </body>
 </html>
-
-
-
