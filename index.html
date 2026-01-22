@@ -19,27 +19,42 @@
         .form-group input, select, textarea { width: 100%; padding: 12px; border: 2px solid #ecf0f1; border-radius: 6px; }
         .login-btn { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; }
 
-        /* Dashboard Layout */
+        /* Layout */
         .dashboard-container { display: none; min-height: 100vh; }
         .dashboard-container.active { display: flex; }
-        .sidebar { width: 240px; background: var(--primary); color: white; padding: 20px; position: fixed; height: 100vh; }
+        .sidebar { width: 240px; background: var(--primary); color: white; padding: 20px; position: fixed; height: 100vh; z-index: 100; }
         .nav-link { display: block; width: 100%; padding: 12px; color: #bdc3c7; text-align: left; background: none; border: none; cursor: pointer; margin-bottom: 5px; border-radius: 6px; transition: 0.2s; }
         .nav-link:hover, .nav-link.active { background: var(--accent); color: white; }
         .main-content { margin-left: 240px; flex: 1; padding: 30px; }
 
-        /* Cards & Grids */
-        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 30px; }
-        .kpi-card { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-left: 5px solid var(--accent); }
+        /* Estrutura de Grades (Fix para não colapsar) */
+        .kpi-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); 
+            gap: 20px; 
+            margin-bottom: 30px; 
+        }
+        
+        .content-grid { 
+            display: grid; 
+            grid-template-columns: 2fr 1fr; 
+            gap: 20px; 
+        }
+
+        /* Cartões */
+        .kpi-card { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-left: 5px solid var(--accent); min-height: 120px; display: flex; flex-direction: column; justify-content: center; }
         .kpi-card.green { border-left-color: var(--success); }
         .kpi-card.orange { border-left-color: var(--warning); }
-        .kpi-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; color: #7f8c8d; font-size: 14px; font-weight: 600; text-transform: uppercase; }
+        
+        .kpi-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; color: #7f8c8d; font-size: 13px; font-weight: 600; text-transform: uppercase; }
         .kpi-value { font-size: 32px; font-weight: 700; color: var(--primary); }
         
-        .content-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
         .card { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
-        
+        .card-title { margin-bottom: 20px; font-size: 18px; color: var(--primary); border-bottom: 1px solid #eee; padding-bottom: 10px; }
+
         /* Tabelas */
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        .table-container { overflow-x: auto; width: 100%; }
+        table { width: 100%; border-collapse: collapse; }
         th { background: #f8f9fa; padding: 12px; text-align: left; font-weight: 600; color: var(--primary); }
         td { padding: 12px; border-bottom: 1px solid #eee; }
         
@@ -47,16 +62,19 @@
         .btn-approve { background: var(--success); }
         .btn-reject { background: var(--danger); }
         
-        /* Responsividade */
         @media (max-width: 1024px) { .content-grid { grid-template-columns: 1fr; } }
-        @media (max-width: 768px) { .sidebar { width: 70px; padding: 15px; } .nav-link span { display: none; } .main-content { margin-left: 70px; padding: 15px; } }
+        @media (max-width: 768px) { 
+            .sidebar { width: 70px; padding: 15px; } 
+            .nav-link span, .sidebar-title { display: none; } 
+            .main-content { margin-left: 70px; padding: 15px; } 
+        }
     </style>
 </head>
 <body>
     <div id="loginScreen" class="login-container">
         <div class="login-box">
             <h1 style="text-align:center; margin-bottom:20px; color:#2c3e50;">RH Manager</h1>
-            <p id="msg" style="color:red; text-align:center; display:none;">Erro</p>
+            <p id="msg" style="color:red; text-align:center; display:none;">Erro ao entrar</p>
             <form onsubmit="login(event)">
                 <div class="form-group"><label>Email</label><input id="email" type="email" required></div>
                 <div class="form-group"><label>Senha</label><input id="pass" type="password" required></div>
@@ -67,7 +85,7 @@
 
     <div id="app" class="dashboard-container">
         <aside class="sidebar">
-            <h2 style="margin-bottom:30px; font-size:20px;">RH Manager</h2>
+            <h2 class="sidebar-title" style="margin-bottom:30px; font-size:20px;">RH Manager</h2>
             <button class="nav-link active" onclick="go('dashboard')"><i class="fas fa-home"></i> <span>Início</span></button>
             <button class="nav-link" onclick="go('horas')"><i class="fas fa-clock"></i> <span>Horas Extras</span></button>
             <button class="nav-link" onclick="go('aprovacoes')"><i class="fas fa-check-double"></i> <span>Aprovações</span></button>
@@ -87,8 +105,8 @@
                     <div class="kpi-card orange"><div class="kpi-header">Pendências</div><div class="kpi-value" id="kpiPend">--</div></div>
                 </div>
                 <div class="content-grid">
-                    <div class="card"><h3>Distribuição</h3><div style="height:250px"><canvas id="chartDash"></canvas></div></div>
-                    <div class="card"><h3>Acesso Rápido</h3><button onclick="go('ferias')" class="login-btn" style="margin-top:10px;">Solicitar Férias</button></div>
+                    <div class="card"><h3 class="card-title">Distribuição</h3><div style="height:250px; width:100%;"><canvas id="chartDash"></canvas></div></div>
+                    <div class="card"><h3 class="card-title">Acesso Rápido</h3><button onclick="go('ferias')" class="login-btn" style="margin-top:10px;">Solicitar Férias</button></div>
                 </div>
             </div>
 
@@ -102,15 +120,15 @@
                     <div class="kpi-card">
                         <div class="kpi-header">Maior Saldo</div>
                         <div class="kpi-value" id="topColabHoras">--</div>
-                        <div id="topColabNome" style="color: #7f8c8d; font-weight: 600; margin-top: 5px;"></div>
+                        <small id="topColabNome" style="color: #7f8c8d; font-weight: 600; display:block; margin-top: 5px;">Carregando...</small>
                     </div>
                 </div>
                 <div class="content-grid">
-                    <div class="card"><h3>Por Setor</h3><div style="height:250px"><canvas id="chartHoras"></canvas></div></div>
+                    <div class="card"><h3 class="card-title">Por Setor</h3><div style="height:250px; width:100%;"><canvas id="chartHoras"></canvas></div></div>
                     <div class="card">
-                        <h3>Ranking</h3>
-                        <div style="overflow-y:auto; max-height:300px;">
-                            <table id="tableRanking"><tbody><tr><td>Carregando...</td></tr></tbody></table>
+                        <h3 class="card-title">Ranking</h3>
+                        <div class="table-container">
+                            <table id="tableRanking"><thead><tr><th>Nome</th><th>Horas</th></tr></thead><tbody><tr><td>Carregando...</td></tr></tbody></table>
                         </div>
                     </div>
                 </div>
@@ -118,24 +136,38 @@
 
             <div id="p-aprovacoes" class="page" style="display:none;">
                 <h1>Aprovações Pendentes</h1>
-                <div id="listaPendencias" class="card" style="margin-top:20px;">Carregando...</div>
+                <div class="card" style="margin-top:20px;">
+                    <div class="table-container">
+                        <table id="tableAprovacoes"><thead><tr><th>Nome</th><th>Data</th><th>Horas</th><th>Ações</th></tr></thead><tbody id="listaPendencias"><tr><td>Carregando...</td></tr></tbody></table>
+                    </div>
+                </div>
             </div>
 
             <div id="p-ferias" class="page" style="display:none;">
                 <h1>Gestão de Férias</h1>
-                <div class="card" style="margin-top:20px; max-width:600px;">
-                    <div class="form-group"><label>Colaborador</label><select id="fNome"></select></div>
-                    <div class="form-group"><label>Modelo</label><select id="fModelo"><option value="30">30 dias</option><option value="20_10_venda">20 dias + Abono</option></select></div>
-                    <div class="form-group"><label>Início</label><input type="date" id="fInicio"></div>
-                    <button onclick="salvarFerias()" class="login-btn">Agendar</button>
+                <div class="content-grid">
+                    <div class="card">
+                        <h3 class="card-title">Nova Solicitação</h3>
+                        <div class="form-group"><label>Colaborador</label><select id="fNome" style="width:100%"></select></div>
+                        <div class="form-group"><label>Modelo</label><select id="fModelo" style="width:100%"><option value="30">30 dias</option><option value="20_10_venda">20 dias + Abono</option></select></div>
+                        <div class="form-group"><label>Início</label><input type="date" id="fInicio" style="width:100%"></div>
+                        <button onclick="salvarFerias()" class="login-btn">Agendar</button>
+                    </div>
+                    <div class="card">
+                        <h3 class="card-title">Histórico Recente</h3>
+                        <div id="histFerias">Selecione um colaborador...</div>
+                    </div>
                 </div>
             </div>
         </main>
     </div>
 
     <script>
-        const API = 'https://script.google.com/macros/s/AKfycbzBhcMX0cs2UYA3AaeFwis-UKqTsnp7m_6nDEX4MBivD1ESfCLVdHkkCmYvTpCHfZ23/exec';
+        // --- COLE O LINK DO SEU SCRIPT AQUI ---
+        const API = 'https://script.google.com/macros/s/AKfycbyU8ASR68MnwwixjGs0QV83ZkUpUI6N61Ika8-xW4_sGsrOv-Nn-H8j2JSwU8p8UQ0/exec';
         
+        let chart1 = null, chart2 = null;
+
         async function login(e) {
             e.preventDefault();
             const em = document.getElementById('email').value;
@@ -173,6 +205,21 @@
             const r2 = await fetch(`${API}?action=obterDadosHorasExtras`);
             const d2 = await r2.json();
             document.getElementById('kpiHoras').innerText = d2.dados.totalHoras;
+            
+            // Renderiza Gráfico Dashboard (com proteção se vazio)
+            const ctx = document.getElementById('chartDash');
+            if(chart1) chart1.destroy();
+            const labels = d2.dados.horasPorSetor.map(x => x.setor);
+            const vals = d2.dados.horasPorSetor.map(x => 1); // Simplificado para visual
+            
+            chart1 = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels.length ? labels : ['Sem dados'],
+                    datasets: [{ data: vals.length ? vals : [1], backgroundColor: ['#3498db', '#e74c3c', '#2ecc71'] }]
+                },
+                options: { maintainAspectRatio: false }
+            });
 
             const r3 = await fetch(`${API}?action=obterSolicitacoesPendentes`);
             const d3 = await r3.json();
@@ -185,30 +232,55 @@
             
             document.getElementById('totalMes').innerText = d.dados.totalHoras;
             
-            // Corrige exibição do nome do colaborador
+            // Top Colaborador
             if(d.dados.colaboradorMaisHoras) {
                 document.getElementById('topColabHoras').innerText = d.dados.colaboradorMaisHoras.horas;
                 document.getElementById('topColabNome').innerText = d.dados.colaboradorMaisHoras.nome;
             }
 
-            // Tabela Ranking
+            // Gráfico Barras
+            const ctx = document.getElementById('chartHoras');
+            if(chart2) chart2.destroy();
+            const labels = d.dados.horasPorSetor.map(x=>x.setor);
+            // Simples contagem para visualização
+            chart2 = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels.length ? labels : ['Geral'],
+                    datasets: [{ label: 'Horas', data: [10], backgroundColor: '#3498db' }]
+                },
+                options: { maintainAspectRatio: false }
+            });
+
+            // Ranking Tabela
             const rTab = await fetch(`${API}?action=obterHorasPorColaborador`);
             const dTab = await rTab.json();
-            let html = '<tbody>';
-            dTab.dados.forEach(x => html += `<tr><td>${x[0]}</td><td><strong>${x[1]}</strong></td></tr>`);
+            let html = '<thead><tr><th>Nome</th><th>Horas</th></tr></thead><tbody>';
+            if(dTab.dados.length > 0) {
+                dTab.dados.forEach(x => html += `<tr><td>${x[0]}</td><td><strong>${x[1]}</strong></td></tr>`);
+            } else {
+                html += '<tr><td colspan="2">Sem horas extras este mês.</td></tr>';
+            }
             document.getElementById('tableRanking').innerHTML = html + '</tbody>';
         }
 
         async function loadAprovacoes() {
             const r = await fetch(`${API}?action=obterSolicitacoesPendentes`);
             const d = await r.json();
-            let html = '<table><thead><tr><th>Nome</th><th>Data</th><th>Horas</th><th>Ação</th></tr></thead><tbody>';
+            const tbody = document.getElementById('listaPendencias');
+            
+            if(d.dados.solicitacoes.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4">Nenhuma pendência.</td></tr>';
+                return;
+            }
+
+            let html = '';
             d.dados.solicitacoes.forEach(s => {
                 html += `<tr><td>${s.nome}</td><td>${s.data}</td><td>${s.horas}</td>
                 <td><button onclick="acao('${s.linha}', 'aprovar')" class="btn-small btn-approve">✓</button> 
                 <button onclick="acao('${s.linha}', 'rejeitar')" class="btn-small btn-reject">✕</button></td></tr>`;
             });
-            document.getElementById('listaPendencias').innerHTML = html + '</tbody></table>';
+            tbody.innerHTML = html;
         }
 
         async function acao(l, tipo) {
