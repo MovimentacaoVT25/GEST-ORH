@@ -131,7 +131,6 @@
         <main class="main-content">
             
             <div id="dashboard-page" class="page active">
-                
                 <div style="background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); color: white; padding: 25px; border-radius: 12px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);">
                     <div>
                         <h1 style="font-size: 24px; font-weight: 700; margin-bottom: 5px;">Olá, <span id="dashUserName">Colaborador</span>! 👋</h1>
@@ -145,37 +144,22 @@
 
                 <div class="kpi-grid">
                     <div class="kpi-card blue">
-                        <div class="kpi-header">
-                            <span class="kpi-label">Funcionários</span>
-                            <div style="background: #ebf5fb; color: #3498db; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center;"><i class="fas fa-users"></i></div>
-                        </div>
+                        <div class="kpi-header"><span class="kpi-label">Funcionários</span><div style="background: #ebf5fb; color: #3498db; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center;"><i class="fas fa-users"></i></div></div>
                         <div class="kpi-value" id="dashTotalFunc">--</div>
                         <div class="kpi-change">Cadastrados</div>
                     </div>
-
                     <div class="kpi-card green">
-                        <div class="kpi-header">
-                            <span class="kpi-label">Horas Extras</span>
-                            <div style="background: #e9f7ef; color: #27ae60; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center;"><i class="fas fa-clock"></i></div>
-                        </div>
+                        <div class="kpi-header"><span class="kpi-label">Horas Extras</span><div style="background: #e9f7ef; color: #27ae60; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center;"><i class="fas fa-clock"></i></div></div>
                         <div class="kpi-value" id="dashHorasExtras">--</div>
                         <div class="kpi-change">Total no mês</div>
                     </div>
-
                     <div class="kpi-card orange">
-                        <div class="kpi-header">
-                            <span class="kpi-label">Pendências</span>
-                            <div style="background: #fef5e7; color: #e67e22; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center;"><i class="fas fa-exclamation-circle"></i></div>
-                        </div>
+                        <div class="kpi-header"><span class="kpi-label">Pendências</span><div style="background: #fef5e7; color: #e67e22; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center;"><i class="fas fa-exclamation-circle"></i></div></div>
                         <div class="kpi-value" id="dashPendencias">--</div>
                         <div class="kpi-change">Aguardando aprovação</div>
                     </div>
-
                     <div class="kpi-card purple" style="border-left-color: #9b59b6;">
-                        <div class="kpi-header">
-                            <span class="kpi-label">Férias</span>
-                            <div style="background: #f4ecf7; color: #9b59b6; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center;"><i class="fas fa-plane"></i></div>
-                        </div>
+                        <div class="kpi-header"><span class="kpi-label">Férias</span><div style="background: #f4ecf7; color: #9b59b6; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center;"><i class="fas fa-plane"></i></div></div>
                         <div class="kpi-value" id="dashFerias">--</div>
                         <div class="kpi-change">Ativas/Programadas</div>
                     </div>
@@ -223,7 +207,7 @@
                 </div>
                 <div class="content-grid">
                     <div class="card"><h2 class="card-title">Por Setor</h2><div style="height:250px;"><canvas id="graficoHorasPorSetor"></canvas></div></div>
-                    <div class="card"><h2 class="card-title">Colaboradores</h2><div id="tabelaColaboradores">Carregando...</div></div>
+                    <div class="card"><h2 class="card-title">Ranking de Colaboradores</h2><div id="tabelaColaboradores">Carregando...</div></div>
                 </div>
             </div>
 
@@ -235,7 +219,7 @@
                         <form id="formFerias" onsubmit="event.preventDefault(); solicitarFerias();">
                             <div class="form-group">
                                 <label>Colaborador</label>
-                                <select id="feriasNomeColaborador" required>
+                                <select id="feriasNomeColaborador" required onchange="carregarHistoricoFerias()">
                                     <option value="">Carregando lista...</option>
                                 </select>
                             </div>
@@ -262,22 +246,17 @@
                                 </div>
                                 <input type="hidden" id="dataRetornoCalculada">
                             </div>
-                            <div class="form-group">
-                                <label>Observações</label>
-                                <textarea id="obsFerias" rows="2"></textarea>
-                            </div>
+                            <div class="form-group"><label>Observações</label><textarea id="obsFerias" rows="2"></textarea></div>
                             <div style="display:flex; flex-direction:column; gap:10px; margin-top:20px;">
                                 <button type="submit" id="btnSalvarFerias" class="login-btn" style="margin:0;">Agendar no Sistema</button>
-                                <button type="button" onclick="abrirEmailRH()" class="btn-outline" style="padding:12px; border-radius:6px; cursor:pointer;">
-                                    <i class="far fa-envelope"></i> Solicitar via E-mail
-                                </button>
+                                <button type="button" onclick="abrirEmailRH()" class="btn-outline" style="padding:12px; border-radius:6px; cursor:pointer;"><i class="far fa-envelope"></i> Solicitar via E-mail</button>
                                 <div id="loadingFerias" class="loading-spinner"><div class="spinner"></div></div>
                             </div>
                         </form>
                     </div>
                     <div class="card">
                         <h2 class="card-title">Minhas Solicitações</h2>
-                        <div id="historicoFeriasContainer">Aguardando...</div>
+                        <div id="historicoFeriasContainer">Selecione um colaborador...</div>
                         <div class="config-box" style="margin-top:20px; background:#e8f4fd; border-color:#3498db; color:#2980b9;">
                             <strong>Regras:</strong>
                             <ul style="margin-left:20px; margin-top:5px;"><li>Proibido início em sextas-feiras.</li><li>Antecedência mínima de 30 dias.</li></ul>
@@ -311,7 +290,6 @@
                 <div style="background:white; padding:30px; border-radius:8px; width:90%; max-width:400px;">
                     <h2 style="margin-bottom:20px;">Funcionário</h2>
                     <form onsubmit="event.preventDefault(); salvarFuncionario();">
-                        <input type="hidden" id="linhaFuncionario">
                         <div class="form-group"><label>Nome Completo</label><input id="inputNome" required></div>
                         <div class="form-group"><label>Cargo</label><input id="inputCargo"></div>
                         <div class="form-group"><label>Setor</label><input id="inputSetor"></div>
@@ -323,32 +301,30 @@
                     </form>
                 </div>
             </div>
-
         </main>
     </div>
 
     <script>
-        // CONFIGURAÇÃO - URL do seu Backend (Apps Script)
-        // Substitua pela URL da sua VERSÃO 13 se for diferente
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyU8ASR68MnwwixjGs0QV83ZkUpUI6N61Ika8-xW4_sGsrOv-Nn-H8j2JSwU8p8UQ0/exec';
+        // === CONFIGURAÇÃO ===
+        // Substitua pelo seu link do script (Versão 14)
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbykAKf9zQL5Sv_mH4IucW2wzV_P2xaHaZfTGI2npgAvRheaVmVcyMuve0zWL-HlLKqw/exec';
         
         const INACTIVITY_TIMEOUT = 300000; 
         let inactivityTimer;
         let dashboardChartInstance = null;
         let horasChartInstance = null;
 
-        // ===== LÓGICA DO DASHBOARD (ATUALIZADA) =====
+        // ===== LÓGICA DO DASHBOARD =====
         async function loadDashboardData() {
             const nome = localStorage.getItem('userName') || 'Colaborador';
             document.getElementById('dashUserName').textContent = nome.split(' ')[0];
             document.getElementById('dataAtual').textContent = new Date().toLocaleDateString('pt-BR');
 
             try {
-                // 1. Funcionários & Gráfico
+                // 1. Funcionários
                 const resFunc = await fetch(`${SCRIPT_URL}?action=obterFuncionarios`);
                 const dataFunc = await resFunc.json();
                 let setores = {};
-                
                 if(dataFunc.sucesso) {
                     document.getElementById('dashTotalFunc').textContent = dataFunc.dados.funcionarios.length;
                     dataFunc.dados.funcionarios.forEach(f => {
@@ -366,13 +342,10 @@
                 // 3. Pendências
                 const resPend = await fetch(`${SCRIPT_URL}?action=obterSolicitacoesPendentes`);
                 const dataPend = await resPend.json();
-                if(dataPend.sucesso && dataPend.dados.solicitacoes) {
-                    document.getElementById('dashPendencias').textContent = dataPend.dados.solicitacoes.length;
-                }
+                if(dataPend.sucesso) document.getElementById('dashPendencias').textContent = dataPend.dados.solicitacoes.length;
 
                 // 4. Férias
                 document.getElementById('dashFerias').textContent = '--'; 
-
             } catch(e) { console.error("Erro Dashboard", e); }
         }
 
@@ -381,7 +354,6 @@
             if(!ctx) return;
             const labels = Object.keys(setoresData);
             const values = Object.values(setoresData);
-
             if(dashboardChartInstance) dashboardChartInstance.destroy();
             dashboardChartInstance = new Chart(ctx, {
                 type: 'doughnut',
@@ -397,7 +369,7 @@
             });
         }
 
-        // ===== LÓGICA DE FÉRIAS (ATUALIZADA) =====
+        // ===== LÓGICA DE FÉRIAS =====
         async function carregarSelectFuncionarios() {
             const select = document.getElementById('feriasNomeColaborador');
             const user = localStorage.getItem('userName');
@@ -411,9 +383,10 @@
                         const opt = document.createElement('option');
                         opt.value = f.nome; 
                         opt.textContent = f.nome;
-                        if(user && f.nome.toLowerCase() === user.toLowerCase()) opt.selected = true;
+                        if(user && f.nome.toLowerCase().includes(user.toLowerCase().split(' ')[0])) opt.selected = true;
                         select.appendChild(opt);
                     });
+                    carregarHistoricoFerias();
                 }
             } catch(e) { select.innerHTML = '<option>Erro ao carregar</option>'; }
         }
@@ -423,18 +396,14 @@
             const modelo = document.getElementById('modeloFerias').value;
             const box = document.getElementById('boxPrevisao');
             if(!saida || !modelo) { box.style.display = 'none'; return; }
-
             let dias = 0;
             if(modelo == '30') dias = 30;
             else if(modelo == '20_10_venda' || modelo == '20_10_gozo') dias = 20;
             else if(modelo == '15_9_7') dias = 15;
-
             const dt = new Date(saida + 'T00:00:00');
             if(dt.getDay() === 5) alert("Evite iniciar férias na sexta-feira!");
-
             const dtRet = new Date(dt);
             dtRet.setDate(dt.getDate() + dias);
-            
             document.getElementById('dataRetornoCalculada').value = dtRet.toISOString().split('T')[0];
             document.getElementById('textoDataRetorno').textContent = dtRet.toLocaleDateString('pt-BR');
             document.getElementById('textoDiasGozo').textContent = `${dias} dias de gozo`;
@@ -445,18 +414,14 @@
             resetInactivityTimer();
             const btn = document.getElementById('btnSalvarFerias');
             const load = document.getElementById('loadingFerias');
-            
             const nome = document.getElementById('feriasNomeColaborador').value;
             const modelo = document.getElementById('modeloFerias').value;
             const saida = document.getElementById('dataSaida').value;
             const retorno = document.getElementById('dataRetornoCalculada').value;
             const obs = document.getElementById('obsFerias').value;
-
             if(!nome || !modelo || !saida) { alert("Preencha tudo!"); return; }
-
             btn.style.display = 'none'; load.style.display = 'block';
             try {
-                // Envia nome como email pois o backend espera ID na coluna B
                 const url = `${SCRIPT_URL}?action=agendarFerias&email=${encodeURIComponent(nome)}&modelo=${modelo}&dataSaida=${saida}&dataRetorno=${retorno}&obs=${encodeURIComponent(obs)}`;
                 const res = await fetch(url);
                 const data = await res.json();
@@ -475,29 +440,27 @@
             const modelo = document.getElementById('modeloFerias').value;
             const saida = document.getElementById('dataSaida').value;
             const obs = document.getElementById('obsFerias').value;
-            
             if(!nome || !saida) { alert("Preencha o formulário."); return; }
-            
             const corpo = `Solicitação de Férias\n\nColaborador: ${nome}\nModelo: ${modelo}\nInício: ${saida}\nObs: ${obs}`;
             window.open(`mailto:rh@empresa.com?subject=Férias - ${nome}&body=${encodeURIComponent(corpo)}`);
         }
 
         async function carregarHistoricoFerias() {
-            const user = localStorage.getItem('userName');
+            const user = document.getElementById('feriasNomeColaborador').value || localStorage.getItem('userName');
             const div = document.getElementById('historicoFeriasContainer');
             div.innerHTML = '<div class="loading-spinner" style="display:block"><div class="spinner"></div></div>';
+            if (!user) { div.innerHTML = "Selecione um colaborador."; return; }
             try {
-                // Filtra pelo nome do usuário logado
                 const res = await fetch(`${SCRIPT_URL}?action=obterMinhasFerias&email=${encodeURIComponent(user)}`);
                 const data = await res.json();
                 if(data.sucesso && data.dados.length) {
                     let html = '<div style="display:flex; flex-direction:column; gap:10px;">';
                     data.dados.forEach(f => {
-                        let cor = '#f39c12';
-                        if(f.status == 'Aprovada') cor = '#27ae60';
-                        if(f.status == 'Rejeitada') cor = '#e74c3c';
+                        let cor = f.status == 'Aprovada' ? '#27ae60' : (f.status == 'Rejeitada' ? '#e74c3c' : '#f39c12');
+                        let dataShow = f.saida;
+                        if(dataShow.includes('-')) dataShow = dataShow.split('-').reverse().join('/');
                         html += `<div style="border-bottom:1px solid #eee; padding-bottom:5px; display:flex; justify-content:space-between;">
-                            <div><strong>${f.modelo}</strong><br><span style="font-size:12px; color:#777">Início: ${f.saida.split('-').reverse().join('/')}</span></div>
+                            <div><strong>${f.modelo}</strong><br><span style="font-size:12px; color:#777">Início: ${dataShow}</span></div>
                             <span style="background:${cor}; color:white; padding:2px 8px; border-radius:10px; font-size:11px; height:fit-content;">${f.status}</span>
                         </div>`;
                     });
@@ -506,15 +469,96 @@
             } catch(e) { div.innerHTML = 'Erro ao carregar'; }
         }
 
-        // ===== LÓGICA GERAL (Login, Horas, Func) =====
+        // ===== LÓGICA HORAS EXTRAS (ATUALIZADA) =====
+        async function recarregarHorasExtras() {
+            try {
+                const res = await fetch(`${SCRIPT_URL}?action=obterDadosHorasExtras`);
+                const data = await res.json();
+                
+                if(data.sucesso) {
+                    document.getElementById('totalHorasExtras').textContent = data.dados.totalHoras;
+                    
+                    // CORREÇÃO: Preencher Nome e Horas
+                    if(data.dados.colaboradorMaisHoras) {
+                        document.getElementById('colaboradorMaisHoras').textContent = data.dados.colaboradorMaisHoras.horas;
+                        const elNome = document.getElementById('colaboradorChange');
+                        if(elNome) {
+                            elNome.textContent = data.dados.colaboradorMaisHoras.nome;
+                            elNome.style.display = 'block';
+                        }
+                    }
+                    renderChartHoras(data.dados.horasPorSetor);
+                }
+
+                // Tabela
+                const resTab = await fetch(`${SCRIPT_URL}?action=obterHorasPorColaborador`);
+                const dataTab = await resTab.json();
+                let html = '<div class="table-container"><table><thead><tr><th>Nome</th><th>Horas</th></tr></thead><tbody>';
+                if(dataTab.dados && dataTab.dados.length > 0) {
+                    dataTab.dados.forEach(c => html += `<tr><td>${c[0]}</td><td style="font-weight:bold;">${c[1]}</td></tr>`);
+                } else {
+                    html += '<tr><td colspan="2">Sem dados no mês.</td></tr>';
+                }
+                document.getElementById('tabelaColaboradores').innerHTML = html + '</tbody></table></div>';
+            } catch(e){ console.error(e); }
+        }
+
+        function renderChartHoras(setores) {
+            const ctx = document.getElementById('graficoHorasPorSetor');
+            if(!ctx) return;
+            
+            // Se não houver dados, limpa
+            if (!setores || setores.length === 0) {
+                if(horasChartInstance) horasChartInstance.destroy();
+                return;
+            }
+
+            // Mapeia dados
+            const labels = setores.map(s => s.setor);
+            const dataMinutes = setores.map(s => s.minutos); // Usa valor numérico para o gráfico
+
+            if(horasChartInstance) horasChartInstance.destroy();
+            
+            horasChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Minutos', // Rótulo interno
+                        data: dataMinutes,
+                        backgroundColor: '#3498db',
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                // Converte minutos de volta para HH:mm no tooltip
+                                label: function(context) {
+                                    let min = context.raw;
+                                    let h = Math.floor(min / 60);
+                                    let m = Math.round(min % 60);
+                                    return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')} hs`;
+                                }
+                            }
+                        }
+                    },
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+        }
+
+        // ===== OUTRAS FUNÇÕES =====
         async function handleLogin(e) {
             e.preventDefault();
             const email = document.getElementById('email').value;
             const pass = document.getElementById('password').value;
-            
             document.getElementById('loginBtn').disabled = true;
             document.getElementById('loadingSpinner').style.display = 'block';
-
             try {
                 const res = await fetch(`${SCRIPT_URL}?action=validarCredenciais&email=${encodeURIComponent(email)}&senha=${encodeURIComponent(pass)}`);
                 const data = await res.json();
@@ -523,7 +567,6 @@
                     localStorage.setItem('userName', data.dados.nome);
                     document.getElementById('userName').textContent = data.dados.nome;
                     document.getElementById('userEmail').textContent = data.dados.email;
-                    
                     document.getElementById('loginScreen').style.display = 'none';
                     document.getElementById('dashboardScreen').classList.add('active');
                     loadDashboardData();
@@ -533,101 +576,22 @@
                     document.getElementById('errorMessage').style.display = 'block';
                 }
             } catch(e) { alert('Erro de conexão'); }
-            finally { 
-                document.getElementById('loginBtn').disabled = false; 
-                document.getElementById('loadingSpinner').style.display = 'none';
-            }
+            finally { document.getElementById('loginBtn').disabled = false; document.getElementById('loadingSpinner').style.display = 'none'; }
         }
 
-        function handleLogout() {
-            clearTimeout(inactivityTimer);
-            localStorage.clear();
-            location.reload();
-        }
-
+        function handleLogout() { clearTimeout(inactivityTimer); localStorage.clear(); location.reload(); }
         function showPage(pageId) {
             resetInactivityTimer();
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.getElementById(pageId + '-page').classList.add('active');
             document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-            
-            // Lógica específica por página
             if(pageId === 'dashboard') loadDashboardData();
-            if(pageId === 'ferias') { carregarSelectFuncionarios(); carregarHistoricoFerias(); }
+            if(pageId === 'ferias') { carregarSelectFuncionarios(); }
             if(pageId === 'horas') recarregarHorasExtras();
             if(pageId === 'aprovacoes') verificarPermissaoAprovacao();
             if(pageId === 'funcionarios') carregarFuncionarios();
         }
-
-        function resetInactivityTimer() {
-            clearTimeout(inactivityTimer);
-            inactivityTimer = setTimeout(handleLogout, INACTIVITY_TIMEOUT);
-        }
-
-        // Funções Auxiliares (Horas, Aprovação, Func) - Simplificadas
-        async function recarregarHorasExtras() {
-            try {
-                const res = await fetch(`${SCRIPT_URL}?action=obterDadosHorasExtras`);
-                const data = await res.json();
-                
-                if(data.sucesso) {
-                    // Atualiza Totais
-                    document.getElementById('totalHorasExtras').textContent = data.dados.totalHoras;
-                    
-                    // Atualiza Maior Saldo e NOME (CORREÇÃO APLICADA AQUI)
-                    if(data.dados.colaboradorMaisHoras) {
-                        // O número grande (ex: 94:05)
-                        document.getElementById('colaboradorMaisHoras').textContent = data.dados.colaboradorMaisHoras.horas;
-                        
-                        // O nome em baixo (ex: João Silva)
-                        const elNome = document.getElementById('colaboradorChange');
-                        if(elNome) {
-                            elNome.textContent = data.dados.colaboradorMaisHoras.nome;
-                            elNome.style.display = 'block'; 
-                            elNome.style.marginTop = '5px';
-                            elNome.style.color = '#555';
-                        }
-                    }
-                    renderChartHoras(data.dados.horasPorSetor);
-                }
-
-                // Tabela de Ranking
-                const resTab = await fetch(`${SCRIPT_URL}?action=obterHorasPorColaborador`);
-                const dataTab = await resTab.json();
-                
-                let html = '<div class="table-container"><table><thead><tr><th>Email</th><th>Horas</th></tr></thead><tbody>';
-                if(dataTab.dados && dataTab.dados.length > 0) {
-                    dataTab.dados.forEach(c => html += `<tr><td>${c[0]}</td><td>${c[1]}</td></tr>`);
-                } else {
-                    html += '<tr><td colspan="2">Nenhum dado neste mês.</td></tr>';
-                }
-                document.getElementById('tabelaColaboradores').innerHTML = html + '</tbody></table></div>';
-
-            } catch(e) { console.error("Erro recarregarHorasExtras", e); }
-        }
-
-        function renderChartHoras(setores) {
-            const ctx = document.getElementById('graficoHorasPorSetor');
-            if(!ctx) return;
-            
-            // Proteção contra dados vazios no gráfico
-            if (!setores || setores.length === 0) {
-                // Pode exibir um gráfico vazio ou mensagem, aqui apenas limpamos
-                if(horasChartInstance) horasChartInstance.destroy();
-                return;
-            }
-
-            if(horasChartInstance) horasChartInstance.destroy();
-            horasChartInstance = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: setores.map(s => s.setor),
-                    datasets: [{ label: 'Horas', data: setores.map(s => parseInt(s.horas.split(':')[0])), backgroundColor: '#3498db' }]
-                },
-                options: { responsive: true, maintainAspectRatio: false }
-            });
-        }
-
+        function resetInactivityTimer() { clearTimeout(inactivityTimer); inactivityTimer = setTimeout(handleLogout, INACTIVITY_TIMEOUT); }
         async function verificarPermissaoAprovacao() {
             const email = localStorage.getItem('userEmail');
             const res = await fetch(`${SCRIPT_URL}?action=verificarPermissaoAprovacao&email=${encodeURIComponent(email)}`);
@@ -641,7 +605,6 @@
                 document.getElementById('acessoNegado').style.display = 'block';
             }
         }
-
         async function carregarSolicitacoesPendentes() {
             const div = document.getElementById('solicitacoesPendentes');
             div.innerHTML = 'Carregando...';
@@ -658,10 +621,8 @@
                 div.innerHTML = html + '</tbody></table></div>';
             }
         }
-
         async function acaoAprovar(lin) { if(confirm('Aprovar?')) await fetch(`${SCRIPT_URL}?action=aprovarSolicitacao&linha=${lin}&emailAprovador=${localStorage.getItem('userEmail')}`); carregarSolicitacoesPendentes(); }
         async function acaoRejeitar(lin) { const m = prompt('Motivo:'); if(m) await fetch(`${SCRIPT_URL}?action=rejeitarSolicitacao&linha=${lin}&emailAprovador=${localStorage.getItem('userEmail')}&motivo=${encodeURIComponent(m)}`); carregarSolicitacoesPendentes(); }
-
         async function carregarFuncionarios() {
             const div = document.getElementById('funcionariosContainer');
             const res = await fetch(`${SCRIPT_URL}?action=obterFuncionarios`);
@@ -684,7 +645,6 @@
         }
         async function delFunc(lin) { if(confirm('Excluir?')) { await fetch(`${SCRIPT_URL}?action=deletarFuncionario&linha=${lin}`); carregarFuncionarios(); } }
 
-        // Init
         document.addEventListener('DOMContentLoaded', () => {
             document.addEventListener('mousemove', resetInactivityTimer);
             document.addEventListener('click', resetInactivityTimer);
