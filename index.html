@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* ===== ESTILO VISUAL PREMIUM (RESTAURADO) ===== */
+        /* ===== ESTILO VISUAL PREMIUM (CORRIGIDO) ===== */
         :root {
             --primary: #2c3e50; --secondary: #34495e; --accent: #3498db;
             --success: #27ae60; --danger: #e74c3c; --warning: #f1c40f;
@@ -17,46 +17,52 @@
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
-        body { background-color: var(--bg); color: var(--text); }
+        body { background-color: var(--bg); color: var(--text); overflow-x: hidden; }
 
+        /* LÓGICA DE PÁGINAS (CORREÇÃO DO EMPILHAMENTO) */
+        .page { display: none; width: 100%; } /* Padrão: Oculto */
+        .page.active { display: block; animation: fadeIn 0.4s ease-out forwards; } /* Ativo: Visível */
+        
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .page.active { animation: fadeIn 0.4s ease-out forwards; }
 
-        .login-container { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg, var(--primary), var(--secondary)); padding: 20px; }
+        /* Login */
+        .login-container { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg, var(--primary), var(--secondary)); padding: 20px; position: fixed; top: 0; left: 0; width: 100%; z-index: 9999; }
         .login-box { background: var(--white); border-radius: var(--radius); box-shadow: 0 20px 50px rgba(0,0,0,0.2); padding: 40px; width: 100%; max-width: 400px; }
         .login-header { text-align: center; margin-bottom: 30px; }
         .login-header h1 { font-size: 26px; color: var(--primary); margin-bottom: 5px; }
         
+        /* Formulários */
         .form-group { margin-bottom: 20px; }
         .form-group label { display: block; margin-bottom: 8px; color: var(--primary); font-weight: 600; font-size: 13px; }
         .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px 15px; border: 2px solid #ecf0f1; border-radius: 8px; font-size: 14px; transition: 0.3s; background: #fff; }
         .form-group input:focus, .form-group select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(52,152,219,0.1); }
 
+        /* Botões */
         .login-btn { width: 100%; padding: 14px; background: var(--primary); color: var(--white); border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; transition: 0.3s; margin-top: 10px; }
-        .login-btn:hover { background: var(--secondary); transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
-        .login-btn:disabled { opacity: 0.7; cursor: not-allowed; }
-        
+        .login-btn:hover { background: var(--secondary); transform: translateY(-2px); }
         .btn-small { padding: 8px 14px; border: none; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; transition: 0.2s; }
         .btn-aprovar { background: var(--success); color: white; }
         .btn-rejeitar { background: var(--danger); color: white; }
-        .btn-excel { background: #217346; color: white; } 
+        .btn-excel { background: #217346; color: white; margin-right: 5px; }
         .btn-refresh { background: var(--accent); color: white; }
-
         .btn-outline { background: white; border: 1px solid #eee; color: var(--primary); font-weight: 600; transition: all 0.2s; width: 100%; text-align: left; padding: 15px; border-radius: 8px; display: flex; align-items: center; gap: 10px; cursor: pointer; }
         .btn-outline:hover { background: #f8f9fa; border-color: var(--accent); color: var(--accent); transform: translateX(5px); }
 
+        /* Layout */
         .dashboard-container { display: none; height: 100vh; overflow: hidden; }
         .dashboard-container.active { display: flex; }
         
-        .sidebar { width: 240px; background: var(--primary); color: white; display: flex; flex-direction: column; padding: 25px; box-shadow: 4px 0 15px rgba(0,0,0,0.1); z-index: 10; }
-        .sidebar-title { font-size: 20px; font-weight: 700; margin-bottom: 30px; }
-        .sidebar-user { font-size: 12px; opacity: 0.7; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 20px; }
+        .sidebar { width: 240px; background: var(--primary); color: white; display: flex; flex-direction: column; padding: 25px; box-shadow: 4px 0 15px rgba(0,0,0,0.1); z-index: 10; flex-shrink: 0; }
+        .sidebar-header { margin-bottom: 40px; }
+        .sidebar-title { font-size: 20px; font-weight: 700; margin-bottom: 5px; }
+        .sidebar-user { font-size: 12px; opacity: 0.7; padding-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); width: 100%; }
         
         .nav-link { display: flex; align-items: center; gap: 12px; color: rgba(255,255,255,0.7); text-decoration: none; padding: 12px 15px; border-radius: 8px; font-size: 14px; transition: 0.2s; cursor: pointer; border: none; background: none; width: 100%; text-align: left; margin-bottom: 5px; }
         .nav-link:hover, .nav-link.active { background: rgba(255,255,255,0.1); color: white; }
         
-        .main-content { flex: 1; background: var(--bg); overflow-y: auto; padding: 30px; }
+        .main-content { flex: 1; background: var(--bg); overflow-y: auto; padding: 30px; position: relative; }
         
+        /* Componentes */
         .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
         .page-title { font-size: 26px; font-weight: 700; color: var(--primary); }
         .header-controls { display: flex; gap: 10px; align-items: center; }
@@ -83,13 +89,13 @@
 
         .rank-badge { width: 24px; height: 24px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; color: white; background: #bdc3c7; }
         .rank-1 { background: var(--warning); box-shadow: 0 2px 5px rgba(241,196,15,0.4); }
-        .rank-2 { background: #95a5a6; }
-        .rank-3 { background: #d35400; }
+        .rank-2 { background: #95a5a6; } .rank-3 { background: #d35400; }
         
         .loading-spinner { display: none; text-align: center; padding: 20px; }
         .spinner { border: 3px solid #f3f3f3; border-top: 3px solid var(--accent); border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 0 auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
+        /* Férias & Modais */
         .ferias-row { cursor: pointer; transition: background 0.2s; padding: 12px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
         .ferias-row:hover { background-color: #f0f8ff; }
         .status-badge { padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; color: white; }
@@ -119,9 +125,14 @@
 
     <div id="dashboardScreen" class="dashboard-container">
         <aside class="sidebar">
-            <div class="sidebar-title">RH Manager</div>
-            <div class="sidebar-user"><div style="font-weight:bold; color:white;" id="userName">Usuário</div><div id="userEmail" style="opacity:0.7; font-size:11px;">email@empresa.com</div></div>
-            <nav>
+            <div class="sidebar-header" style="margin-bottom:20px;">
+                <div class="sidebar-title">RH Manager</div>
+                <div class="sidebar-user">
+                    <div style="font-weight:bold; color:white;" id="userName">Usuário</div>
+                    <div id="userEmail" style="opacity:0.7; font-size:11px;">email@empresa.com</div>
+                </div>
+            </div>
+            <nav style="flex:1;">
                 <button class="nav-link active" onclick="showPage('dashboard')"><i class="fas fa-home"></i> <span>Início</span></button>
                 <button class="nav-link" onclick="showPage('horas')"><i class="fas fa-clock"></i> <span>Horas Extras</span></button>
                 <button class="nav-link" onclick="showPage('aprovacoes')"><i class="fas fa-check-circle"></i> <span>Aprovações</span></button>
@@ -132,6 +143,7 @@
         </aside>
 
         <main class="main-content">
+            
             <div id="dashboard-page" class="page active">
                 <div class="page-header">
                     <div><h1 class="page-title">Olá, <span id="dashUserName">Colaborador</span>! 👋</h1><p style="color:#7f8c8d; font-size:14px;">Resumo geral.</p></div>
@@ -252,7 +264,7 @@
     </div>
 
     <script>
-        // --- ATENÇÃO: SUBSTITUA PELA SUA URL DE IMPLANTAÇÃO (NOVA VERSÃO) ---
+        // --- COPIE A URL DA NOVA IMPLANTAÇÃO AQUI ---
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxW6J1Wr4CzzWX2wIl38HHn_0_MJLMJ0OtgcWI17bv9p1oOZxoFsaJyblJ_Ya0MjWRW/exec';
         
         const INACTIVITY_TIMEOUT = 300000; 
@@ -260,7 +272,7 @@
 
         function init() { preencherPeriodos(); }
 
-        // PERÍODOS (ATUALIZADO: HOJE >= 20, LIBERA MÊS SEGUINTE)
+        // PERÍODOS
         function preencherPeriodos() {
             const sel = document.getElementById('filtroPeriodo'); if(!sel) return; sel.innerHTML='';
             const hj = new Date();
@@ -275,7 +287,7 @@
             }
         }
 
-        // EXCEL DOWNLOAD (.XLS)
+        // EXCEL (.XLS)
         async function downloadExcel() {
             const val = document.getElementById('filtroPeriodo').value;
             if(!val) return alert("Selecione um período.");
@@ -297,7 +309,7 @@
             finally { btn.innerHTML = original; btn.disabled = false; }
         }
 
-        // FÉRIAS (GERENCIAL + EMAIL)
+        // FÉRIAS
         async function carregarHistoricoFerias() {
             const div = document.getElementById('historicoFeriasContainer');
             div.innerHTML = '<div class="loading-spinner" style="display:block"><div class="spinner"></div></div>';
@@ -349,7 +361,7 @@
             } catch(e) { alert('Erro.'); } finally { btn.disabled=false; btn.textContent='Agendar'; }
         }
 
-        // ===== OUTROS (LOGIN, NAV, HORAS) =====
+        // LOGIN
         async function handleLogin(e) {
             e.preventDefault(); const em=document.getElementById('email').value; const ps=document.getElementById('password').value;
             document.getElementById('loginBtn').disabled=true; document.getElementById('loadingSpinner').style.display='block';
@@ -359,11 +371,15 @@
             } catch(e){alert('Conexão falhou');} finally{document.getElementById('loginBtn').disabled=false; document.getElementById('loadingSpinner').style.display='none';}
         }
         function handleLogout() { localStorage.clear(); location.reload(); }
+        
+        // NAV
         function showPage(id) {
             resetInactivityTimer(); document.querySelectorAll('.page').forEach(p=>p.classList.remove('active')); document.getElementById(id+'-page').classList.add('active'); document.querySelectorAll('.nav-link').forEach(l=>l.classList.remove('active'));
             if(id=='dashboard') loadDashboardData(); if(id=='ferias') { carregarSelectFuncionarios(); carregarHistoricoFerias(); } if(id=='horas') { preencherPeriodos(); recarregarHorasExtras(); } if(id=='aprovacoes') verificarPermissaoAprovacao(); if(id=='funcionarios') carregarFuncionarios();
         }
         function resetInactivityTimer() { clearTimeout(inactivityTimer); inactivityTimer=setTimeout(handleLogout, INACTIVITY_TIMEOUT); }
+
+        // HORAS
         async function recarregarHorasExtras() {
             try { const val=document.getElementById('filtroPeriodo').value; let url=`${SCRIPT_URL}?action=obterDadosHorasExtras`; if(val){const [m,a]=val.split('-'); url+=`&mes=${m}&ano=${a}`;} const res=await fetch(url); const data=await res.json();
                 if(data.sucesso) { document.getElementById('totalHorasExtras').textContent=data.dados.totalHoras; document.getElementById('periodoDisplay').textContent="Ciclo: "+data.dados.periodo; if(data.dados.colaboradorMaisHoras){document.getElementById('colaboradorMaisHoras').textContent=data.dados.colaboradorMaisHoras.horas; const el=document.getElementById('colaboradorChange'); if(el){el.textContent=data.dados.colaboradorMaisHoras.nome; el.style.display='block';}} renderChartHoras(data.dados.horasPorSetor);
@@ -371,6 +387,8 @@
             } catch(e){}
         }
         function renderChartHoras(setores) { const ctx=document.getElementById('graficoHorasPorSetor'); if(!ctx)return; if(!setores||!setores.length){if(horasChartInstance)horasChartInstance.destroy();return;} const labels=setores.map(s=>s.setor); const vals=setores.map(s=>s.minutos); if(horasChartInstance)horasChartInstance.destroy(); horasChartInstance=new Chart(ctx,{type:'bar',data:{labels:labels,datasets:[{label:'Minutos',data:vals,backgroundColor:'#3498db',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}}); }
+
+        // APROVAÇÕES
         async function carregarSolicitacoesPendentes() {
             const div=document.getElementById('solicitacoesPendentes'); if(div.innerHTML.includes('Carregando')) div.innerHTML='<div class="loading-spinner" style="display:block"><div class="spinner"></div></div>';
             const res=await fetch(`${SCRIPT_URL}?action=obterSolicitacoesPendentes`); const data=await res.json();
@@ -378,6 +396,8 @@
         }
         async function acaoAprovar(l,btn){if(!confirm('Aprovar?'))return; btn.innerHTML='<i class="fas fa-spinner fa-spin"></i>'; btn.disabled=true; await fetch(`${SCRIPT_URL}?action=aprovarSolicitacao&linha=${l}&emailAprovador=${localStorage.getItem('userEmail')}`); carregarSolicitacoesPendentes();}
         async function acaoRejeitar(l,btn){const m=prompt('Motivo:'); if(m){btn.innerHTML='<i class="fas fa-spinner fa-spin"></i>'; btn.disabled=true; await fetch(`${SCRIPT_URL}?action=rejeitarSolicitacao&linha=${l}&emailAprovador=${localStorage.getItem('userEmail')}&motivo=${encodeURIComponent(m)}`); carregarSolicitacoesPendentes();}}
+
+        // HELPERS
         async function carregarSelectFuncionarios(){const s=document.getElementById('feriasNomeColaborador'); s.innerHTML='<option>Carregando...</option>'; const res=await fetch(`${SCRIPT_URL}?action=obterFuncionarios`); const d=await res.json(); if(d.sucesso){s.innerHTML='<option value="">Selecione...</option>'; d.dados.funcionarios.forEach(f=>{let o=document.createElement('option'); o.value=f.nome; o.text=f.nome; s.appendChild(o);});}}
         function calcularVolta(){const s=document.getElementById('dataSaida').value; const m=document.getElementById('modeloFerias').value; if(!s||!m)return; let d=m=='30'?30:20; const dt=new Date(s+'T00:00:00'); const ret=new Date(dt); ret.setDate(dt.getDate()+d); document.getElementById('textoDataRetorno').textContent=ret.toLocaleDateString('pt-BR'); document.getElementById('dataRetornoCalculada').value=ret.toISOString().split('T')[0]; document.getElementById('boxPrevisao').style.display='block';}
         async function verificarPermissaoAprovacao(){const res=await fetch(`${SCRIPT_URL}?action=verificarPermissaoAprovacao&email=${encodeURIComponent(localStorage.getItem('userEmail'))}`); const d=await res.json(); if(d.sucesso&&d.dados.podeAprovar){document.getElementById('containerAprovacoes').style.display='block';document.getElementById('acessoNegado').style.display='none';carregarSolicitacoesPendentes();}else{document.getElementById('containerAprovacoes').style.display='none';document.getElementById('acessoNegado').style.display='block';}}
