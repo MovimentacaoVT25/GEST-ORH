@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* ===== CSS PREMIUM (MANTIDO) ===== */
+        /* ===== ESTILO VISUAL PREMIUM (LAYOUT CORRIGIDO) ===== */
         :root {
             --primary: #2c3e50; --secondary: #34495e; --accent: #3498db;
             --success: #27ae60; --danger: #e74c3c; --warning: #f1c40f;
@@ -15,70 +15,97 @@
             --shadow: 0 4px 15px rgba(0,0,0,0.05);
             --radius: 12px;
         }
+
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
-        body { background-color: var(--bg); color: var(--text); }
+        body { background-color: var(--bg); color: var(--text); overflow-x: hidden; }
 
-        /* Animações */
+        /* --- CORREÇÃO DO EMPILHAMENTO DE ABAS --- */
+        .main-content { 
+            flex: 1; 
+            background: var(--bg); 
+            overflow-y: auto; 
+            padding: 30px; 
+            position: relative; 
+            height: 100vh; /* Garante altura total */
+        }
+        
+        .page { 
+            display: none; /* Padrão: Invisível */
+            width: 100%; 
+            animation: none;
+        }
+        
+        .page.active { 
+            display: block; /* Apenas a ativa aparece */
+            animation: fadeIn 0.4s ease-out forwards; 
+        }
+
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .page.active { animation: fadeIn 0.4s ease-out forwards; }
 
-        /* Login */
-        .login-container { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg, var(--primary), var(--secondary)); padding: 20px; }
+        /* Login Overlay */
+        .login-container { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg, var(--primary), var(--secondary)); padding: 20px; position: fixed; top: 0; left: 0; width: 100%; z-index: 9999; }
         .login-box { background: var(--white); border-radius: var(--radius); box-shadow: 0 20px 50px rgba(0,0,0,0.2); padding: 40px; width: 100%; max-width: 400px; }
         .login-header { text-align: center; margin-bottom: 30px; }
         .login-header h1 { font-size: 26px; color: var(--primary); margin-bottom: 5px; }
+        
+        /* Formulários */
         .form-group { margin-bottom: 20px; }
         .form-group label { display: block; margin-bottom: 8px; color: var(--primary); font-weight: 600; font-size: 13px; }
         .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px 15px; border: 2px solid #ecf0f1; border-radius: 8px; font-size: 14px; transition: 0.3s; background: #fff; }
         .form-group input:focus, .form-group select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(52,152,219,0.1); }
+
+        /* Botões */
         .login-btn { width: 100%; padding: 14px; background: var(--primary); color: var(--white); border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; transition: 0.3s; margin-top: 10px; }
         .login-btn:hover { background: var(--secondary); transform: translateY(-2px); }
-        
-        /* Botões */
         .btn-small { padding: 8px 14px; border: none; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; transition: 0.2s; }
         .btn-aprovar { background: var(--success); color: white; }
         .btn-rejeitar { background: var(--danger); color: white; }
-        .btn-excel { background: #217346; color: white; }
+        .btn-excel { background: #217346; color: white; margin-right: 5px; }
+        .btn-refresh { background: var(--accent); color: white; }
         .btn-outline { background: white; border: 1px solid #eee; color: var(--primary); font-weight: 600; transition: all 0.2s; width: 100%; text-align: left; padding: 15px; border-radius: 8px; display: flex; align-items: center; gap: 10px; cursor: pointer; }
         .btn-outline:hover { background: #f8f9fa; border-color: var(--accent); color: var(--accent); transform: translateX(5px); }
 
-        /* Layout */
+        /* Sidebar Fixa */
         .dashboard-container { display: none; height: 100vh; overflow: hidden; }
         .dashboard-container.active { display: flex; }
-        .sidebar { width: 240px; background: var(--primary); color: white; display: flex; flex-direction: column; padding: 25px; box-shadow: 4px 0 15px rgba(0,0,0,0.1); z-index: 10; }
+        .sidebar { width: 240px; background: var(--primary); color: white; display: flex; flex-direction: column; padding: 25px; box-shadow: 4px 0 15px rgba(0,0,0,0.1); z-index: 10; flex-shrink: 0; }
         .sidebar-title { font-size: 20px; font-weight: 700; margin-bottom: 30px; }
         .sidebar-user { font-size: 12px; opacity: 0.7; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 20px; }
         .nav-link { display: flex; align-items: center; gap: 12px; color: rgba(255,255,255,0.7); text-decoration: none; padding: 12px 15px; border-radius: 8px; font-size: 14px; transition: 0.2s; cursor: pointer; border: none; background: none; width: 100%; text-align: left; margin-bottom: 5px; }
         .nav-link:hover, .nav-link.active { background: rgba(255,255,255,0.1); color: white; }
-        .main-content { flex: 1; background: var(--bg); overflow-y: auto; padding: 30px; }
-        .page { display: none; }
         
-        /* Componentes */
+        /* Componentes Gerais */
         .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
         .page-title { font-size: 26px; font-weight: 700; color: var(--primary); }
         .header-controls { display: flex; gap: 10px; align-items: center; }
         .select-periodo { padding: 8px 12px; border-radius: 6px; border: 1px solid #ddd; background: white; cursor: pointer; font-size: 13px; }
+
         .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 30px; }
         .kpi-card { background: white; border-radius: var(--radius); padding: 25px; box-shadow: var(--shadow); border-left: 5px solid var(--accent); transition: transform 0.2s; }
         .kpi-card:hover { transform: translateY(-3px); }
         .kpi-card.green { border-left-color: var(--success); } .kpi-card.orange { border-left-color: var(--warning); } .kpi-card.purple { border-left-color: #9b59b6; }
         .kpi-header { display: flex; justify-content: space-between; margin-bottom: 10px; color: #7f8c8d; font-size: 12px; font-weight: 700; text-transform: uppercase; }
         .kpi-value { font-size: 28px; font-weight: 700; color: var(--primary); }
+        
         .content-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
         .card { background: white; border-radius: var(--radius); padding: 25px; box-shadow: var(--shadow); margin-bottom: 20px; }
         .card-title { font-size: 16px; font-weight: 700; margin-bottom: 20px; color: var(--primary); border-bottom: 1px solid #eee; padding-bottom: 15px; }
+        
         .table-container { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; font-size: 14px; }
         th { background: #f8f9fa; padding: 15px; text-align: left; color: var(--primary); font-weight: 600; border-bottom: 2px solid #eee; }
         td { padding: 15px; border-bottom: 1px solid #eee; color: #555; vertical-align: middle; }
         tr:hover td { background: #f9f9f9; }
+
         .rank-badge { width: 24px; height: 24px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; color: white; background: #bdc3c7; }
-        .rank-1 { background: var(--warning); box-shadow: 0 2px 5px rgba(241,196,15,0.4); } .rank-2 { background: #95a5a6; } .rank-3 { background: #d35400; }
+        .rank-1 { background: var(--warning); box-shadow: 0 2px 5px rgba(241,196,15,0.4); }
+        .rank-2 { background: #95a5a6; } .rank-3 { background: #d35400; }
+        
         .loading-spinner { display: none; text-align: center; padding: 20px; }
         .spinner { border: 3px solid #f3f3f3; border-top: 3px solid var(--accent); border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 0 auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* MODAIS E FÉRIAS */
+        /* Férias Rows & Modais */
         .ferias-row { cursor: pointer; transition: background 0.2s; padding: 12px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
         .ferias-row:hover { background-color: #f0f8ff; }
         .status-badge { padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; color: white; }
@@ -121,6 +148,7 @@
         </aside>
 
         <main class="main-content">
+            
             <div id="dashboard-page" class="page active">
                 <div class="page-header">
                     <div><h1 class="page-title">Olá, <span id="dashUserName">Colaborador</span>! 👋</h1><p style="color:#7f8c8d; font-size:14px;">Resumo geral.</p></div>
@@ -148,7 +176,7 @@
                     <div class="header-controls">
                         <select id="filtroPeriodo" class="select-periodo" onchange="recarregarHorasExtras()"></select>
                         <button onclick="downloadExcel()" class="btn-small btn-excel"><i class="fas fa-file-excel"></i> Exportar</button>
-                        <button onclick="recarregarHorasExtras()" class="btn-small btn-aprovar"><i class="fas fa-sync-alt"></i> Atualizar</button>
+                        <button onclick="recarregarHorasExtras()" class="btn-small btn-refresh"><i class="fas fa-sync-alt"></i> Atualizar</button>
                     </div>
                 </div>
                 <div class="kpi-grid">
@@ -167,14 +195,14 @@
                 <div id="containerAprovacoes" class="card">
                     <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
                         <span class="card-title">Solicitações Pendentes</span>
-                        <button onclick="carregarSolicitacoesPendentes()" class="btn-small btn-aprovar"><i class="fas fa-sync"></i></button>
+                        <button onclick="carregarSolicitacoesPendentes()" class="btn-small btn-refresh"><i class="fas fa-sync"></i></button>
                     </div>
                     <div id="solicitacoesPendentes">Carregando...</div>
                 </div>
             </div>
 
             <div id="ferias-page" class="page">
-                <div class="page-header"><h1 class="page-title">Gestão de Férias</h1></div>
+                <div class="page-header"><h1 class="page-title">Gestão de Férias</h1><button onclick="abrirConfigEmails()" class="btn-small" style="background:#34495e; color:white;"><i class="fas fa-cog"></i> Configurar E-mails</button></div>
                 <div class="content-grid">
                     <div class="card">
                         <h2 class="card-title">Nova Solicitação</h2>
@@ -190,7 +218,7 @@
                         </form>
                     </div>
                     <div class="card">
-                        <h2 class="card-title">Lista de Solicitações (Todas)</h2>
+                        <h2 class="card-title">Solicitações (Todas)</h2>
                         <div id="historicoFeriasContainer">Carregando...</div>
                     </div>
                 </div>
@@ -214,6 +242,16 @@
                 </div>
             </div>
 
+            <div id="modalConfigEmails" class="modal-overlay">
+                <div class="modal-box">
+                    <h2 style="margin-bottom:15px;">E-mails Notificação</h2>
+                    <p style="font-size:12px; color:#666; margin-bottom:10px;">Separe por vírgula.</p>
+                    <textarea id="inputEmailsConfig" rows="4" style="width:100%; border:1px solid #ddd; padding:10px; border-radius:6px; margin-bottom:10px;"></textarea>
+                    <button onclick="salvarConfigEmails()" class="btn-small btn-aprovar" style="width:100%;">Salvar</button>
+                    <button onclick="document.getElementById('modalConfigEmails').style.display='none'" class="btn-small" style="background:#95a5a6; color:white; width:100%; margin-top:5px;">Fechar</button>
+                </div>
+            </div>
+
             <div id="modalFuncionario" class="modal-overlay">
                 <div class="modal-box">
                     <h2 style="margin-bottom:20px;">Novo Funcionário</h2>
@@ -231,13 +269,15 @@
     </div>
 
     <script>
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwDWJ2W4iZF9A9AXyG6qOqtnVAH0PhV-ho1lUhkGAVkv6uwTliShl8VeaVJbLO_s7Z0/exec';
+        // LINK ATUALIZADO
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzTLXOGtKEkzpgnvFOI67m3gOn-w5klOSKsECWqkoEoNxlGaGEZFerQYURUeKqlVrw2/exec';
+        
         const INACTIVITY_TIMEOUT = 300000; 
         let inactivityTimer, dashboardChartInstance = null, horasChartInstance = null;
 
         function init() { preencherPeriodos(); }
 
-        // EXCEL E CICLO
+        // PERÍODOS
         function preencherPeriodos() {
             const sel = document.getElementById('filtroPeriodo'); if(!sel) return; sel.innerHTML='';
             const hj = new Date();
@@ -251,6 +291,8 @@
                 sel.add(opt);
             }
         }
+
+        // EXCEL DOWNLOAD (.XLS)
         async function downloadExcel() {
             const val = document.getElementById('filtroPeriodo').value;
             if(!val) return alert("Selecione um período.");
@@ -272,19 +314,17 @@
             finally { btn.innerHTML = original; btn.disabled = false; }
         }
 
-        // FÉRIAS - LISTA GERAL + MODAL
+        // FÉRIAS
         async function carregarHistoricoFerias() {
             const div = document.getElementById('historicoFeriasContainer');
             div.innerHTML = '<div class="loading-spinner" style="display:block"><div class="spinner"></div></div>';
             try {
-                // Chama a rota que retorna TUDO
                 const res = await fetch(`${SCRIPT_URL}?action=obterTodasFerias`);
                 const data = await res.json();
                 if(data.sucesso && data.dados.length) {
                     let html = '<div style="max-height:300px; overflow-y:auto;">';
                     data.dados.forEach(f => {
                         let dataShow = f.saida.split('-').reverse().join('/');
-                        // Linha clicável
                         html += `<div class="ferias-row" onclick='abrirDetalhesFerias(${JSON.stringify(f)})'>
                             <div><strong style="color:var(--primary);">${f.colaborador}</strong><br><span style="font-size:11px; color:#777;">Início: ${dataShow}</span></div>
                             <span class="status-badge status-${f.status}">${f.status}</span>
@@ -296,7 +336,6 @@
         }
         function abrirDetalhesFerias(f) {
             document.getElementById('linhaFeriasAtual').value = f.linha;
-            // Preenche Modal
             document.getElementById('conteudoDetalhesFerias').innerHTML = `<p><strong>Colaborador:</strong> ${f.colaborador}</p><p><strong>Modelo:</strong> ${f.modelo}</p><p><strong>Saída:</strong> ${f.saida.split('-').reverse().join('/')}</p><p><strong>Retorno:</strong> ${f.retorno.split('-').reverse().join('/')}</p><p><strong>Obs:</strong> ${f.obs||'-'}</p><p><strong>Status:</strong> ${f.status}</p>`;
             document.getElementById('modalDetalhesFerias').style.display = 'flex';
         }
@@ -309,6 +348,16 @@
             await fetch(`${SCRIPT_URL}?action=alterarStatusFerias&linha=${linha}&status=${status}&motivo=${encodeURIComponent(motivo)}&emailUser=${localStorage.getItem('userEmail')}`);
             carregarHistoricoFerias();
         }
+        async function abrirConfigEmails() {
+            const res = await fetch(`${SCRIPT_URL}?action=obterEmailsNotificacao`); const data = await res.json();
+            document.getElementById('inputEmailsConfig').value = data.dados.emails;
+            document.getElementById('modalConfigEmails').style.display = 'flex';
+        }
+        async function salvarConfigEmails() {
+            const emails = document.getElementById('inputEmailsConfig').value;
+            await fetch(`${SCRIPT_URL}?action=salvarEmailsNotificacao&emails=${encodeURIComponent(emails)}`);
+            document.getElementById('modalConfigEmails').style.display = 'none'; alert('Salvo!');
+        }
         async function solicitarFerias() {
             const btn=document.getElementById('btnSalvarFerias'); btn.disabled=true; btn.textContent='Enviando...';
             try {
@@ -317,7 +366,7 @@
             } catch(e) { alert('Erro.'); } finally { btn.disabled=false; btn.textContent='Agendar'; }
         }
 
-        // OUTROS
+        // LOGIN
         async function handleLogin(e) {
             e.preventDefault(); const em=document.getElementById('email').value; const ps=document.getElementById('password').value;
             document.getElementById('loginBtn').disabled=true; document.getElementById('loadingSpinner').style.display='block';
@@ -327,11 +376,29 @@
             } catch(e){alert('Conexão falhou');} finally{document.getElementById('loginBtn').disabled=false; document.getElementById('loadingSpinner').style.display='none';}
         }
         function handleLogout() { localStorage.clear(); location.reload(); }
+        
+        // NAV - LÓGICA CORRIGIDA PARA NÃO EMPILHAR ABAS
         function showPage(id) {
-            resetInactivityTimer(); document.querySelectorAll('.page').forEach(p=>p.classList.remove('active')); document.getElementById(id+'-page').classList.add('active'); document.querySelectorAll('.nav-link').forEach(l=>l.classList.remove('active'));
-            if(id=='dashboard') loadDashboardData(); if(id=='ferias') { carregarSelectFuncionarios(); carregarHistoricoFerias(); } if(id=='horas') { preencherPeriodos(); recarregarHorasExtras(); } if(id=='aprovacoes') verificarPermissaoAprovacao(); if(id=='funcionarios') carregarFuncionarios();
+            resetInactivityTimer();
+            // 1. Remove active de TODOS
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+            
+            // 2. Adiciona active SÓ NO ALVO
+            document.getElementById(id+'-page').classList.add('active');
+            
+            // 3. Destaca link no menu (se existir)
+            // (O seletor abaixo é genérico, pode ajustar se quiser destacar o botão exato)
+            
+            if(id=='dashboard') loadDashboardData(); 
+            if(id=='ferias') { carregarSelectFuncionarios(); carregarHistoricoFerias(); } 
+            if(id=='horas') { preencherPeriodos(); recarregarHorasExtras(); } 
+            if(id=='aprovacoes') verificarPermissaoAprovacao(); 
+            if(id=='funcionarios') carregarFuncionarios();
         }
         function resetInactivityTimer() { clearTimeout(inactivityTimer); inactivityTimer=setTimeout(handleLogout, INACTIVITY_TIMEOUT); }
+
+        // HORAS
         async function recarregarHorasExtras() {
             try { const val=document.getElementById('filtroPeriodo').value; let url=`${SCRIPT_URL}?action=obterDadosHorasExtras`; if(val){const [m,a]=val.split('-'); url+=`&mes=${m}&ano=${a}`;} const res=await fetch(url); const data=await res.json();
                 if(data.sucesso) { document.getElementById('totalHorasExtras').textContent=data.dados.totalHoras; document.getElementById('periodoDisplay').textContent="Ciclo: "+data.dados.periodo; if(data.dados.colaboradorMaisHoras){document.getElementById('colaboradorMaisHoras').textContent=data.dados.colaboradorMaisHoras.horas; const el=document.getElementById('colaboradorChange'); if(el){el.textContent=data.dados.colaboradorMaisHoras.nome; el.style.display='block';}} renderChartHoras(data.dados.horasPorSetor);
@@ -339,6 +406,8 @@
             } catch(e){}
         }
         function renderChartHoras(setores) { const ctx=document.getElementById('graficoHorasPorSetor'); if(!ctx)return; if(!setores||!setores.length){if(horasChartInstance)horasChartInstance.destroy();return;} const labels=setores.map(s=>s.setor); const vals=setores.map(s=>s.minutos); if(horasChartInstance)horasChartInstance.destroy(); horasChartInstance=new Chart(ctx,{type:'bar',data:{labels:labels,datasets:[{label:'Minutos',data:vals,backgroundColor:'#3498db',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}}); }
+
+        // APROVAÇÕES
         async function carregarSolicitacoesPendentes() {
             const div=document.getElementById('solicitacoesPendentes'); if(div.innerHTML.includes('Carregando')) div.innerHTML='<div class="loading-spinner" style="display:block"><div class="spinner"></div></div>';
             const res=await fetch(`${SCRIPT_URL}?action=obterSolicitacoesPendentes`); const data=await res.json();
@@ -346,6 +415,8 @@
         }
         async function acaoAprovar(l,btn){if(!confirm('Aprovar?'))return; btn.innerHTML='<i class="fas fa-spinner fa-spin"></i>'; btn.disabled=true; await fetch(`${SCRIPT_URL}?action=aprovarSolicitacao&linha=${l}&emailAprovador=${localStorage.getItem('userEmail')}`); carregarSolicitacoesPendentes();}
         async function acaoRejeitar(l,btn){const m=prompt('Motivo:'); if(m){btn.innerHTML='<i class="fas fa-spinner fa-spin"></i>'; btn.disabled=true; await fetch(`${SCRIPT_URL}?action=rejeitarSolicitacao&linha=${l}&emailAprovador=${localStorage.getItem('userEmail')}&motivo=${encodeURIComponent(m)}`); carregarSolicitacoesPendentes();}}
+
+        // HELPERS
         async function carregarSelectFuncionarios(){const s=document.getElementById('feriasNomeColaborador'); s.innerHTML='<option>Carregando...</option>'; const res=await fetch(`${SCRIPT_URL}?action=obterFuncionarios`); const d=await res.json(); if(d.sucesso){s.innerHTML='<option value="">Selecione...</option>'; d.dados.funcionarios.forEach(f=>{let o=document.createElement('option'); o.value=f.nome; o.text=f.nome; s.appendChild(o);});}}
         function calcularVolta(){const s=document.getElementById('dataSaida').value; const m=document.getElementById('modeloFerias').value; if(!s||!m)return; let d=m=='30'?30:20; const dt=new Date(s+'T00:00:00'); const ret=new Date(dt); ret.setDate(dt.getDate()+d); document.getElementById('textoDataRetorno').textContent=ret.toLocaleDateString('pt-BR'); document.getElementById('dataRetornoCalculada').value=ret.toISOString().split('T')[0]; document.getElementById('boxPrevisao').style.display='block';}
         async function verificarPermissaoAprovacao(){const res=await fetch(`${SCRIPT_URL}?action=verificarPermissaoAprovacao&email=${encodeURIComponent(localStorage.getItem('userEmail'))}`); const d=await res.json(); if(d.sucesso&&d.dados.podeAprovar){document.getElementById('containerAprovacoes').style.display='block';document.getElementById('acessoNegado').style.display='none';carregarSolicitacoesPendentes();}else{document.getElementById('containerAprovacoes').style.display='none';document.getElementById('acessoNegado').style.display='block';}}
