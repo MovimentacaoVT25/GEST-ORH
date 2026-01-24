@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RH Manager Enterprise</title>
+    <title>RH Manager Premium</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <style>
-        /* ===== ESTILO VISUAL "FOTO 2" ===== */
+        /* ===== ESTILO VISUAL PREMIUM (BASEADO NA SUA FOTO 2) ===== */
         :root {
             --sidebar-bg: #2c3e50; /* Azul Petróleo Escuro */
             --active-bg: #3498db;  /* Azul Destaque */
@@ -27,14 +27,14 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; outline: none; }
         body { background-color: var(--bg-body); color: var(--text-main); height: 100vh; overflow: hidden; }
 
-        /* LOADING INICIAL */
+        /* LOADING (Tela Branca com Spinner Azul) */
         #globalOverlay { position: fixed; top:0; left:0; width:100%; height:100%; background:var(--card-bg); z-index:99999; display:flex; flex-direction:column; justify-content:center; align-items:center; transition: opacity 0.4s ease; }
-        .spinner-large { width: 50px; height: 50px; border: 4px solid #e5e7eb; border-top-color: var(--active-bg); border-radius: 50%; animation: spin 0.8s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
+        .spinner { width: 50px; height: 50px; border: 4px solid #f3f3f3; border-top: 4px solid var(--active-bg); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* LAYOUT */
+        /* ESTRUTURA */
         .app-container { display: flex; height: 100vh; }
-        .sidebar { width: 250px; background: var(--sidebar-bg); color: white; display: flex; flex-direction: column; padding: 20px; z-index: 100; flex-shrink: 0; }
+        .sidebar { width: 240px; background: var(--sidebar-bg); color: white; display: flex; flex-direction: column; padding: 20px; flex-shrink: 0; }
         .main-content { flex: 1; overflow-y: auto; padding: 30px; background: var(--bg-body); }
         
         .menu-btn { display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px 15px; border: none; background: transparent; color: rgba(255,255,255,0.7); font-size: 14px; font-weight: 500; border-radius: 6px; cursor: pointer; transition: 0.2s; text-align: left; margin-bottom: 5px; }
@@ -98,17 +98,17 @@
 <body>
 
     <div id="globalOverlay">
-        <div class="spinner-large"></div>
-        <p style="margin-top:15px; color:#666; font-weight:500;">Iniciando...</p>
+        <div class="spinner"></div>
+        <p style="margin-top:15px; color:#666; font-weight:500;">Carregando...</p>
     </div>
 
-    <div id="loginScreen" class="login-screen" style="display:none;">
+    <div id="loginScreen" class="login-screen">
         <div class="login-box">
             <h2 style="color:var(--sidebar-bg); margin-bottom:5px;">RH Manager</h2>
             <p style="color:#888; font-size:13px; margin-bottom:30px;">Acesso ao Painel</p>
             <form onsubmit="handleLogin(event)">
-                <div style="text-align:left;"><label style="font-size:12px; font-weight:bold; color:#555;">E-MAIL</label><input type="email" id="email" required></div>
-                <div style="text-align:left;"><label style="font-size:12px; font-weight:bold; color:#555;">SENHA</label><input type="password" id="password" required></div>
+                <div style="text-align:left;"><label>E-MAIL</label><input type="email" id="email" required></div>
+                <div style="text-align:left;"><label>SENHA</label><input type="password" id="password" required></div>
                 <button type="submit" class="btn btn-prim" style="width:100%; justify-content:center; padding:12px;">ENTRAR</button>
             </form>
             <div id="loginError" style="color:var(--danger); font-size:13px; margin-top:15px; display:none;">Dados inválidos</div>
@@ -116,7 +116,6 @@
     </div>
 
     <div id="appContainer" class="app-container" style="display:none;">
-        
         <aside class="sidebar">
             <div class="brand"><i class="fas fa-layer-group"></i> RH Manager</div>
             <nav>
@@ -136,16 +135,13 @@
         </aside>
 
         <main class="main-content">
-
             <div id="dashboard-page" class="page active">
                 <div class="page-title">Dashboard</div>
-                
                 <div class="kpi-row">
                     <div class="kpi-card"><div class="kpi-lbl">Funcionários</div><div class="kpi-val" id="dashTotalFunc">--</div></div>
                     <div class="kpi-card" style="border-left-color: var(--success)"><div class="kpi-lbl">Horas (Mês)</div><div class="kpi-val" id="dashHoras">--</div></div>
                     <div class="kpi-card" style="border-left-color: var(--warning)"><div class="kpi-lbl">Pendências</div><div class="kpi-val" id="dashPend">--</div></div>
                 </div>
-
                 <div class="flex-row">
                     <div class="col-main">
                         <div class="card">
@@ -258,15 +254,15 @@
             </div>
 
             <div id="horas-page" class="page">
-                <div class="header-flex">
+                <div class="flex-row" style="justify-content:space-between; align-items:center;">
                     <h1 class="page-title" style="margin:0;">Horas Extras</h1>
                     <div class="controls">
-                        <select id="filtroPeriodo" onchange="recarregarHoras()" style="margin:0; width:auto;"></select>
+                        <select id="filtroPeriodo" onchange="recarregarHoras()" style="width:auto;"></select>
                         <button onclick="downloadExcel()" class="btn btn-excel">Exportar</button>
                         <button onclick="recarregarHoras()" class="btn btn-prim">Atualizar</button>
                     </div>
                 </div>
-                <div class="kpi-row">
+                <div class="kpi-row" style="margin-top:20px;">
                     <div class="kpi-card"><div class="kpi-lbl">Total</div><div class="kpi-val" id="totalHorasValor">--</div></div>
                     <div class="kpi-card"><div class="kpi-lbl">Maior Saldo</div><div class="kpi-val" id="maiorSaldoValor">--</div><small id="maiorSaldoNome"></small></div>
                 </div>
@@ -295,50 +291,49 @@
         </div>
     </div>
 
+    <div id="modalDetalhes" class="modal-bg">
+        <div class="modal-box">
+            <h3 style="margin-bottom:15px;">Detalhes</h3>
+            <div id="conteudoModalDetalhes" style="font-size:14px; margin-bottom:20px;"></div>
+            <input type="hidden" id="hdnIdFerias"><input type="hidden" id="hdnDadosFerias">
+            <button onclick="agendarViaEmailManual()" class="btn btn-sec" style="width:100%; justify-content:center; margin-bottom:15px;">
+                <i class="far fa-envelope"></i> Agendar via E-mail
+            </button>
+            <div style="display:flex; gap:10px;">
+                <button onclick="acaoFerias('Aprovada')" class="btn btn-green" style="flex:1;">Aprovar</button>
+                <button onclick="acaoFerias('Rejeitada')" class="btn btn-red" style="flex:1;">Rejeitar</button>
+                <button onclick="document.getElementById('modalDetalhes').style.display='none'" class="btn btn-sec" style="flex:1;">Fechar</button>
+            </div>
+        </div>
+    </div>
+
     <div id="areaImpressao" style="display:none;"></div>
 
     <script>
-        // === ATENÇÃO: COLE SEU NOVO LINK AQUI ===
-        const API_URL = 'https://script.google.com/macros/s/AKfycbx3C3LAi7aFvNYLwsTPQLrr9VxvXEImfLTuP55tKoYfObX4GucriF0ymZklYLSw49wG/exec';
+        // === ATENÇÃO: LINK DO SCRIPT ===
+        const API_URL = 'https://script.google.com/macros/s/AKfycbwRSYO4d8Q1cjEcmSd52Kq-5MOLlxprzxr-11Xy58WF3qh77g_zqQ9OR44hnQxa007c/exec';
         
         let chartRef = null, chartRef2 = null;
+        let inactivityTimer;
+        const TIMEOUT_MS = 180000; // 3 minutos
 
         // INICIALIZAÇÃO SEGURA
         document.addEventListener('DOMContentLoaded', () => {
-            const user = localStorage.getItem('u_email');
-            if (user) {
-                // Se já logado
-                document.getElementById('loginScreen').style.display = 'none';
-                document.getElementById('appContainer').style.display = 'flex';
-                document.getElementById('userNameDisplay').innerText = localStorage.getItem('u_nome');
-                document.getElementById('globalOverlay').style.display = 'flex'; // Mantém loading visual
-                init();
-                // Fecha loading após carregar
-                setTimeout(() => document.getElementById('globalOverlay').style.display = 'none', 1000);
-            } else {
-                // Se não logado, mostra login e esconde loading
-                document.getElementById('globalOverlay').style.display = 'none';
-                document.getElementById('loginScreen').style.display = 'flex';
-            }
+            // LIMPA SESSÃO AO ATUALIZAR A PÁGINA (FORÇA LOGIN)
+            localStorage.clear(); 
+            document.getElementById('loginScreen').style.display = 'flex';
+            document.getElementById('appContainer').style.display = 'none';
+            document.getElementById('globalOverlay').style.display = 'none';
         });
 
-        function init() { carregarColabs(); carregarDashboard(); preencherFiltroDatas(); }
-
-        // --- NAVEGAÇÃO ---
-        function navTo(id) {
-            document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-            document.querySelectorAll('.menu-btn').forEach(b=>b.classList.remove('active'));
-            document.getElementById(id+'-page').classList.add('active');
-            
-            const btn = Array.from(document.querySelectorAll('.menu-btn')).find(b => b.getAttribute('onclick').includes(id));
-            if(btn) btn.classList.add('active');
-
-            if(id=='ferias') carregarListaFerias();
-            if(id=='funcionarios') carregarFuncionarios();
-            if(id=='documentos') carregarColabs();
-            if(id=='horas') recarregarHoras();
-            if(id=='configuracoes') abrirConfigEmails();
-            if(id=='aprovacoes') carregarPendencias();
+        // MONITOR INATIVIDADE
+        function startInactivityMonitor() {
+            window.onload = resetTimer; document.onmousemove = resetTimer; document.onkeypress = resetTimer; document.onclick = resetTimer;
+            resetTimer();
+        }
+        function resetTimer() {
+            clearTimeout(inactivityTimer);
+            if(localStorage.getItem('u_email')) inactivityTimer = setTimeout(doLogout, TIMEOUT_MS);
         }
 
         // --- LOGIN ---
@@ -354,7 +349,6 @@
                 const res = await fetch(`${API_URL}?action=validarCredenciais&email=${encodeURIComponent(em)}&senha=${encodeURIComponent(pw)}`);
                 const d = await res.json();
                 
-                // Delay estético
                 setTimeout(() => {
                     if(d.sucesso) {
                         localStorage.setItem('u_email', d.dados.email);
@@ -362,7 +356,7 @@
                         document.getElementById('userNameDisplay').innerText = d.dados.nome;
                         document.getElementById('loginScreen').style.display='none';
                         document.getElementById('appContainer').style.display='flex';
-                        init();
+                        init(); startInactivityMonitor();
                         setTimeout(() => document.getElementById('globalOverlay').style.display='none', 500);
                     } else {
                         document.getElementById('globalOverlay').style.display='none';
@@ -373,7 +367,24 @@
             } catch(x) { alert("Erro de conexão."); document.getElementById('globalOverlay').style.display='none'; btn.disabled=false; }
         }
 
+        function init() { carregarColabs(); carregarDashboard(); preencherFiltroDatas(); }
         function doLogout() { localStorage.clear(); location.reload(); }
+
+        // --- NAVEGAÇÃO ---
+        function navTo(id) {
+            document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+            document.querySelectorAll('.menu-btn').forEach(b=>b.classList.remove('active'));
+            document.getElementById(id+'-page').classList.add('active');
+            const btn = Array.from(document.querySelectorAll('.menu-btn')).find(b => b.getAttribute('onclick').includes(id));
+            if(btn) btn.classList.add('active');
+
+            if(id=='ferias') carregarListaFerias();
+            if(id=='funcionarios') carregarFuncionarios();
+            if(id=='documentos') carregarColabs();
+            if(id=='horas') recarregarHoras();
+            if(id=='configuracoes') abrirConfigEmails();
+            if(id=='aprovacoes') carregarPendencias();
+        }
 
         // --- DASHBOARD ---
         async function carregarDashboard() {
@@ -418,7 +429,7 @@
             const res = await fetch(`${API_URL}?action=obterFuncionarios`); const d = await res.json();
             let h = '<table width="100%"><tr><th>Nome</th><th>Cargo</th><th>Nascimento</th><th>Ação</th></tr>';
             d.dados.funcionarios.forEach(f => {
-                h+=`<tr><td>${f.nome}</td><td>${f.cargo}</td><td>${f.nascimento}</td><td><button onclick="delFunc('${f.linha}')" style="color:red;border:none;cursor:pointer;">Excluir</button></td></tr>`;
+                h+=`<tr><td>${f.nome}</td><td>${f.cargo}</td><td>${f.nascimento}</td><td><button onclick="delFunc('${f.linha}')" class="btn-red" style="padding:5px 10px;">Excluir</button></td></tr>`;
             });
             document.getElementById('tabelaFuncionarios').innerHTML = h+'</table>';
         }
@@ -469,8 +480,27 @@
         async function carregarListaFerias() {
             const div = document.getElementById('listaFeriasRecentes'); div.innerHTML='...';
             const res = await fetch(`${API_URL}?action=obterTodasFerias`); const d = await res.json();
-            if(d.sucesso && d.dados.length) div.innerHTML = d.dados.map(f=>`<div style="padding:10px; border-bottom:1px solid #eee;"><strong>${f.colaborador}</strong><br><small>${f.saida} • ${f.status}</small></div>`).join('');
-            else div.innerHTML='Vazio.';
+            if(d.sucesso && d.dados.length) {
+                let h='';
+                d.dados.forEach(f=>{
+                    let c='#999'; if(f.status=='Aprovada')c='#27ae60'; if(f.status=='Rejeitada')c='#e74c3c'; if(f.status=='Solicitado')c='#3498db';
+                    h+=`<div onclick='verDetalhesFerias(${JSON.stringify(f)})' style="padding:10px; border-bottom:1px solid #eee; cursor:pointer;"><strong>${f.colaborador}</strong><br><small style="color:#777;">${formatDataBr(f.saida)} • <span style="color:${c}; font-weight:bold;">${f.status}</span></small></div>`;
+                });
+                div.innerHTML = h;
+            } else div.innerHTML='Vazio.';
+        }
+        function verDetalhesFerias(f) {
+            document.getElementById('hdnIdFerias').value = f.linha; document.getElementById('hdnDadosFerias').value = JSON.stringify(f);
+            document.getElementById('conteudoModalDetalhes').innerHTML = `<p><strong>Colaborador:</strong> ${f.colaborador}</p><p><strong>Início:</strong> ${formatDataBr(f.saida)}</p><p><strong>Obs:</strong> ${f.obs||'-'}</p>`;
+            document.getElementById('modalDetalhes').style.display='flex';
+        }
+        async function acaoFerias(st) { if(!confirm('Confirmar?'))return; const ln=document.getElementById('hdnIdFerias').value; let m=''; if(st=='Rejeitada')m=prompt('Motivo:'); document.getElementById('modalDetalhes').style.display='none'; await fetch(`${API_URL}?action=alterarStatusFerias&linha=${ln}&status=${st}&motivo=${encodeURIComponent(m)}&emailUser=${localStorage.getItem('u_email')}`); carregarListaFerias(); }
+        async function agendarViaEmailManual() {
+            const f = JSON.parse(document.getElementById('hdnDadosFerias').value);
+            const res = await fetch(`${API_URL}?action=obterEmailsNotificacao`); const d = await res.json();
+            const dest = d.dados.emails||"";
+            const corpo = `Olá,\n\nGostaria de formalizar a solicitação de férias:\n\nColaborador: ${f.colaborador}\nInício: ${formatDataBr(f.saida)}\nModelo: ${f.modelo}\n\nAtenciosamente.`;
+            window.open(`mailto:${dest}?subject=${encodeURIComponent('Solicitação de Férias - '+f.colaborador)}&body=${encodeURIComponent(corpo)}`);
         }
         
         // --- HORAS & APROVAÇÕES ---
@@ -481,7 +511,7 @@
                 if(!d.dados.solicitacoes.length) div.innerHTML='Tudo limpo!';
                 else {
                     let h='<table width="100%"><tr><th>Nome</th><th>Data</th><th>Horas</th><th>Ação</th></tr>';
-                    d.dados.solicitacoes.forEach(s=>{ h+=`<tr><td>${s.nome}</td><td>${s.data.split('T')[0]}</td><td>${s.horas}</td><td><button class="btn-green" onclick="aprovar('${s.linha}')">OK</button></td></tr>` });
+                    d.dados.solicitacoes.forEach(s=>{ h+=`<tr><td>${s.nome}</td><td>${formatDataBr(s.data.split('T')[0])}</td><td>${s.horas}</td><td><button class="btn-green" onclick="aprovar('${s.linha}')">OK</button></td></tr>` });
                     div.innerHTML=h+'</table>';
                 }
             }
@@ -508,6 +538,7 @@
             const res=await fetch(`${API_URL}?action=exportarExcel&mes=${m}&ano=${a}`); const d=await res.json();
             if(d.sucesso){const b=new Blob(["\ufeff"+d.dados.arquivo],{type:'application/vnd.ms-excel'}); const l=document.createElement('a'); l.href=URL.createObjectURL(b); l.download=d.dados.nome; l.click();}
         }
+        function formatDataBr(d) { if(!d)return ""; if(d.includes('/'))return d; const p=d.split('-'); if(p.length===3)return `${p[2]}/${p[1]}/${p[0]}`; return d; }
     </script>
 </body>
 </html>
