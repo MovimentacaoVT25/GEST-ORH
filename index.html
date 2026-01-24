@@ -154,8 +154,9 @@
                     <div class="col-side">
                         <div class="panel">
                             <div class="panel-head"><span class="panel-title">Acesso Rápido</span></div>
-                            <button onclick="navTo('ferias')" class="menu-btn" style="background:#f9fafb; margin-bottom:10px;">Solicitar Férias</button>
-                            <button onclick="navTo('horas')" class="menu-btn" style="background:#f9fafb;">Banco de Horas</button>
+                            <button onclick="navTo('ferias')" class="menu-btn" style="background:#f9fafb; margin-bottom:10px;"><i class="fas fa-umbrella-beach"></i> Solicitar Férias</button>
+                            <button onclick="navTo('horas')" class="menu-btn" style="background:#f9fafb; margin-bottom:10px;"><i class="fas fa-history"></i> Banco de Horas</button>
+                            <button onclick="navTo('funcionarios')" class="menu-btn" style="background:#f9fafb;"><i class="fas fa-user-plus"></i> Novo Funcionário</button>
                         </div>
                     </div>
                 </div>
@@ -175,7 +176,7 @@
                     <div class="kpi-box"><div class="kpi-label">Maior Saldo</div><div class="kpi-num" id="maiorSaldoValor">--</div><small id="maiorSaldoNome" style="color:var(--success); font-weight:bold;"></small></div>
                 </div>
                 <div class="flex-row">
-                    <div class="col-main"><div class="panel"><canvas id="graficoHoras"></canvas></div></div>
+                    <div class="col-main"><div class="panel" style="height:500px;"><canvas id="graficoHoras"></canvas></div></div>
                     <div class="col-side"><div class="panel"><div class="panel-head"><span class="panel-title">Ranking</span></div><div id="tabelaRanking" class="table-wrap"></div></div></div>
                 </div>
             </div>
@@ -239,6 +240,7 @@
                 <div class="header-flex"><h1 class="page-h1">Funcionários</h1><button onclick="document.getElementById('modalFuncionario').classList.add('open')" class="btn btn-prim"><i class="fas fa-plus"></i> Novo</button></div>
                 <div class="panel"><div id="listaFuncionarios" class="table-wrap">Carregando...</div></div>
             </div>
+
         </main>
     </div>
 
@@ -248,7 +250,7 @@
             <div id="conteudoModalDetalhes" style="font-size:14px; color:var(--text-main); line-height:1.6; margin-bottom:20px;"></div>
             <input type="hidden" id="hdnIdFerias"><input type="hidden" id="hdnDadosFerias">
             
-            <button onclick="emailManual()" class="btn btn-sec" style="width:100%; justify-content:center; margin-bottom:15px; border:1px solid #3b82f6; color:#3b82f6;">
+            <button onclick="agendarViaEmailManual()" class="btn btn-sec" style="width:100%; justify-content:center; margin-bottom:15px; border:1px solid #3b82f6; color:#3b82f6;">
                 <i class="far fa-envelope"></i> Agendar via E-mail
             </button>
 
@@ -263,7 +265,7 @@
     <div id="modalEmail" class="modal-bg">
         <div class="modal-content">
             <h3 style="margin-bottom:10px;">Configuração de E-mails</h3>
-            <p style="font-size:13px; color:#666; margin-bottom:10px;">Emails para aviso automático:</p>
+            <p style="font-size:13px; color:#666; margin-bottom:10px;">Quem recebe os avisos automáticos?</p>
             <textarea id="txtEmailsConfig" rows="3" placeholder="email1@empresa.com, email2@empresa.com"></textarea>
             <div style="margin-top:15px; display:flex; gap:10px;">
                 <button onclick="salvarConfigEmails()" class="btn btn-prim" style="flex:1; justify-content:center;">Salvar</button>
@@ -289,29 +291,21 @@
     </div>
 
     <script>
-        // === ATUALIZE COM SEU LINK AQUI ===
         const API_URL = 'https://script.google.com/macros/s/AKfycbxDVwaM8PW7xa7wrZp4biZ03qOfsb9TkrLaA44tGV5vM2zsSPVzKo-9hXxXgAqLlY85/exec';
         
         let chartRef = null, chartRef2 = null;
 
-        // INICIALIZAÇÃO SEGURA
         document.addEventListener('DOMContentLoaded', () => {
             const user = localStorage.getItem('u_email');
             if (user) {
-                // Se já tem login salvo, pula para o dashboard
                 document.getElementById('loginScreen').style.display = 'none';
                 document.getElementById('appContainer').style.display = 'flex';
                 document.getElementById('userNameDisplay').innerText = localStorage.getItem('u_nome');
                 init();
                 navTo('dashboard');
-                // Timeout de segurança para esconder o loading
                 setTimeout(hideLoading, 1500); 
-            } else {
-                // Se não, mostra o login e esconde o loading
-                hideLoading();
-            }
+            } else { hideLoading(); }
             
-            // Timeout global anti-travamento
             setTimeout(() => {
                 const overlay = document.getElementById('globalOverlay');
                 if(overlay.style.display !== 'none' && !overlay.classList.contains('hidden')) {
@@ -324,10 +318,8 @@
         function forceReset() { localStorage.clear(); location.reload(); }
         function hideLoading() { document.getElementById('globalOverlay').classList.add('hidden'); setTimeout(() => document.getElementById('globalOverlay').style.display='none', 500); }
         function showLoading() { const ov=document.getElementById('globalOverlay'); ov.style.display='flex'; ov.classList.remove('hidden'); }
-
         function init() { document.getElementById('dataHoje').innerText = new Date().toLocaleDateString('pt-BR'); preencherFiltroDatas(); }
 
-        // --- NAVEGAÇÃO ---
         function navTo(pageId) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.menu-btn').forEach(b => b.classList.remove('active'));
@@ -341,6 +333,34 @@
             if(pageId === 'aprovacoes') verificarPermissao();
             if(pageId === 'ferias') { carregarColaboradoresSelect(); carregarListaFerias(); }
             if(pageId === 'funcionarios') carregarListaFuncionarios();
+        }
+
+        // --- EMAIL MANUAL INTELIGENTE ---
+        async function agendarViaEmailManual() {
+            // Pega dados da solicitação atual
+            const f = JSON.parse(document.getElementById('hdnDadosFerias').value);
+            
+            // Busca e-mails salvos no Backend
+            const btn = document.querySelector('button[onclick="agendarViaEmailManual()"]');
+            const txtOriginal = btn.innerHTML;
+            btn.innerText = "Carregando E-mails...";
+            btn.disabled = true;
+
+            try {
+                const res = await fetch(`${API_URL}?action=obterEmailsNotificacao`);
+                const data = await res.json();
+                const destinatarios = data.dados.emails || ""; // Ex: "chefe@empresa.com, rh@empresa.com"
+
+                const assunto = `Agendamento de Férias - ${f.colaborador}`;
+                const corpo = `Olá,\n\nSegue solicitação de férias aprovada.\n\nColaborador: ${f.colaborador}\nInício: ${f.saida}\nRetorno: ${f.retorno}\nModelo: ${f.modelo}\n\nObs: ${f.obs}\n\nAtenciosamente.`;
+                
+                window.open(`mailto:${destinatarios}?subject=${encodeURIComponent(assunto)}&body=${encodeURIComponent(corpo)}`);
+            } catch(e) {
+                alert("Erro ao buscar e-mails configurados.");
+            } finally {
+                btn.innerHTML = txtOriginal;
+                btn.disabled = false;
+            }
         }
 
         // --- LOGIN ---
@@ -378,10 +398,6 @@
             document.getElementById('hdnIdFerias').value = f.linha; document.getElementById('hdnDadosFerias').value = JSON.stringify(f);
             document.getElementById('conteudoModalDetalhes').innerHTML = `<p><strong>Colab:</strong> ${f.colaborador}</p><p><strong>Modelo:</strong> ${f.modelo}</p><p><strong>Início:</strong> ${f.saida}</p><p><strong>Obs:</strong> ${f.obs||'-'}</p>`;
             document.getElementById('modalDetalhes').classList.add('open');
-        }
-        function emailManual() {
-            const f = JSON.parse(document.getElementById('hdnDadosFerias').value);
-            window.open(`mailto:?subject=Férias - ${f.colaborador}&body=Confirmo férias para ${f.colaborador} iniciando em ${f.saida}.`);
         }
         async function acaoFerias(st) {
             if(!confirm('Confirmar?')) return;
