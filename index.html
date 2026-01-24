@@ -97,8 +97,9 @@
 <body>
 
     <div id="globalOverlay">
-        <div class="spinner-large"></div>
+        <div class="spinner-large" id="mainSpinner"></div>
         <p style="margin-top:15px; color:#6b7280; font-size:14px; font-weight:500;" id="loadingText">Iniciando RH Manager...</p>
+        <button onclick="forceReset()" id="btnResetLoad" style="display:none; margin-top:20px; padding:10px 20px; background:#e74c3c; color:white; border:none; border-radius:8px; cursor:pointer;">Reiniciar Sistema</button>
     </div>
 
     <div id="loginScreen" class="login-wrapper">
@@ -263,7 +264,11 @@
             <h3 style="margin-bottom:15px; color:var(--primary);">Detalhes</h3>
             <div id="conteudoModalDetalhes" style="font-size:14px; color:var(--text-main); line-height:1.6; margin-bottom:20px;"></div>
             <input type="hidden" id="hdnIdFerias"><input type="hidden" id="hdnDadosFerias">
-            <button onclick="agendarViaEmailManual()" class="btn btn-sec" style="width:100%; justify-content:center; margin-bottom:15px; border:1px solid #3b82f6; color:#3b82f6;"><i class="far fa-envelope"></i> Agendar via E-mail</button>
+            
+            <button onclick="agendarViaEmailManual()" class="btn btn-sec" style="width:100%; justify-content:center; margin-bottom:15px; border:1px solid #3b82f6; color:#3b82f6;">
+                <i class="far fa-envelope"></i> Agendar via E-mail
+            </button>
+
             <div style="display:flex; gap:10px;">
                 <button onclick="acaoFerias('Aprovada')" class="btn btn-green" style="flex:1; justify-content:center;">Aprovar</button>
                 <button onclick="acaoFerias('Rejeitada')" class="btn btn-red" style="flex:1; justify-content:center;">Rejeitar</button>
@@ -301,7 +306,7 @@
     </div>
 
     <script>
-        const API_URL = 'https://script.google.com/macros/s/AKfycbwJ0-LxIvV31zTIxb931oYXmbXi8wfjOYKnsGE1Nlgb7OY8ViZ88CwnpZn3Vh5yly8n/exec';
+        const API_URL = 'https://script.google.com/macros/s/AKfycbwn_xMCHLpDaC8TrtCM_-9a_iu13dh0x-ObgdKOll7njQE8oMk4Td89oD_R1UVZGNoP/exec';
         
         let chartRef = null, chartRef2 = null;
         let inactivityTimer;
@@ -313,6 +318,14 @@
             document.getElementById('loginScreen').style.display = 'flex';
             document.getElementById('appContainer').style.display = 'none';
             document.getElementById('globalOverlay').style.display = 'none';
+            
+            setTimeout(() => {
+                const overlay = document.getElementById('globalOverlay');
+                if(overlay.style.display !== 'none' && !overlay.classList.contains('hidden')) {
+                    document.getElementById('loadingText').innerText = "Demorando muito?";
+                    document.getElementById('btnResetLoad').style.display = 'block';
+                }
+            }, 8000);
         });
 
         // MONITORAMENTO INATIVIDADE
