@@ -291,22 +291,18 @@
     </div>
 
     <script>
-        // === ATUALIZE COM SEU LINK AQUI ===
         const API_URL = 'https://script.google.com/macros/s/AKfycbxDVwaM8PW7xa7wrZp4biZ03qOfsb9TkrLaA44tGV5vM2zsSPVzKo-9hXxXgAqLlY85/exec';
         
         let chartRef = null, chartRef2 = null;
 
         document.addEventListener('DOMContentLoaded', () => {
-            const user = localStorage.getItem('u_email');
-            if (user) {
-                document.getElementById('loginScreen').style.display = 'none';
-                document.getElementById('appContainer').style.display = 'flex';
-                document.getElementById('userNameDisplay').innerText = localStorage.getItem('u_nome');
-                init();
-                navTo('dashboard');
-                setTimeout(hideLoading, 1500); 
-            } else { hideLoading(); }
+            // LOGIN OBRIGATÓRIO (LÓGICA CORRIGIDA)
+            localStorage.clear(); // Limpa sessão anterior
+            document.getElementById('loginScreen').style.display = 'flex'; // Exibe Login
+            document.getElementById('appContainer').style.display = 'none'; // Esconde App
+            document.getElementById('globalOverlay').style.display = 'none'; // Esconde Loading Inicial
             
+            // Timeout de segurança
             setTimeout(() => {
                 const overlay = document.getElementById('globalOverlay');
                 if(overlay.style.display !== 'none' && !overlay.classList.contains('hidden')) {
@@ -336,7 +332,7 @@
             if(pageId === 'funcionarios') carregarListaFuncionarios();
         }
 
-        // --- EMAIL MANUAL INTELIGENTE (OPÇÃO 1 - FORMAL) ---
+        // --- EMAIL MANUAL INTELIGENTE (PREENCHE PARA: COM DADOS DA CONFIG) ---
         async function agendarViaEmailManual() {
             // Pega dados da solicitação atual
             const f = JSON.parse(document.getElementById('hdnDadosFerias').value);
@@ -347,6 +343,7 @@
             btn.disabled = true;
 
             try {
+                // Busca os e-mails salvos na configuração
                 const res = await fetch(`${API_URL}?action=obterEmailsNotificacao`);
                 const data = await res.json();
                 const destinatarios = data.dados.emails || ""; // Ex: "chefe@empresa.com, rh@empresa.com"
@@ -364,9 +361,10 @@ Aguardo a confirmação do agendamento e sigo à disposição para qualquer dúv
 
 Atenciosamente,`;
                 
+                // Abre o cliente de email com Destinatário, Assunto e Corpo preenchidos
                 window.open(`mailto:${destinatarios}?subject=${encodeURIComponent(assunto)}&body=${encodeURIComponent(corpo)}`);
             } catch(e) {
-                alert("Erro ao buscar e-mails configurados.");
+                alert("Erro ao buscar e-mails configurados. Verifique sua conexão.");
             } finally {
                 btn.innerHTML = txtOriginal;
                 btn.disabled = false;
