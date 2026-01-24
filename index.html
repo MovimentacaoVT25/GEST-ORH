@@ -20,7 +20,7 @@
         * { margin: 0; padding: 0; box-sizing: border-box; outline: none; font-family: 'Inter', sans-serif; }
         body { background-color: var(--bg); color: var(--text-main); overflow-x: hidden; }
 
-        /* ===== LOADING SCREEN ===== */
+        /* ===== LOADING SCREEN (Overlay Global) ===== */
         #globalOverlay { 
             position: fixed; top:0; left:0; width:100%; height:100%; 
             background: var(--surface); z-index: 9999; 
@@ -29,6 +29,16 @@
         }
         .spinner-large { width: 50px; height: 50px; border: 4px solid #e5e7eb; border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
         .hidden { opacity: 0; pointer-events: none; }
+
+        /* ===== EFEITO SKELETON (Carregamento Dashboard) ===== */
+        .skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+            border-radius: 6px;
+            color: transparent !important;
+        }
+        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 
         /* ===== ANIMAÇÕES ===== */
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
@@ -57,8 +67,8 @@
         .controls { display: flex; gap: 10px; align-items: center; }
         
         .kpi-row { display: flex; flex-wrap: wrap; gap: 20px; margin-bottom: 30px; }
-        .kpi-box { flex: 1; min-width: 200px; background: var(--surface); padding: 20px; border-radius: var(--radius); box-shadow: var(--shadow); border: 1px solid #f3f4f6; }
-        .kpi-num { font-size: 28px; font-weight: 700; color: var(--text-main); margin: 5px 0; }
+        .kpi-box { flex: 1; min-width: 200px; background: var(--surface); padding: 20px; border-radius: var(--radius); box-shadow: var(--shadow); border: 1px solid #f3f4f6; position: relative; }
+        .kpi-num { font-size: 28px; font-weight: 700; color: var(--text-main); margin: 5px 0; min-height: 34px; }
         .kpi-label { font-size: 12px; font-weight: 600; color: var(--text-sec); text-transform: uppercase; }
 
         .flex-row { display: flex; gap: 25px; flex-wrap: wrap; }
@@ -99,7 +109,7 @@
     <div id="globalOverlay">
         <div class="spinner-large" id="mainSpinner"></div>
         <p style="margin-top:15px; color:#6b7280; font-size:14px; font-weight:500;" id="loadingText">Iniciando RH Manager...</p>
-        <button onclick="forceReset()" id="btnResetLoad" style="display:none; margin-top:20px; padding:10px 20px; background:#e74c3c; color:white; border:none; border-radius:8px; cursor:pointer;">Reiniciar Sistema</button>
+        <button onclick="forceReset()" id="btnResetLoad" style="display:none; margin-top:20px; padding:10px 20px; background:#e74c3c; color:white; border:none; border-radius:8px; cursor:pointer;">Reiniciar</button>
     </div>
 
     <div id="loginScreen" class="login-wrapper">
@@ -296,13 +306,12 @@
         let chartRef = null, chartRef2 = null;
 
         document.addEventListener('DOMContentLoaded', () => {
-            // LOGIN OBRIGATÓRIO (LÓGICA CORRIGIDA)
-            localStorage.clear(); // Limpa sessão anterior
-            document.getElementById('loginScreen').style.display = 'flex'; // Exibe Login
-            document.getElementById('appContainer').style.display = 'none'; // Esconde App
-            document.getElementById('globalOverlay').style.display = 'none'; // Esconde Loading Inicial
+            // LOGIN OBRIGATÓRIO
+            localStorage.clear();
+            document.getElementById('loginScreen').style.display = 'flex';
+            document.getElementById('appContainer').style.display = 'none';
+            document.getElementById('globalOverlay').style.display = 'none';
             
-            // Timeout de segurança
             setTimeout(() => {
                 const overlay = document.getElementById('globalOverlay');
                 if(overlay.style.display !== 'none' && !overlay.classList.contains('hidden')) {
@@ -317,6 +326,7 @@
         function showLoading() { const ov=document.getElementById('globalOverlay'); ov.style.display='flex'; ov.classList.remove('hidden'); }
         function init() { document.getElementById('dataHoje').innerText = new Date().toLocaleDateString('pt-BR'); preencherFiltroDatas(); }
 
+        // --- NAVEGAÇÃO ---
         function navTo(pageId) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.menu-btn').forEach(b => b.classList.remove('active'));
@@ -332,9 +342,17 @@
             if(pageId === 'funcionarios') carregarListaFuncionarios();
         }
 
-        // --- EMAIL MANUAL INTELIGENTE (PREENCHE PARA: COM DADOS DA CONFIG) ---
+        // --- UTILS FORMAT DATE ---
+        function formatDataBr(dataISO) {
+            if(!dataISO) return "";
+            if(dataISO.includes('/')) return dataISO; // Já formatado
+            const partes = dataISO.split('-');
+            if(partes.length === 3) return `${partes[2]}/${partes[1]}/${partes[0]}`;
+            return dataISO;
+        }
+
+        // --- EMAIL MANUAL INTELIGENTE ---
         async function agendarViaEmailManual() {
-            // Pega dados da solicitação atual
             const f = JSON.parse(document.getElementById('hdnDadosFerias').value);
             
             const btn = document.querySelector('button[onclick="agendarViaEmailManual()"]');
@@ -343,10 +361,13 @@
             btn.disabled = true;
 
             try {
-                // Busca os e-mails salvos na configuração
+                // Pega os e-mails salvos no sistema
                 const res = await fetch(`${API_URL}?action=obterEmailsNotificacao`);
                 const data = await res.json();
-                const destinatarios = data.dados.emails || ""; // Ex: "chefe@empresa.com, rh@empresa.com"
+                const destinatarios = data.dados.emails || ""; 
+
+                const dataIni = formatDataBr(f.saida);
+                const dataRet = formatDataBr(f.retorno);
 
                 const assunto = `Solicitação de Férias – ${f.colaborador}`;
                 const corpo = `Olá,
@@ -354,14 +375,13 @@
 Gostaria de formalizar a solicitação de férias, conforme os detalhes abaixo:
 
 Colaborador: ${f.colaborador}
-Período: de ${f.saida} a ${f.retorno}
+Período: de ${dataIni} a ${dataRet}
 Modelo: ${f.modelo}
 
 Aguardo a confirmação do agendamento e sigo à disposição para qualquer dúvida.
 
 Atenciosamente,`;
                 
-                // Abre o cliente de email com Destinatário, Assunto e Corpo preenchidos
                 window.open(`mailto:${destinatarios}?subject=${encodeURIComponent(assunto)}&body=${encodeURIComponent(corpo)}`);
             } catch(e) {
                 alert("Erro ao buscar e-mails configurados. Verifique sua conexão.");
@@ -397,14 +417,15 @@ Atenciosamente,`;
                 let html = '';
                 data.dados.forEach(f => {
                     let cor = '#9ca3af'; if(f.status=='Aprovada') cor='#10b981'; if(f.status=='Rejeitada') cor='#ef4444'; if(f.status=='Solicitado') cor='#3b82f6';
-                    html += `<div class="ferias-item" onclick='verDetalhesFerias(${JSON.stringify(f)})'><div><div style="font-weight:600; color:var(--primary);">${f.colaborador}</div><div style="font-size:11px; color:var(--text-sec);">${f.saida} • ${f.modelo}</div></div><div class="status-badge" style="background:${cor}">${f.status}</div></div>`;
+                    let dFmt = formatDataBr(f.saida);
+                    html += `<div class="ferias-item" onclick='verDetalhesFerias(${JSON.stringify(f)})'><div><div style="font-weight:600; color:var(--primary);">${f.colaborador}</div><div style="font-size:11px; color:var(--text-sec);">${dFmt} • ${f.modelo}</div></div><div class="status-badge" style="background:${cor}">${f.status}</div></div>`;
                 });
                 div.innerHTML = html;
             } else div.innerHTML = '<p style="text-align:center; padding:10px; color:#999;">Vazio.</p>';
         }
         function verDetalhesFerias(f) {
             document.getElementById('hdnIdFerias').value = f.linha; document.getElementById('hdnDadosFerias').value = JSON.stringify(f);
-            document.getElementById('conteudoModalDetalhes').innerHTML = `<p><strong>Colab:</strong> ${f.colaborador}</p><p><strong>Modelo:</strong> ${f.modelo}</p><p><strong>Início:</strong> ${f.saida}</p><p><strong>Obs:</strong> ${f.obs||'-'}</p>`;
+            document.getElementById('conteudoModalDetalhes').innerHTML = `<p><strong>Colab:</strong> ${f.colaborador}</p><p><strong>Modelo:</strong> ${f.modelo}</p><p><strong>Início:</strong> ${formatDataBr(f.saida)}</p><p><strong>Obs:</strong> ${f.obs||'-'}</p>`;
             document.getElementById('modalDetalhes').classList.add('open');
         }
         async function acaoFerias(st) {
@@ -433,8 +454,13 @@ Atenciosamente,`;
             document.getElementById('modalEmail').classList.remove('open'); alert('Salvo!');
         }
 
-        // --- DASHBOARD & HORAS ---
+        // --- DASHBOARD (Com Animação Skeleton) ---
         async function loadDashboard() {
+            // Estado Skeleton
+            document.getElementById('dashTotalFunc').innerHTML = '<div class="skeleton" style="width:40px; height:30px;"></div>';
+            document.getElementById('dashHorasExtras').innerHTML = '<div class="skeleton" style="width:40px; height:30px;"></div>';
+            document.getElementById('dashPendencias').innerHTML = '<div class="skeleton" style="width:40px; height:30px;"></div>';
+            
             try {
                 const rf = await fetch(`${API_URL}?action=obterFuncionarios`); const df = await rf.json();
                 if(df.sucesso) {
@@ -448,6 +474,8 @@ Atenciosamente,`;
                 document.getElementById('dashFerias').innerText = "--"; 
             } catch(e) {}
         }
+
+        // --- HORAS EXTRAS ---
         function preencherFiltroDatas() {
             const sel = document.getElementById('filtroPeriodo'); if(!sel) return; sel.innerHTML='';
             const hj = new Date(); const m = ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
@@ -486,7 +514,7 @@ Atenciosamente,`;
             if(d.sucesso) {
                 if(!d.dados.solicitacoes.length) { document.getElementById('listaPendencias').innerHTML='<p style="text-align:center;color:#999;padding:20px;">Tudo limpo!</p>'; return; }
                 let html = '<table><thead><tr><th>Colaborador</th><th>Data</th><th>Horas</th><th>Ação</th></tr></thead><tbody>';
-                d.dados.solicitacoes.forEach(s => { html += `<tr><td>${s.nome}</td><td>${s.data.split('T')[0]}</td><td><strong>${s.horas}</strong></td><td><button class="btn btn-green" onclick="acaoAprovar('${s.linha}',this)">✓</button> <button class="btn btn-red" onclick="acaoRejeitar('${s.linha}',this)">✕</button></td></tr>`; });
+                d.dados.solicitacoes.forEach(s => { html += `<tr><td>${s.nome}</td><td>${formatDataBr(s.data.split('T')[0])}</td><td><strong>${s.horas}</strong></td><td><button class="btn btn-green" onclick="acaoAprovar('${s.linha}',this)">✓</button> <button class="btn btn-red" onclick="acaoRejeitar('${s.linha}',this)">✕</button></td></tr>`; });
                 document.getElementById('listaPendencias').innerHTML = html + '</tbody></table>';
             }
         }
@@ -512,4 +540,3 @@ Atenciosamente,`;
     </script>
 </body>
 </html>
-
