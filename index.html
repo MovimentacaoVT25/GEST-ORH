@@ -116,6 +116,11 @@
         .modal-content { background: var(--surface); width: 90%; max-width: 500px; padding: 30px; border-radius: 20px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); transform: translateY(20px); transition: transform 0.3s; }
         .modal-bg.open .modal-content { transform: translateY(0); }
 
+        /* Lista Férias */
+        .ferias-item { padding: 12px; border-bottom: 1px solid #f3f4f6; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; border-radius: 8px; }
+        .ferias-item:hover { background-color: #f9fafb; }
+        .status-pill { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; color: white; }
+
         /* Responsividade */
         @media (max-width: 1024px) { .grid-2-1 { grid-template-columns: 1fr; } .sidebar { width: 80px; padding: 20px; align-items: center; } .brand span, .menu-btn span { display: none; } .menu-btn { justify-content: center; } .kpi-row { grid-template-columns: 1fr 1fr; } }
         @media (max-width: 768px) { .kpi-row { grid-template-columns: 1fr; } .sidebar { display: none; } .main-content { padding: 20px; } }
@@ -290,7 +295,7 @@
                                 <textarea id="txtObsFerias" rows="2" style="width:100%; padding:10px; border:1px solid #e5e7eb; border-radius:10px; margin-top:5px;"></textarea>
                             </div>
                             <div style="text-align:center;">
-                                <button type="submit" id="btnAgendar" class="btn btn-green" style="padding:14px 40px; font-size:15px; width:100%;">AGENDAR AGORA</button>
+                                <button type="submit" id="btnAgendar" class="btn btn-green" style="padding:14px 40px; font-size:15px; width:100%; justify-content:center;">AGENDAR AGORA</button>
                             </div>
                         </form>
                     </div>
@@ -358,13 +363,10 @@
     </div>
 
     <script>
-        // === ATENÇÃO: COLOQUE SEU LINK DO GOOGLE APPS SCRIPT AQUI ===
-        const API_URL = 'https://script.google.com/macros/s/AKfycbzTXsHfIAlkqIcMLoUY3ojgVl1wgq2WrY0onh0iH7qnm272HkI-5tknfjtaQ_MTE7Q/exec';
-        
+        const API_URL = 'https://script.google.com/macros/s/AKfycbwVe1Gsc5tU9qoKw1z9Ng_0F9vFIdTWpBb3-0yTrSaOmDdDJZz4Rnm2TPf_BXxS8bc/exec';
         let chartRef = null;
         let chartRef2 = null;
 
-        // --- INICIALIZAÇÃO ---
         function init() {
             document.getElementById('dataHoje').innerText = new Date().toLocaleDateString('pt-BR');
             preencherFiltroDatas();
@@ -372,18 +374,14 @@
 
         // --- NAVEGAÇÃO E UX ---
         function navTo(pageId) {
-            // Remove active
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.menu-btn').forEach(b => b.classList.remove('active'));
             
-            // Ativa nova
             document.getElementById(pageId + '-page').classList.add('active');
             
-            // Highlight no menu (opcional, busca pelo onclick)
             const btn = Array.from(document.querySelectorAll('.menu-btn')).find(b => b.getAttribute('onclick').includes(pageId));
             if(btn) btn.classList.add('active');
 
-            // Carrega dados específicos
             if(pageId === 'dashboard') loadDashboard();
             if(pageId === 'horas') { preencherFiltroDatas(); recarregarHoras(); }
             if(pageId === 'aprovacoes') verificarPermissao();
@@ -415,10 +413,8 @@
                 if(data.sucesso) {
                     localStorage.setItem('u_email', data.dados.email);
                     localStorage.setItem('u_nome', data.dados.nome);
-                    
                     document.getElementById('userNameDisplay').innerText = data.dados.nome;
                     
-                    // Transição Suave
                     showLoading();
                     document.getElementById('loginScreen').style.display = 'none';
                     document.getElementById('appContainer').style.display = 'flex';
@@ -426,7 +422,7 @@
                     
                     init();
                     navTo('dashboard');
-                    hideLoading(); // Só esconde depois de carregar o dash
+                    setTimeout(() => hideLoading(), 1000); // Garante carregamento visual
                 } else {
                     document.getElementById('errorMsg').innerText = "Credenciais inválidas.";
                     document.getElementById('errorMsg').style.display = 'block';
@@ -437,7 +433,7 @@
 
         function doLogout() { localStorage.clear(); location.reload(); }
 
-        // --- FÉRIAS (LÓGICA COMPLETA) ---
+        // --- FÉRIAS ---
         async function carregarListaFerias() {
             const div = document.getElementById('listaFerias');
             div.innerHTML = '<p style="color:#999; text-align:center;">Atualizando...</p>';
@@ -447,7 +443,7 @@
             if(data.sucesso && data.dados.length > 0) {
                 let html = '';
                 data.dados.forEach(f => {
-                    let corStatus = '#9ca3af'; // cinza
+                    let corStatus = '#9ca3af'; 
                     if(f.status=='Aprovada') corStatus = '#10b981';
                     if(f.status=='Rejeitada') corStatus = '#ef4444';
                     if(f.status=='Solicitado') corStatus = '#3b82f6';
@@ -455,12 +451,12 @@
                     let dataFmt = f.saida.split('-').reverse().join('/');
 
                     html += `
-                    <div onclick='verDetalhesFerias(${JSON.stringify(f)})' style="padding:15px; border-bottom:1px solid #f3f4f6; cursor:pointer; display:flex; justify-content:space-between; align-items:center; transition:0.2s;" onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background='transparent'">
+                    <div class="ferias-item" onclick='verDetalhesFerias(${JSON.stringify(f)})'>
                         <div>
                             <div style="font-weight:600; color:var(--primary);">${f.colaborador}</div>
                             <div style="font-size:12px; color:var(--text-sec); margin-top:2px;">Início: ${dataFmt} • ${f.modelo}</div>
                         </div>
-                        <div style="font-size:11px; font-weight:700; color:white; background:${corStatus}; padding:4px 10px; border-radius:12px;">${f.status}</div>
+                        <div class="status-pill" style="background:${corStatus}">${f.status}</div>
                     </div>`;
                 });
                 div.innerHTML = html;
@@ -512,10 +508,8 @@
             const o = document.getElementById('txtObsFerias').value;
 
             try {
-                // Backend envia e-mail automatico
                 await fetch(`${API_URL}?action=agendarFerias&email=${encodeURIComponent(n)}&modelo=${m}&dataSaida=${s}&dataRetorno=${r}&obs=${encodeURIComponent(o)}`);
                 alert("Solicitação enviada com sucesso!");
-                // Limpa e recarrega
                 document.getElementById('infoRetorno').style.display='none';
                 document.getElementById('txtObsFerias').value = '';
                 carregarListaFerias();
@@ -539,7 +533,6 @@
         // --- DASHBOARD ---
         async function loadDashboard() {
             try {
-                // Dados Funcionarios para Grafico
                 const rf = await fetch(`${API_URL}?action=obterFuncionarios`);
                 const df = await rf.json();
                 if(df.sucesso) {
@@ -562,18 +555,15 @@
                         options: { responsive: true, maintainAspectRatio: false, cutout: '75%', plugins: { legend: { position: 'right', labels: { boxWidth: 10 } } } }
                     });
                 }
-
-                // Dados Horas
                 const rh = await fetch(`${API_URL}?action=obterDadosHorasExtras`);
                 const dh = await rh.json();
                 if(dh.sucesso) document.getElementById('dashHorasExtras').innerText = dh.dados.totalHoras;
 
-                // Dados Pendencias
                 const rp = await fetch(`${API_URL}?action=obterSolicitacoesPendentes`);
                 const dp = await rp.json();
                 if(dp.sucesso) document.getElementById('dashPendencias').innerText = dp.dados.totalHoras;
 
-                document.getElementById('dashFerias').innerText = "--"; // Pode conectar depois se quiser
+                document.getElementById('dashFerias').innerText = "--"; 
             } catch(e) { console.error(e); }
         }
 
@@ -582,7 +572,7 @@
             const sel = document.getElementById('filtroPeriodo'); if(!sel) return; sel.innerHTML='';
             const hj = new Date();
             const meses = ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
-            let off = (hj.getDate() >= 21) ? 1 : 0; // Regra 21
+            let off = (hj.getDate() >= 21) ? 1 : 0;
             for(let i=0; i<12; i++){
                 let d = new Date(hj.getFullYear(), hj.getMonth() + off - i, 1);
                 let opt = document.createElement('option');
@@ -606,14 +596,12 @@
                     document.getElementById('maiorSaldoNome').innerText = d.dados.colaboradorMaisHoras.nome;
                 }
                 
-                // Grafico
                 const ctx = document.getElementById('graficoHoras');
                 if(chartRef2) chartRef2.destroy();
                 const labs = d.dados.horasPorSetor.map(s=>s.setor);
                 const vals = d.dados.horasPorSetor.map(s=>s.minutos);
                 chartRef2 = new Chart(ctx, { type:'bar', data:{labels:labs, datasets:[{label:'Minutos',data:vals,backgroundColor:'#3b82f6',borderRadius:4}]}, options:{maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true}}} });
 
-                // Tabela
                 let html = '<table><thead><tr><th>#</th><th>Nome</th><th>Horas</th></tr></thead><tbody>';
                 if(d.dados.ranking.length) {
                     d.dados.ranking.forEach((c,i) => {
@@ -717,7 +705,6 @@
             document.getElementById('hdnRetorno').value = ret.toISOString().split('T')[0];
             document.getElementById('infoRetorno').style.display = 'block';
         }
-
     </script>
 </body>
 </html>
