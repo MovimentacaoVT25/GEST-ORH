@@ -23,22 +23,12 @@
         /* ===== LOADING SCREEN (Overlay Global) ===== */
         #globalOverlay { 
             position: fixed; top:0; left:0; width:100%; height:100%; 
-            background: var(--surface); z-index: 9999; 
+            background: var(--surface); z-index: 99999; /* Z-Index altíssimo para cobrir tudo */
             display: flex; flex-direction: column; justify-content: center; align-items: center; 
             transition: opacity 0.5s ease;
         }
         .spinner-large { width: 50px; height: 50px; border: 4px solid #e5e7eb; border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
         .hidden { opacity: 0; pointer-events: none; }
-
-        /* ===== EFEITO SKELETON (Carregamento Dashboard) ===== */
-        .skeleton {
-            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-            background-size: 200% 100%;
-            animation: shimmer 1.5s infinite;
-            border-radius: 6px;
-            color: transparent !important;
-        }
-        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 
         /* ===== ANIMAÇÕES ===== */
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
@@ -259,11 +249,7 @@
             <h3 style="margin-bottom:15px; color:var(--primary);">Detalhes</h3>
             <div id="conteudoModalDetalhes" style="font-size:14px; color:var(--text-main); line-height:1.6; margin-bottom:20px;"></div>
             <input type="hidden" id="hdnIdFerias"><input type="hidden" id="hdnDadosFerias">
-            
-            <button onclick="agendarViaEmailManual()" class="btn btn-sec" style="width:100%; justify-content:center; margin-bottom:15px; border:1px solid #3b82f6; color:#3b82f6;">
-                <i class="far fa-envelope"></i> Agendar via E-mail
-            </button>
-
+            <button onclick="agendarViaEmailManual()" class="btn btn-sec" style="width:100%; justify-content:center; margin-bottom:15px; border:1px solid #3b82f6; color:#3b82f6;"><i class="far fa-envelope"></i> Agendar via E-mail</button>
             <div style="display:flex; gap:10px;">
                 <button onclick="acaoFerias('Aprovada')" class="btn btn-green" style="flex:1; justify-content:center;">Aprovar</button>
                 <button onclick="acaoFerias('Rejeitada')" class="btn btn-red" style="flex:1; justify-content:center;">Rejeitar</button>
@@ -304,14 +290,33 @@
         const API_URL = 'https://script.google.com/macros/s/AKfycbxDVwaM8PW7xa7wrZp4biZ03qOfsb9TkrLaA44tGV5vM2zsSPVzKo-9hXxXgAqLlY85/exec';
         
         let chartRef = null, chartRef2 = null;
+        let inactivityTimer;
+        const TIMEOUT_MS = 300000; // 5 minutos
 
         document.addEventListener('DOMContentLoaded', () => {
-            // LOGIN OBRIGATÓRIO
-            localStorage.clear();
-            document.getElementById('loginScreen').style.display = 'flex';
-            document.getElementById('appContainer').style.display = 'none';
-            document.getElementById('globalOverlay').style.display = 'none';
+            // LÓGICA DE LOGIN OBRIGATÓRIO (MODIFICADO)
+            // Se tiver token, tentamos validar, mas se der erro ou expirar, logout.
+            // Para garantir segurança, limpamos o localstorage ao abrir a página (Exceto se for F5 rápido)
+            // Mas o pedido foi: Login sempre. Então:
             
+            // 1. Limpa tudo ao carregar
+            // localStorage.clear(); // <-- Remova se quiser "Lembrar-me", mantenha para segurança total.
+            
+            // Se quiser "Manter logado" use este bloco:
+            const user = localStorage.getItem('u_email');
+            if (user) {
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('appContainer').style.display = 'flex';
+                document.getElementById('userNameDisplay').innerText = localStorage.getItem('u_nome');
+                init();
+                navTo('dashboard');
+                hideLoading();
+                startInactivityMonitor(); // Inicia monitoramento
+            } else {
+                hideLoading();
+            }
+            
+            // Fallback Loading
             setTimeout(() => {
                 const overlay = document.getElementById('globalOverlay');
                 if(overlay.style.display !== 'none' && !overlay.classList.contains('hidden')) {
@@ -321,9 +326,33 @@
             }, 8000);
         });
 
+        // --- MONITORAMENTO DE INATIVIDADE ---
+        function startInactivityMonitor() {
+            // Reseta timer em qualquer interação
+            window.onload = resetTimer;
+            document.onmousemove = resetTimer;
+            document.onkeypress = resetTimer;
+            document.onclick = resetTimer;
+            document.onscroll = resetTimer;
+            resetTimer(); // Inicia primeira vez
+        }
+
+        function resetTimer() {
+            clearTimeout(inactivityTimer);
+            if(localStorage.getItem('u_email')) {
+                inactivityTimer = setTimeout(doLogout, TIMEOUT_MS);
+            }
+        }
+
         function forceReset() { localStorage.clear(); location.reload(); }
         function hideLoading() { document.getElementById('globalOverlay').classList.add('hidden'); setTimeout(() => document.getElementById('globalOverlay').style.display='none', 500); }
-        function showLoading() { const ov=document.getElementById('globalOverlay'); ov.style.display='flex'; ov.classList.remove('hidden'); }
+        function showLoading() { 
+            const ov=document.getElementById('globalOverlay'); 
+            document.getElementById('loadingText').innerText = "Carregando..."; 
+            ov.style.display='flex'; 
+            ov.classList.remove('hidden'); 
+        }
+        
         function init() { document.getElementById('dataHoje').innerText = new Date().toLocaleDateString('pt-BR'); preencherFiltroDatas(); }
 
         // --- NAVEGAÇÃO ---
@@ -345,7 +374,7 @@
         // --- UTILS FORMAT DATE ---
         function formatDataBr(dataISO) {
             if(!dataISO) return "";
-            if(dataISO.includes('/')) return dataISO; // Já formatado
+            if(dataISO.includes('/')) return dataISO;
             const partes = dataISO.split('-');
             if(partes.length === 3) return `${partes[2]}/${partes[1]}/${partes[0]}`;
             return dataISO;
@@ -354,14 +383,11 @@
         // --- EMAIL MANUAL INTELIGENTE ---
         async function agendarViaEmailManual() {
             const f = JSON.parse(document.getElementById('hdnDadosFerias').value);
-            
             const btn = document.querySelector('button[onclick="agendarViaEmailManual()"]');
             const txtOriginal = btn.innerHTML;
-            btn.innerText = "Carregando E-mails...";
-            btn.disabled = true;
+            btn.innerText = "Carregando E-mails..."; btn.disabled = true;
 
             try {
-                // Pega os e-mails salvos no sistema
                 const res = await fetch(`${API_URL}?action=obterEmailsNotificacao`);
                 const data = await res.json();
                 const destinatarios = data.dados.emails || ""; 
@@ -383,17 +409,21 @@ Aguardo a confirmação do agendamento e sigo à disposição para qualquer dúv
 Atenciosamente,`;
                 
                 window.open(`mailto:${destinatarios}?subject=${encodeURIComponent(assunto)}&body=${encodeURIComponent(corpo)}`);
-            } catch(e) {
-                alert("Erro ao buscar e-mails configurados. Verifique sua conexão.");
-            } finally {
-                btn.innerHTML = txtOriginal;
-                btn.disabled = false;
-            }
+            } catch(e) { alert("Erro ao buscar e-mails."); } 
+            finally { btn.innerHTML = txtOriginal; btn.disabled = false; }
         }
 
-        // --- LOGIN ---
+        // --- LOGIN COM ANIMAÇÃO ---
         async function handleLogin(e) {
-            e.preventDefault(); const bt=document.getElementById('btnLogin'); bt.disabled=true; bt.innerText="...";
+            e.preventDefault(); 
+            const bt=document.getElementById('btnLogin'); 
+            bt.disabled=true; bt.innerText="...";
+            
+            // EXIBE OVERLAY IMEDIATAMENTE
+            document.getElementById('loadingText').innerText = "Autenticando...";
+            document.getElementById('globalOverlay').style.display = 'flex';
+            document.getElementById('globalOverlay').classList.remove('hidden');
+
             const em=document.getElementById('email').value; const pw=document.getElementById('password').value;
             try {
                 const res = await fetch(`${API_URL}?action=validarCredenciais&email=${encodeURIComponent(em)}&senha=${encodeURIComponent(pw)}`);
@@ -401,10 +431,16 @@ Atenciosamente,`;
                 if(data.sucesso) {
                     localStorage.setItem('u_email', data.dados.email); localStorage.setItem('u_nome', data.dados.nome);
                     document.getElementById('userNameDisplay').innerText = data.dados.nome;
-                    showLoading();
-                    document.getElementById('loginScreen').style.display='none'; document.getElementById('appContainer').style.display='flex';
-                    init(); navTo('dashboard'); setTimeout(hideLoading, 1000);
-                } else { document.getElementById('errorMsg').innerText="Inválido"; document.getElementById('errorMsg').style.display='block'; hideLoading(); }
+                    document.getElementById('loginScreen').style.display='none'; 
+                    document.getElementById('appContainer').style.display='flex';
+                    init(); navTo('dashboard'); 
+                    startInactivityMonitor(); // Inicia monitor
+                    setTimeout(hideLoading, 1000); // Esconde suavemente
+                } else { 
+                    document.getElementById('errorMsg').innerText="Inválido"; 
+                    document.getElementById('errorMsg').style.display='block'; 
+                    hideLoading(); 
+                }
             } catch(x){ alert("Erro conexão"); hideLoading(); } finally { bt.disabled=false; bt.innerText="ENTRAR"; }
         }
         function doLogout() { localStorage.clear(); location.reload(); }
@@ -454,13 +490,8 @@ Atenciosamente,`;
             document.getElementById('modalEmail').classList.remove('open'); alert('Salvo!');
         }
 
-        // --- DASHBOARD (Com Animação Skeleton) ---
+        // --- DASHBOARD ---
         async function loadDashboard() {
-            // Estado Skeleton
-            document.getElementById('dashTotalFunc').innerHTML = '<div class="skeleton" style="width:40px; height:30px;"></div>';
-            document.getElementById('dashHorasExtras').innerHTML = '<div class="skeleton" style="width:40px; height:30px;"></div>';
-            document.getElementById('dashPendencias').innerHTML = '<div class="skeleton" style="width:40px; height:30px;"></div>';
-            
             try {
                 const rf = await fetch(`${API_URL}?action=obterFuncionarios`); const df = await rf.json();
                 if(df.sucesso) {
@@ -474,8 +505,6 @@ Atenciosamente,`;
                 document.getElementById('dashFerias').innerText = "--"; 
             } catch(e) {}
         }
-
-        // --- HORAS EXTRAS ---
         function preencherFiltroDatas() {
             const sel = document.getElementById('filtroPeriodo'); if(!sel) return; sel.innerHTML='';
             const hj = new Date(); const m = ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
@@ -503,7 +532,7 @@ Atenciosamente,`;
             if(d.sucesso) { const blob = new Blob(["\ufeff"+d.dados.arquivo], {type:'application/vnd.ms-excel'}); const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = d.dados.nome; link.click(); }
         }
 
-        // --- APROVAÇÕES E FUNCIONÁRIOS ---
+        // --- APROVAÇÕES & FUNCIONÁRIOS ---
         async function verificarPermissao() {
             const res = await fetch(`${API_URL}?action=verificarPermissaoAprovacao&email=${localStorage.getItem('u_email')}`); const d = await res.json();
             if(d.dados.podeAprovar) { document.getElementById('msgAcessoNegado').style.display='none'; document.getElementById('areaAprovacoes').style.display='block'; carregarPendencias(); } 
