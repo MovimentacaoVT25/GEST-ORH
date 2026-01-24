@@ -291,6 +291,7 @@
     </div>
 
     <script>
+        // === ATUALIZE COM SEU LINK AQUI ===
         const API_URL = 'https://script.google.com/macros/s/AKfycbxDVwaM8PW7xa7wrZp4biZ03qOfsb9TkrLaA44tGV5vM2zsSPVzKo-9hXxXgAqLlY85/exec';
         
         let chartRef = null, chartRef2 = null;
@@ -335,12 +336,11 @@
             if(pageId === 'funcionarios') carregarListaFuncionarios();
         }
 
-        // --- EMAIL MANUAL INTELIGENTE ---
+        // --- EMAIL MANUAL INTELIGENTE (OPÇÃO 1 - FORMAL) ---
         async function agendarViaEmailManual() {
             // Pega dados da solicitação atual
             const f = JSON.parse(document.getElementById('hdnDadosFerias').value);
             
-            // Busca e-mails salvos no Backend
             const btn = document.querySelector('button[onclick="agendarViaEmailManual()"]');
             const txtOriginal = btn.innerHTML;
             btn.innerText = "Carregando E-mails...";
@@ -351,8 +351,18 @@
                 const data = await res.json();
                 const destinatarios = data.dados.emails || ""; // Ex: "chefe@empresa.com, rh@empresa.com"
 
-                const assunto = `Agendamento de Férias - ${f.colaborador}`;
-                const corpo = `Olá,\n\nSegue solicitação de férias aprovada.\n\nColaborador: ${f.colaborador}\nInício: ${f.saida}\nRetorno: ${f.retorno}\nModelo: ${f.modelo}\n\nObs: ${f.obs}\n\nAtenciosamente.`;
+                const assunto = `Solicitação de Férias – ${f.colaborador}`;
+                const corpo = `Olá,
+
+Gostaria de formalizar a minha solicitação de férias, conforme os detalhes abaixo:
+
+Colaborador: ${f.colaborador}
+Período: de ${f.saida} a ${f.retorno}
+Modelo: ${f.modelo}
+
+Aguardo a confirmação do agendamento e sigo à disposição para qualquer dúvida.
+
+Atenciosamente,`;
                 
                 window.open(`mailto:${destinatarios}?subject=${encodeURIComponent(assunto)}&body=${encodeURIComponent(corpo)}`);
             } catch(e) {
