@@ -20,10 +20,10 @@
         * { margin: 0; padding: 0; box-sizing: border-box; outline: none; font-family: 'Inter', sans-serif; }
         body { background-color: var(--bg); color: var(--text-main); overflow-x: hidden; }
 
-        /* ===== LOADING SCREEN ===== */
+        /* ===== LOADING SCREEN (Overlay Global) ===== */
         #globalOverlay { 
             position: fixed; top:0; left:0; width:100%; height:100%; 
-            background: var(--surface); z-index: 99999; 
+            background: var(--surface); z-index: 99999; /* Z-Index altíssimo para cobrir tudo */
             display: flex; flex-direction: column; justify-content: center; align-items: center; 
             transition: opacity 0.5s ease;
         }
@@ -99,7 +99,7 @@
     <div id="globalOverlay">
         <div class="spinner-large" id="mainSpinner"></div>
         <p style="margin-top:15px; color:#6b7280; font-size:14px; font-weight:500;" id="loadingText">Iniciando RH Manager...</p>
-        <button onclick="forceReset()" id="btnResetLoad" style="display:none; margin-top:20px; padding:10px 20px; background:#e74c3c; color:white; border:none; border-radius:8px; cursor:pointer;">Reiniciar Sistema</button>
+        <button onclick="forceReset()" id="btnResetLoad" style="display:none; margin-top:20px; padding:10px 20px; background:#e74c3c; color:white; border:none; border-radius:8px; cursor:pointer;">Reiniciar</button>
     </div>
 
     <div id="loginScreen" class="login-wrapper">
@@ -124,7 +124,6 @@
                 <button class="menu-btn" onclick="navTo('aprovacoes')"><i class="fas fa-check-circle"></i> Aprovações</button>
                 <button class="menu-btn" onclick="navTo('ferias')"><i class="fas fa-plane"></i> Férias</button>
                 <button class="menu-btn" onclick="navTo('funcionarios')"><i class="fas fa-users"></i> Funcionários</button>
-                <button class="menu-btn" onclick="navTo('settings')"><i class="fas fa-user-cog"></i> Minha Conta</button>
             </nav>
             <div style="margin-top:auto; padding-top:20px; border-top:1px solid #eee;">
                 <div style="font-size:12px; color:#999;">Logado como</div>
@@ -160,20 +159,6 @@
                             <button onclick="navTo('funcionarios')" class="menu-btn" style="background:#f9fafb;"><i class="fas fa-user-plus"></i> Novo Funcionário</button>
                         </div>
                     </div>
-                </div>
-            </div>
-
-            <div id="settings-page" class="page">
-                <div class="header-flex"><h1 class="page-h1">Minha Conta</h1></div>
-                <div class="panel" style="max-width:500px;">
-                    <div class="panel-head"><span class="panel-title">Alterar Senha</span></div>
-                    <form onsubmit="event.preventDefault(); changePassword();">
-                        <label>Nova Senha</label>
-                        <input type="password" id="newPass" required placeholder="Mínimo 6 caracteres">
-                        <div style="margin-top:20px;">
-                            <button type="submit" class="btn btn-prim" id="btnSavePass">Salvar Nova Senha</button>
-                        </div>
-                    </form>
                 </div>
             </div>
 
@@ -264,11 +249,7 @@
             <h3 style="margin-bottom:15px; color:var(--primary);">Detalhes</h3>
             <div id="conteudoModalDetalhes" style="font-size:14px; color:var(--text-main); line-height:1.6; margin-bottom:20px;"></div>
             <input type="hidden" id="hdnIdFerias"><input type="hidden" id="hdnDadosFerias">
-            
-            <button onclick="agendarViaEmailManual()" class="btn btn-sec" style="width:100%; justify-content:center; margin-bottom:15px; border:1px solid #3b82f6; color:#3b82f6;">
-                <i class="far fa-envelope"></i> Agendar via E-mail
-            </button>
-
+            <button onclick="agendarViaEmailManual()" class="btn btn-sec" style="width:100%; justify-content:center; margin-bottom:15px; border:1px solid #3b82f6; color:#3b82f6;"><i class="far fa-envelope"></i> Agendar via E-mail</button>
             <div style="display:flex; gap:10px;">
                 <button onclick="acaoFerias('Aprovada')" class="btn btn-green" style="flex:1; justify-content:center;">Aprovar</button>
                 <button onclick="acaoFerias('Rejeitada')" class="btn btn-red" style="flex:1; justify-content:center;">Rejeitar</button>
@@ -313,12 +294,29 @@
         const TIMEOUT_MS = 300000; // 5 minutos
 
         document.addEventListener('DOMContentLoaded', () => {
-            // LOGIN OBRIGATÓRIO: Limpa tudo para forçar
-            localStorage.clear();
-            document.getElementById('loginScreen').style.display = 'flex';
-            document.getElementById('appContainer').style.display = 'none';
-            document.getElementById('globalOverlay').style.display = 'none';
+            // LÓGICA DE LOGIN OBRIGATÓRIO (MODIFICADO)
+            // Se tiver token, tentamos validar, mas se der erro ou expirar, logout.
+            // Para garantir segurança, limpamos o localstorage ao abrir a página (Exceto se for F5 rápido)
+            // Mas o pedido foi: Login sempre. Então:
             
+            // 1. Limpa tudo ao carregar
+            // localStorage.clear(); // <-- Remova se quiser "Lembrar-me", mantenha para segurança total.
+            
+            // Se quiser "Manter logado" use este bloco:
+            const user = localStorage.getItem('u_email');
+            if (user) {
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('appContainer').style.display = 'flex';
+                document.getElementById('userNameDisplay').innerText = localStorage.getItem('u_nome');
+                init();
+                navTo('dashboard');
+                hideLoading();
+                startInactivityMonitor(); // Inicia monitoramento
+            } else {
+                hideLoading();
+            }
+            
+            // Fallback Loading
             setTimeout(() => {
                 const overlay = document.getElementById('globalOverlay');
                 if(overlay.style.display !== 'none' && !overlay.classList.contains('hidden')) {
@@ -328,29 +326,34 @@
             }, 8000);
         });
 
-        // MONITORAMENTO INATIVIDADE
+        // --- MONITORAMENTO DE INATIVIDADE ---
         function startInactivityMonitor() {
-            window.onload = resetTimer; document.onmousemove = resetTimer; document.onkeypress = resetTimer;
-            resetTimer();
-        }
-        function resetTimer() {
-            clearTimeout(inactivityTimer);
-            if(localStorage.getItem('u_email')) inactivityTimer = setTimeout(doLogout, TIMEOUT_MS);
+            // Reseta timer em qualquer interação
+            window.onload = resetTimer;
+            document.onmousemove = resetTimer;
+            document.onkeypress = resetTimer;
+            document.onclick = resetTimer;
+            document.onscroll = resetTimer;
+            resetTimer(); // Inicia primeira vez
         }
 
-        // --- ALTERAR SENHA ---
-        async function changePassword() {
-            const btn = document.getElementById('btnSavePass'); btn.disabled=true; btn.innerText='Salvando...';
-            const np = document.getElementById('newPass').value;
-            const em = localStorage.getItem('u_email');
-            try {
-                const res = await fetch(`${API_URL}?action=alterarSenha&email=${encodeURIComponent(em)}&novaSenha=${encodeURIComponent(np)}`);
-                const d = await res.json();
-                if(d.sucesso) { alert("Senha alterada com sucesso!"); document.getElementById('newPass').value=''; }
-                else alert(d.mensagem);
-            } catch(e) { alert("Erro ao salvar."); }
-            finally { btn.disabled=false; btn.innerText='Salvar Nova Senha'; }
+        function resetTimer() {
+            clearTimeout(inactivityTimer);
+            if(localStorage.getItem('u_email')) {
+                inactivityTimer = setTimeout(doLogout, TIMEOUT_MS);
+            }
         }
+
+        function forceReset() { localStorage.clear(); location.reload(); }
+        function hideLoading() { document.getElementById('globalOverlay').classList.add('hidden'); setTimeout(() => document.getElementById('globalOverlay').style.display='none', 500); }
+        function showLoading() { 
+            const ov=document.getElementById('globalOverlay'); 
+            document.getElementById('loadingText').innerText = "Carregando..."; 
+            ov.style.display='flex'; 
+            ov.classList.remove('hidden'); 
+        }
+        
+        function init() { document.getElementById('dataHoje').innerText = new Date().toLocaleDateString('pt-BR'); preencherFiltroDatas(); }
 
         // --- NAVEGAÇÃO ---
         function navTo(pageId) {
@@ -368,98 +371,201 @@
             if(pageId === 'funcionarios') carregarListaFuncionarios();
         }
 
-        // --- LOGIN COM EFEITO ---
+        // --- UTILS FORMAT DATE ---
+        function formatDataBr(dataISO) {
+            if(!dataISO) return "";
+            if(dataISO.includes('/')) return dataISO;
+            const partes = dataISO.split('-');
+            if(partes.length === 3) return `${partes[2]}/${partes[1]}/${partes[0]}`;
+            return dataISO;
+        }
+
+        // --- EMAIL MANUAL INTELIGENTE ---
+        async function agendarViaEmailManual() {
+            const f = JSON.parse(document.getElementById('hdnDadosFerias').value);
+            const btn = document.querySelector('button[onclick="agendarViaEmailManual()"]');
+            const txtOriginal = btn.innerHTML;
+            btn.innerText = "Carregando E-mails..."; btn.disabled = true;
+
+            try {
+                const res = await fetch(`${API_URL}?action=obterEmailsNotificacao`);
+                const data = await res.json();
+                const destinatarios = data.dados.emails || ""; 
+
+                const dataIni = formatDataBr(f.saida);
+                const dataRet = formatDataBr(f.retorno);
+
+                const assunto = `Solicitação de Férias – ${f.colaborador}`;
+                const corpo = `Olá,
+
+Gostaria de formalizar a solicitação de férias, conforme os detalhes abaixo:
+
+Colaborador: ${f.colaborador}
+Período: de ${dataIni} a ${dataRet}
+Modelo: ${f.modelo}
+
+Aguardo a confirmação do agendamento e sigo à disposição para qualquer dúvida.
+
+Atenciosamente,`;
+                
+                window.open(`mailto:${destinatarios}?subject=${encodeURIComponent(assunto)}&body=${encodeURIComponent(corpo)}`);
+            } catch(e) { alert("Erro ao buscar e-mails."); } 
+            finally { btn.innerHTML = txtOriginal; btn.disabled = false; }
+        }
+
+        // --- LOGIN COM ANIMAÇÃO ---
         async function handleLogin(e) {
             e.preventDefault(); 
-            const bt = document.getElementById('btnLogin');
-            bt.disabled = true; bt.innerText = "...";
+            const bt=document.getElementById('btnLogin'); 
+            bt.disabled=true; bt.innerText="...";
             
-            // EFEITO: Mostra overlay imediatamente
-            const ov = document.getElementById('globalOverlay');
+            // EXIBE OVERLAY IMEDIATAMENTE
             document.getElementById('loadingText').innerText = "Autenticando...";
-            ov.style.display = 'flex';
-            ov.style.opacity = '1';
+            document.getElementById('globalOverlay').style.display = 'flex';
+            document.getElementById('globalOverlay').classList.remove('hidden');
 
-            const em = document.getElementById('email').value;
-            const pw = document.getElementById('password').value;
-
+            const em=document.getElementById('email').value; const pw=document.getElementById('password').value;
             try {
                 const res = await fetch(`${API_URL}?action=validarCredenciais&email=${encodeURIComponent(em)}&senha=${encodeURIComponent(pw)}`);
                 const data = await res.json();
-                
-                // ATRASO ARTIFICIAL 1.5s (Para ver o loading)
-                setTimeout(() => {
-                    if(data.sucesso) {
-                        localStorage.setItem('u_email', data.dados.email); localStorage.setItem('u_nome', data.dados.nome);
-                        document.getElementById('userNameDisplay').innerText = data.dados.nome;
-                        
-                        document.getElementById('loginScreen').style.display = 'none';
-                        document.getElementById('appContainer').style.display = 'flex';
-                        init(); navTo('dashboard'); startInactivityMonitor();
-                        
-                        // Fade Out
-                        ov.style.opacity = '0';
-                        setTimeout(() => ov.style.display='none', 500);
-                    } else {
-                        document.getElementById('errorMsg').innerText = "Inválido";
-                        document.getElementById('errorMsg').style.display = 'block';
-                        ov.style.display='none'; // Esconde se erro
-                    }
-                    bt.disabled = false; bt.innerText = "ENTRAR";
-                }, 1500);
-                
-            } catch(x){ alert("Erro conexão"); ov.style.display='none'; bt.disabled=false; }
+                if(data.sucesso) {
+                    localStorage.setItem('u_email', data.dados.email); localStorage.setItem('u_nome', data.dados.nome);
+                    document.getElementById('userNameDisplay').innerText = data.dados.nome;
+                    document.getElementById('loginScreen').style.display='none'; 
+                    document.getElementById('appContainer').style.display='flex';
+                    init(); navTo('dashboard'); 
+                    startInactivityMonitor(); // Inicia monitor
+                    setTimeout(hideLoading, 1000); // Esconde suavemente
+                } else { 
+                    document.getElementById('errorMsg').innerText="Inválido"; 
+                    document.getElementById('errorMsg').style.display='block'; 
+                    hideLoading(); 
+                }
+            } catch(x){ alert("Erro conexão"); hideLoading(); } finally { bt.disabled=false; bt.innerText="ENTRAR"; }
         }
-
-        // --- UTILS ---
-        function forceReset() { localStorage.clear(); location.reload(); }
-        function init() { document.getElementById('dataHoje').innerText = new Date().toLocaleDateString('pt-BR'); preencherFiltroDatas(); }
         function doLogout() { localStorage.clear(); location.reload(); }
-        function formatDataBr(d) { if(!d)return ""; if(d.includes('/'))return d; const p=d.split('-'); if(p.length===3)return `${p[2]}/${p[1]}/${p[0]}`; return d; }
 
         // --- FÉRIAS ---
         async function carregarListaFerias() {
-            const div = document.getElementById('listaFerias'); div.innerHTML = '<p style="color:#999;text-align:center;">Atualizando...</p>';
-            const res = await fetch(`${API_URL}?action=obterTodasFerias`); const d = await res.json();
-            if(d.sucesso && d.dados.length) {
-                let h=''; d.dados.forEach(f=>{ let c='#999'; if(f.status=='Aprovada')c='#10b981'; if(f.status=='Rejeitada')c='#ef4444'; if(f.status=='Solicitado')c='#3b82f6'; h+=`<div class="ferias-item" onclick='verDetalhesFerias(${JSON.stringify(f)})'><div><div style="font-weight:600;color:var(--primary);">${f.colaborador}</div><div style="font-size:11px;color:var(--text-sec);">${formatDataBr(f.saida)} • ${f.modelo}</div></div><div class="status-badge" style="background:${c}">${f.status}</div></div>`; });
-                div.innerHTML = h;
-            } else div.innerHTML = '<p style="text-align:center;padding:10px;color:#999;">Vazio.</p>';
+            const div = document.getElementById('listaFerias'); div.innerHTML = '<p style="color:#999; text-align:center;">Atualizando...</p>';
+            const res = await fetch(`${API_URL}?action=obterTodasFerias`); const data = await res.json();
+            if(data.sucesso && data.dados.length > 0) {
+                let html = '';
+                data.dados.forEach(f => {
+                    let cor = '#9ca3af'; if(f.status=='Aprovada') cor='#10b981'; if(f.status=='Rejeitada') cor='#ef4444'; if(f.status=='Solicitado') cor='#3b82f6';
+                    let dFmt = formatDataBr(f.saida);
+                    html += `<div class="ferias-item" onclick='verDetalhesFerias(${JSON.stringify(f)})'><div><div style="font-weight:600; color:var(--primary);">${f.colaborador}</div><div style="font-size:11px; color:var(--text-sec);">${dFmt} • ${f.modelo}</div></div><div class="status-badge" style="background:${cor}">${f.status}</div></div>`;
+                });
+                div.innerHTML = html;
+            } else div.innerHTML = '<p style="text-align:center; padding:10px; color:#999;">Vazio.</p>';
         }
         function verDetalhesFerias(f) {
             document.getElementById('hdnIdFerias').value = f.linha; document.getElementById('hdnDadosFerias').value = JSON.stringify(f);
             document.getElementById('conteudoModalDetalhes').innerHTML = `<p><strong>Colab:</strong> ${f.colaborador}</p><p><strong>Modelo:</strong> ${f.modelo}</p><p><strong>Início:</strong> ${formatDataBr(f.saida)}</p><p><strong>Obs:</strong> ${f.obs||'-'}</p>`;
             document.getElementById('modalDetalhes').classList.add('open');
         }
-        async function agendarViaEmailManual() {
-            const f = JSON.parse(document.getElementById('hdnDadosFerias').value);
-            const btn = document.querySelector('button[onclick="agendarViaEmailManual()"]'); const txt = btn.innerHTML; btn.innerText="Carregando..."; btn.disabled=true;
-            try {
-                const res = await fetch(`${API_URL}?action=obterEmailsNotificacao`); const d = await res.json();
-                const dest = d.dados.emails||"";
-                const corpo = `Olá,\n\nGostaria de formalizar a solicitação de férias:\n\nColaborador: ${f.colaborador}\nPeríodo: de ${formatDataBr(f.saida)} a ${formatDataBr(f.retorno)}\nModelo: ${f.modelo}\n\nAtenciosamente.`;
-                window.open(`mailto:${dest}?subject=${encodeURIComponent('Solicitação de Férias - '+f.colaborador)}&body=${encodeURIComponent(corpo)}`);
-            } catch(e){ alert("Erro ao obter emails."); } finally { btn.innerHTML = txt; btn.disabled=false; }
+        async function acaoFerias(st) {
+            if(!confirm('Confirmar?')) return;
+            const ln = document.getElementById('hdnIdFerias').value;
+            let m = ''; if(st=='Rejeitada') m = prompt('Motivo:');
+            document.getElementById('modalDetalhes').classList.remove('open');
+            await fetch(`${API_URL}?action=alterarStatusFerias&linha=${ln}&status=${st}&motivo=${encodeURIComponent(m)}&emailUser=${localStorage.getItem('u_email')}`);
+            carregarListaFerias();
         }
-        async function acaoFerias(st) { if(!confirm('Confirmar?'))return; const ln=document.getElementById('hdnIdFerias').value; let m=''; if(st=='Rejeitada')m=prompt('Motivo:'); document.getElementById('modalDetalhes').classList.remove('open'); await fetch(`${API_URL}?action=alterarStatusFerias&linha=${ln}&status=${st}&motivo=${encodeURIComponent(m)}&emailUser=${localStorage.getItem('u_email')}`); carregarListaFerias(); }
-        async function solicitarFerias() { const btn=document.getElementById('btnAgendar'); btn.disabled=true; btn.innerText='...'; try{ await fetch(`${API_URL}?action=agendarFerias&email=${encodeURIComponent(document.getElementById('selColabFerias').value)}&modelo=${document.getElementById('selModeloFerias').value}&dataSaida=${document.getElementById('dateInicioFerias').value}&dataRetorno=${document.getElementById('hdnRetorno').value}&obs=${encodeURIComponent(document.getElementById('txtObsFerias').value)}`); alert('Sucesso!'); document.getElementById('infoRetorno').style.display='none'; document.getElementById('txtObsFerias').value=''; carregarListaFerias(); } catch(e){alert('Erro');} finally{btn.disabled=false; btn.innerText='AGENDAR AGORA';} }
-        async function abrirConfigEmails() { document.getElementById('modalEmail').classList.add('open'); const res=await fetch(`${API_URL}?action=obterEmailsNotificacao`); const d=await res.json(); document.getElementById('txtEmailsConfig').value=d.dados.emails; }
-        async function salvarConfigEmails() { await fetch(`${API_URL}?action=salvarEmailsNotificacao&emails=${encodeURIComponent(document.getElementById('txtEmailsConfig').value)}`); document.getElementById('modalEmail').classList.remove('open'); alert('Salvo!'); }
+        async function solicitarFerias() {
+            const btn = document.getElementById('btnAgendar'); btn.disabled=true; btn.innerText='...';
+            try {
+                await fetch(`${API_URL}?action=agendarFerias&email=${encodeURIComponent(document.getElementById('selColabFerias').value)}&modelo=${document.getElementById('selModeloFerias').value}&dataSaida=${document.getElementById('dateInicioFerias').value}&dataRetorno=${document.getElementById('hdnRetorno').value}&obs=${encodeURIComponent(document.getElementById('txtObsFerias').value)}`);
+                alert('Sucesso!'); document.getElementById('infoRetorno').style.display='none'; document.getElementById('txtObsFerias').value=''; carregarListaFerias();
+            } catch(e) { alert('Erro'); } finally { btn.disabled=false; btn.innerText='AGENDAR AGORA'; }
+        }
+        async function abrirConfigEmails() {
+            document.getElementById('modalEmail').classList.add('open'); document.getElementById('txtEmailsConfig').value = 'Carregando...';
+            const res = await fetch(`${API_URL}?action=obterEmailsNotificacao`); const d = await res.json();
+            document.getElementById('txtEmailsConfig').value = d.dados.emails;
+        }
+        async function salvarConfigEmails() {
+            const v = document.getElementById('txtEmailsConfig').value;
+            await fetch(`${API_URL}?action=salvarEmailsNotificacao&emails=${encodeURIComponent(v)}`);
+            document.getElementById('modalEmail').classList.remove('open'); alert('Salvo!');
+        }
 
-        // --- DASHBOARD / HORAS / APROV / FUNC / UTILS (MANTIDOS) ---
-        async function loadDashboard() { try{const rf=await fetch(`${API_URL}?action=obterFuncionarios`); const df=await rf.json(); if(df.sucesso){document.getElementById('dashTotalFunc').innerText=df.dados.funcionarios.length; let s={}; df.dados.funcionarios.forEach(f=>{let k=f.setor||'Geral'; s[k]=(s[k]||0)+1;}); const ctx=document.getElementById('graficoDashboard'); if(chartRef)chartRef.destroy(); chartRef=new Chart(ctx,{type:'doughnut',data:{labels:Object.keys(s),datasets:[{data:Object.values(s),backgroundColor:['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,cutout:'75%',plugins:{legend:{position:'right',labels:{boxWidth:10}}}}});} const rh=await fetch(`${API_URL}?action=obterDadosHorasExtras`); const dh=await rh.json(); if(dh.sucesso)document.getElementById('dashHorasExtras').innerText=dh.dados.totalHoras; const rp=await fetch(`${API_URL}?action=obterSolicitacoesPendentes`); const dp=await rp.json(); if(dp.sucesso)document.getElementById('dashPendencias').innerText=dp.dados.totalHoras; document.getElementById('dashFerias').innerText="--"; }catch(e){} }
-        function preencherFiltroDatas(){const s=document.getElementById('filtroPeriodo'); if(!s)return; s.innerHTML=''; const h=new Date(); const m=["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"]; let o=(h.getDate()>=21)?1:0; for(let i=0;i<12;i++){let d=new Date(h.getFullYear(),h.getMonth()+o-i,1); let op=document.createElement('option'); op.value=`${d.getMonth()}-${d.getFullYear()}`; op.text=`${m[d.getMonth()]}/${d.getFullYear()}`; s.add(op);}}
-        async function recarregarHoras(){const v=document.getElementById('filtroPeriodo').value; let u=`${API_URL}?action=obterDadosHorasExtras`; if(v){const[m,a]=v.split('-'); u+=`&mes=${m}&ano=${a}`;} const res=await fetch(u); const d=await res.json(); if(d.sucesso){document.getElementById('totalHorasValor').innerText=d.dados.totalHoras; document.getElementById('periodoTexto').innerText="Ciclo: "+d.dados.periodo; if(d.dados.colaboradorMaisHoras){document.getElementById('maiorSaldoValor').innerText=d.dados.colaboradorMaisHoras.horas; document.getElementById('maiorSaldoNome').innerText=d.dados.colaboradorMaisHoras.nome;} const ctx=document.getElementById('graficoHoras'); if(chartRef2)chartRef2.destroy(); const l=d.dados.horasPorSetor.map(x=>x.setor); const va=d.dados.horasPorSetor.map(x=>x.minutos); chartRef2=new Chart(ctx,{type:'bar',data:{labels:l,datasets:[{label:'Min',data:va,backgroundColor:'#3b82f6',borderRadius:4}]},options:{maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}}); let h='<table><thead><tr><th>#</th><th>Nome</th><th>Horas</th></tr></thead><tbody>'; if(d.dados.ranking.length)d.dados.ranking.forEach((c,i)=>{let b=i<3?`<span style="background:${i==0?'#f59e0b':(i==1?'#9ca3af':'#b45309')};color:white;padding:2px 6px;border-radius:50%;font-size:10px;">${i+1}</span>`:i+1; h+=`<tr><td>${b}</td><td>${c.nome}</td><td style="font-weight:700;color:var(--primary);">${c.horas}</td></tr>`;}); else h+='<tr><td colspan="3" style="text-align:center;">Sem dados.</td></tr>'; document.getElementById('tabelaRanking').innerHTML=h+'</tbody></table>';}}
-        async function downloadExcel(){const v=document.getElementById('filtroPeriodo').value; if(!v)return; const[m,a]=v.split('-'); const res=await fetch(`${API_URL}?action=exportarExcel&mes=${m}&ano=${a}`); const d=await res.json(); if(d.sucesso){const b=new Blob(["\ufeff"+d.dados.arquivo],{type:'application/vnd.ms-excel'}); const l=document.createElement('a'); l.href=URL.createObjectURL(b); l.download=d.dados.nome; l.click();}}
-        async function verificarPermissao(){const res=await fetch(`${API_URL}?action=verificarPermissaoAprovacao&email=${localStorage.getItem('u_email')}`); const d=await res.json(); if(d.dados.podeAprovar){document.getElementById('msgAcessoNegado').style.display='none'; document.getElementById('areaAprovacoes').style.display='block'; carregarPendencias();}else{document.getElementById('msgAcessoNegado').style.display='block'; document.getElementById('areaAprovacoes').style.display='none';}}
-        async function carregarPendencias(){document.getElementById('listaPendencias').innerHTML='Loading...'; const res=await fetch(`${API_URL}?action=obterSolicitacoesPendentes`); const d=await res.json(); if(d.sucesso){if(!d.dados.solicitacoes.length){document.getElementById('listaPendencias').innerHTML='<p style="text-align:center;color:#999;padding:20px;">Tudo limpo!</p>';return;} let h='<table><thead><tr><th>Colab</th><th>Data</th><th>Horas</th><th>Ação</th></tr></thead><tbody>'; d.dados.solicitacoes.forEach(s=>{h+=`<tr><td>${s.nome}</td><td>${formatDataBr(s.data.split('T')[0])}</td><td><strong>${s.horas}</strong></td><td><button class="btn btn-green" onclick="acaoAprovar('${s.linha}',this)">✓</button> <button class="btn btn-red" onclick="acaoRejeitar('${s.linha}',this)">✕</button></td></tr>`;}); document.getElementById('listaPendencias').innerHTML=h+'</tbody></table>';}}
-        async function acaoAprovar(l,b){b.innerText='...'; await fetch(`${API_URL}?action=aprovarSolicitacao&linha=${l}&emailAprovador=${localStorage.getItem('u_email')}`); carregarPendencias();}
-        async function acaoRejeitar(l,b){const m=prompt('Motivo:'); if(m){b.innerText='...'; await fetch(`${API_URL}?action=rejeitarSolicitacao&linha=${l}&emailAprovador=${localStorage.getItem('u_email')}&motivo=${encodeURIComponent(m)}`); carregarPendencias();}}
-        async function carregarListaFuncionarios(){document.getElementById('listaFuncionarios').innerHTML='Loading...'; const res=await fetch(`${API_URL}?action=obterFuncionarios`); const d=await res.json(); if(d.sucesso){let h='<table><thead><tr><th>Nome</th><th>Cargo</th><th>Setor</th><th>Ação</th></tr></thead><tbody>'; d.dados.funcionarios.forEach(f=>{h+=`<tr><td>${f.nome}</td><td>${f.cargo}</td><td>${f.setor}</td><td><button class="btn btn-red" onclick="delFunc('${f.linha}')"><i class="fas fa-trash"></i></button></td></tr>`;}); document.getElementById('listaFuncionarios').innerHTML=h+'</tbody></table>';}}
-        async function salvarFuncionario(){await fetch(`${API_URL}?action=adicionarFuncionario&nome=${encodeURIComponent(document.getElementById('newNome').value)}&cargo=${encodeURIComponent(document.getElementById('newCargo').value)}&setor=${encodeURIComponent(document.getElementById('newSetor').value)}&turno=${encodeURIComponent(document.getElementById('newTurno').value)}`); document.getElementById('modalFuncionario').classList.remove('open'); carregarListaFuncionarios();}
-        async function delFunc(l){if(confirm('Apagar?')){await fetch(`${API_URL}?action=deletarFuncionario&linha=${l}`); carregarListaFuncionarios();}}
-        async function carregarColaboradoresSelect(){const s=document.getElementById('selColabFerias'); s.innerHTML='<option>Carregando...</option>'; const res=await fetch(`${API_URL}?action=obterFuncionarios`); const d=await res.json(); if(d.sucesso){s.innerHTML='<option value="">Selecione...</option>'; d.dados.funcionarios.forEach(f=>{let o=document.createElement('option'); o.value=f.nome; o.text=f.nome; s.appendChild(o);});}}
-        function calcRetorno(){const ini=document.getElementById('dateInicioFerias').value; const mod=document.getElementById('selModeloFerias').value; if(!ini||!mod)return; let d=30; if(mod.includes('20'))d=20; if(mod.includes('15'))d=15; const dt=new Date(ini+'T00:00:00'); if(dt.getDay()===5)alert("Atenção: Início em Sexta-feira!"); const ret=new Date(dt); ret.setDate(dt.getDate()+d); document.getElementById('txtRetorno').innerText=ret.toLocaleDateString('pt-BR'); document.getElementById('hdnRetorno').value=ret.toISOString().split('T')[0]; document.getElementById('infoRetorno').style.display='block';}
+        // --- DASHBOARD ---
+        async function loadDashboard() {
+            try {
+                const rf = await fetch(`${API_URL}?action=obterFuncionarios`); const df = await rf.json();
+                if(df.sucesso) {
+                    document.getElementById('dashTotalFunc').innerText = df.dados.funcionarios.length;
+                    let sets = {}; df.dados.funcionarios.forEach(f => { let s=f.setor||'Geral'; sets[s]=(sets[s]||0)+1; });
+                    const ctx = document.getElementById('graficoDashboard'); if(chartRef) chartRef.destroy();
+                    chartRef = new Chart(ctx, { type: 'doughnut', data: { labels: Object.keys(sets), datasets: [{ data: Object.values(sets), backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '75%', plugins: { legend: { position: 'right', labels: { boxWidth: 10 } } } } });
+                }
+                const rh = await fetch(`${API_URL}?action=obterDadosHorasExtras`); const dh = await rh.json(); if(dh.sucesso) document.getElementById('dashHorasExtras').innerText = dh.dados.totalHoras;
+                const rp = await fetch(`${API_URL}?action=obterSolicitacoesPendentes`); const dp = await rp.json(); if(dp.sucesso) document.getElementById('dashPendencias').innerText = dp.dados.totalHoras;
+                document.getElementById('dashFerias').innerText = "--"; 
+            } catch(e) {}
+        }
+        function preencherFiltroDatas() {
+            const sel = document.getElementById('filtroPeriodo'); if(!sel) return; sel.innerHTML='';
+            const hj = new Date(); const m = ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
+            let off = (hj.getDate() >= 21) ? 1 : 0;
+            for(let i=0; i<12; i++){ let d = new Date(hj.getFullYear(), hj.getMonth() + off - i, 1); let opt = document.createElement('option'); opt.value = `${d.getMonth()}-${d.getFullYear()}`; opt.text = `${m[d.getMonth()]}/${d.getFullYear()}`; sel.add(opt); }
+        }
+        async function recarregarHoras() {
+            const v = document.getElementById('filtroPeriodo').value; let url = `${API_URL}?action=obterDadosHorasExtras`;
+            if(v) { const [m,a] = v.split('-'); url += `&mes=${m}&ano=${a}`; }
+            const res = await fetch(url); const d = await res.json();
+            if(d.sucesso) {
+                document.getElementById('totalHorasValor').innerText = d.dados.totalHoras; document.getElementById('periodoTexto').innerText = "Ciclo: " + d.dados.periodo;
+                if(d.dados.colaboradorMaisHoras) { document.getElementById('maiorSaldoValor').innerText = d.dados.colaboradorMaisHoras.horas; document.getElementById('maiorSaldoNome').innerText = d.dados.colaboradorMaisHoras.nome; }
+                const ctx = document.getElementById('graficoHoras'); if(chartRef2) chartRef2.destroy();
+                const labs = d.dados.horasPorSetor.map(s=>s.setor); const vals = d.dados.horasPorSetor.map(s=>s.minutos);
+                chartRef2 = new Chart(ctx, { type:'bar', data:{labels:labs, datasets:[{label:'Minutos',data:vals,backgroundColor:'#3b82f6',borderRadius:4}]}, options:{maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true}}} });
+                let html = '<table><thead><tr><th>#</th><th>Nome</th><th>Horas</th></tr></thead><tbody>';
+                if(d.dados.ranking.length) { d.dados.ranking.forEach((c,i) => { let bg = i<3 ? (i==0?'#f59e0b':(i==1?'#9ca3af':'#b45309')) : 'transparent'; let col = i<3?'white':'#666'; html += `<tr><td><span style="background:${bg}; color:${col}; padding:2px 6px; border-radius:50%; font-size:10px;">${i+1}</span></td><td>${c.nome}</td><td style="font-weight:700; color:var(--primary);">${c.horas}</td></tr>`; }); } else html += '<tr><td colspan="3" style="text-align:center;">Sem dados.</td></tr>';
+                document.getElementById('tabelaRanking').innerHTML = html + '</tbody></table>';
+            }
+        }
+        async function downloadExcel() {
+            const v = document.getElementById('filtroPeriodo').value; if(!v) return; const [m,a] = v.split('-');
+            const res = await fetch(`${API_URL}?action=exportarExcel&mes=${m}&ano=${a}`); const d = await res.json();
+            if(d.sucesso) { const blob = new Blob(["\ufeff"+d.dados.arquivo], {type:'application/vnd.ms-excel'}); const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = d.dados.nome; link.click(); }
+        }
+
+        // --- APROVAÇÕES & FUNCIONÁRIOS ---
+        async function verificarPermissao() {
+            const res = await fetch(`${API_URL}?action=verificarPermissaoAprovacao&email=${localStorage.getItem('u_email')}`); const d = await res.json();
+            if(d.dados.podeAprovar) { document.getElementById('msgAcessoNegado').style.display='none'; document.getElementById('areaAprovacoes').style.display='block'; carregarPendencias(); } 
+            else { document.getElementById('msgAcessoNegado').style.display='block'; document.getElementById('areaAprovacoes').style.display='none'; }
+        }
+        async function carregarPendencias() {
+            document.getElementById('listaPendencias').innerHTML = 'Carregando...'; const res = await fetch(`${API_URL}?action=obterSolicitacoesPendentes`); const d = await res.json();
+            if(d.sucesso) {
+                if(!d.dados.solicitacoes.length) { document.getElementById('listaPendencias').innerHTML='<p style="text-align:center;color:#999;padding:20px;">Tudo limpo!</p>'; return; }
+                let html = '<table><thead><tr><th>Colaborador</th><th>Data</th><th>Horas</th><th>Ação</th></tr></thead><tbody>';
+                d.dados.solicitacoes.forEach(s => { html += `<tr><td>${s.nome}</td><td>${formatDataBr(s.data.split('T')[0])}</td><td><strong>${s.horas}</strong></td><td><button class="btn btn-green" onclick="acaoAprovar('${s.linha}',this)">✓</button> <button class="btn btn-red" onclick="acaoRejeitar('${s.linha}',this)">✕</button></td></tr>`; });
+                document.getElementById('listaPendencias').innerHTML = html + '</tbody></table>';
+            }
+        }
+        async function acaoAprovar(l,btn) { btn.innerText='...'; await fetch(`${API_URL}?action=aprovarSolicitacao&linha=${l}&emailAprovador=${localStorage.getItem('u_email')}`); carregarPendencias(); }
+        async function acaoRejeitar(l,btn) { const m=prompt('Motivo:'); if(m){btn.innerText='...'; await fetch(`${API_URL}?action=rejeitarSolicitacao&linha=${l}&emailAprovador=${localStorage.getItem('u_email')}&motivo=${encodeURIComponent(m)}`); carregarPendencias();} }
+        async function carregarListaFuncionarios() {
+            document.getElementById('listaFuncionarios').innerHTML = 'Carregando...'; const res = await fetch(`${API_URL}?action=obterFuncionarios`); const d = await res.json();
+            if(d.sucesso) { let html = '<table><thead><tr><th>Nome</th><th>Cargo</th><th>Setor</th><th>Ação</th></tr></thead><tbody>'; d.dados.funcionarios.forEach(f => { html += `<tr><td>${f.nome}</td><td>${f.cargo}</td><td>${f.setor}</td><td><button class="btn btn-red" onclick="delFunc('${f.linha}')"><i class="fas fa-trash"></i></button></td></tr>`; }); document.getElementById('listaFuncionarios').innerHTML = html + '</tbody></table>'; }
+        }
+        async function salvarFuncionario() { await fetch(`${API_URL}?action=adicionarFuncionario&nome=${encodeURIComponent(document.getElementById('newNome').value)}&cargo=${encodeURIComponent(document.getElementById('newCargo').value)}&setor=${encodeURIComponent(document.getElementById('newSetor').value)}&turno=${encodeURIComponent(document.getElementById('newTurno').value)}`); document.getElementById('modalFuncionario').classList.remove('open'); carregarListaFuncionarios(); }
+        async function delFunc(l) { if(confirm('Apagar?')) { await fetch(`${API_URL}?action=deletarFuncionario&linha=${l}`); carregarListaFuncionarios(); } }
+        async function carregarColaboradoresSelect() {
+            const s = document.getElementById('selColabFerias'); s.innerHTML = '<option>Carregando...</option>'; const res = await fetch(`${API_URL}?action=obterFuncionarios`); const d = await res.json();
+            if(d.sucesso) { s.innerHTML = '<option value="">Selecione...</option>'; d.dados.funcionarios.forEach(f => { let op = document.createElement('option'); op.value = f.nome; op.text = f.nome; s.appendChild(op); }); }
+        }
+        function calcRetorno() {
+            const ini = document.getElementById('dateInicioFerias').value; const mod = document.getElementById('selModeloFerias').value; if(!ini || !mod) return;
+            let dias = 30; if(mod.includes('20')) dias = 20; if(mod.includes('15')) dias = 15;
+            const dt = new Date(ini + 'T00:00:00'); if(dt.getDay() === 5) alert("Atenção: Início em Sexta-feira!");
+            const ret = new Date(dt); ret.setDate(dt.getDate() + dias);
+            document.getElementById('txtRetorno').innerText = ret.toLocaleDateString('pt-BR'); document.getElementById('hdnRetorno').value = ret.toISOString().split('T')[0]; document.getElementById('infoRetorno').style.display = 'block';
+        }
     </script>
 </body>
 </html>
