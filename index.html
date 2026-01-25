@@ -17,7 +17,8 @@
             --card-bg: #ffffff;
             --text-main: #333;
             --text-sec: #666;
-            --banner-blue: #2980b9; /* Azul do Topo */
+            --banner-blue: #2980b9; 
+            --accent-blue: #3498db;
             --radius: 12px;
             --shadow: 0 4px 10px rgba(0,0,0,0.05);
         }
@@ -26,7 +27,7 @@
         body { background-color: var(--bg-body); color: var(--text-main); height: 100vh; overflow: hidden; }
 
         /* LOADING */
-        #globalOverlay { position: fixed; top:0; left:0; width:100%; height:100%; background:var(--card-bg); z-index:99999; display:flex; flex-direction:column; justify-content:center; align-items:center; }
+        #globalOverlay { position: fixed; top:0; left:0; width:100%; height:100%; background:var(--card-bg); z-index:99999; display:flex; flex-direction:column; justify-content:center; align-items:center; transition: opacity 0.4s ease; }
         .spinner { width: 45px; height: 45px; border: 4px solid #f3f3f3; border-top: 4px solid var(--banner-blue); border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
 
@@ -86,7 +87,22 @@
         
         .btn { padding: 10px 15px; border-radius: 6px; border: none; font-size: 13px; font-weight: 600; cursor: pointer; transition: 0.2s; }
         .btn-prim { background: var(--banner-blue); color: white; }
-        .btn-sec { background: white; border: 1px solid #3498db; color: #3498db; } .btn-sec:hover { background: #ebf5fb; }
+        
+        /* BOTÕES ARREDONDADOS (OUTLINE) */
+        .btn-outline { 
+            background: white; 
+            border: 1px solid var(--accent-blue); 
+            color: var(--accent-blue); 
+            border-radius: 20px; /* Borda Arredondada */
+            width: 100%; 
+            padding: 12px; 
+            text-align: center; 
+            margin-bottom: 10px;
+            display: block;
+        } 
+        .btn-outline:hover { background: #ebf5fb; }
+
+        .btn-sec { background: white; border: 1px solid #ddd; color: #333; }
         .btn-green { background: #27ae60; color: white; }
         .btn-red { background: #e74c3c; color: white; }
         
@@ -106,7 +122,6 @@
             .sidebar, .login-screen, #globalOverlay { display: none !important; }
         }
         
-        /* MODAL */
         .modal-bg { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); z-index: 6000; display: none; align-items: center; justify-content: center; }
         .modal-box { background: white; padding: 30px; border-radius: 12px; width: 450px; max-width: 90%; }
 
@@ -123,7 +138,7 @@
     </div>
 
     <div id="loginScreen" class="login-screen">
-        <div class="login-box">
+        <div class="login-card">
             <h2 style="color:var(--sidebar-bg); margin-bottom:5px;">RH Manager</h2>
             <p style="color:#888; font-size:13px; margin-bottom:30px;">Acesso ao Painel</p>
             <form onsubmit="handleLogin(event)">
@@ -192,16 +207,24 @@
                 </div>
 
                 <div class="row">
-                    <div class="col-2 card">
-                        <div class="card-head">Distribuição por Setor</div>
-                        <div style="height: 250px; position: relative;"><canvas id="graficoDashboard"></canvas></div>
+                    <div class="col-2">
+                        <div class="card">
+                            <div class="card-head">Distribuição por Setor</div>
+                            <div style="height: 250px; position: relative;"><canvas id="graficoDashboard"></canvas></div>
+                        </div>
+                        
+                        <div class="card">
+                            <div class="card-head">🏖️ Próximas Férias (45d)</div>
+                            <div id="listaProximasFerias" style="font-size:13px; color:#555; max-height:200px; overflow-y:auto;">Carregando...</div>
+                        </div>
                     </div>
+                    
                     <div class="col-1 card">
                         <div class="card-head">Acesso Rápido</div>
                         <div style="display:flex; flex-direction:column; gap:10px;">
-                            <button onclick="navTo('ferias')" class="btn-sec" style="width:100%; text-align:left; padding:15px;">Solicitar Férias</button>
-                            <button onclick="navTo('horas')" class="btn-sec" style="width:100%; text-align:left; padding:15px;">Banco de Horas</button>
-                            <button onclick="navTo('funcionarios')" class="btn-sec" style="width:100%; text-align:left; padding:15px;">Novo Funcionário</button>
+                            <button onclick="navTo('ferias')" class="btn-outline">Solicitar Férias</button>
+                            <button onclick="navTo('horas')" class="btn-outline">Banco de Horas</button>
+                            <button onclick="navTo('funcionarios')" class="btn-outline">Novo Funcionário</button>
                         </div>
                     </div>
                 </div>
@@ -215,8 +238,8 @@
                         <form onsubmit="event.preventDefault(); solicitarFerias()">
                             <label style="font-size:12px; font-weight:bold;">COLABORADOR</label><select id="feriasColab" required></select>
                             <div class="row" style="margin-top:10px;">
-                                <div style="flex:1"><label style="font-size:12px; font-weight:bold;">MODELO</label><select id="feriasModelo"><option value="30">30 dias corridos</option><option value="20_10_venda">20 dias + Venda 10</option></select></div>
-                                <div style="flex:1"><label style="font-size:12px; font-weight:bold;">INÍCIO</label><input type="date" id="feriasInicio" required></div>
+                                <div style="flex:1;"><label style="font-size:12px; font-weight:bold;">MODELO</label><select id="feriasModelo"><option value="30">30 dias corridos</option><option value="20_10_venda">20 dias + Venda 10</option></select></div>
+                                <div style="flex:1;"><label style="font-size:12px; font-weight:bold;">INÍCIO</label><input type="date" id="feriasInicio" required></div>
                             </div>
                             <label style="margin-top:10px;">OBSERVAÇÕES</label><textarea id="feriasObs" rows="2"></textarea>
                             <button type="submit" class="btn-prim" id="btnAgendar" style="width:100%; padding:12px;">AGENDAR</button>
@@ -259,8 +282,8 @@
                     </div>
                 </div>
                 <div id="viewListaFunc" class="card">
-                    <div class="card-head"><span>Lista Completa</span><button onclick="document.getElementById('modalFuncionario').style.display='flex'" class="btn-green" style="font-size:11px; padding:6px 12px;">+ Novo</button></div>
-                    <div id="tabelaFuncionarios">Carregando...</div>
+                    <div class="card-head"><span>Lista Completa</span><button onclick="document.getElementById('modalFuncionario').classList.add('open')" class="btn-green" style="font-size:11px; padding:6px 12px;">+ Novo</button></div>
+                    <div id="tabelaFuncionarios" class="table-wrap">Carregando...</div>
                 </div>
                 <div id="viewNiverFunc" class="card" style="display:none;">
                     <div class="card-head">Aniversariantes do Mês</div>
@@ -287,47 +310,40 @@
                             <button class="btn-green" style="width:100%; margin-top:10px;">Criar</button>
                         </form>
                     </div>
+                    <div class="col-1 card">
+                        <div class="card-head">Notificações</div>
+                        <form onsubmit="event.preventDefault(); salvarConfigEmails()">
+                             <textarea id="txtEmailsConfig" rows="3" placeholder="Emails separados por vírgula"></textarea>
+                             <button class="btn-prim" style="width:100%;">Salvar</button>
+                        </form>
+                    </div>
                 </div>
             </div>
 
             <div id="horas-page" class="page">
-                <div style="display:flex; justify-content:space-between; margin-bottom:20px;"><h1>Horas Extras</h1>
-                    <div class="controls"><select id="filtroPeriodo" onchange="recarregarHoras()" style="width:auto; margin:0;"></select><button onclick="downloadExcel()" class="btn-excel">Exportar</button><button onclick="recarregarHoras()" class="btn-prim">Atualizar</button></div>
+                <div class="header-flex"><h1 class="page-h1">Horas Extras</h1>
+                    <div class="controls"><select id="filtroPeriodo" onchange="recarregarHoras()" style="margin:0; width:auto;"></select><button onclick="downloadExcel()" class="btn-excel">Exportar</button><button onclick="recarregarHoras()" class="btn-prim">Atualizar</button></div>
                 </div>
                 <div class="kpi-row"><div class="kpi-box"><div class="kpi-label">Total</div><div class="kpi-num" id="totalHorasValor">--</div></div><div class="kpi-box"><div class="kpi-label">Maior Saldo</div><div class="kpi-num" id="maiorSaldoValor">--</div><small id="maiorSaldoNome"></small></div></div>
                 <div class="row"><div class="col-2 card" style="height:450px;"><canvas id="graficoHoras"></canvas></div><div class="col-1 card"><div id="tabelaRanking" class="table-wrap"></div></div></div>
             </div>
             
             <div id="aprovacoes-page" class="page">
-                <div style="display:flex; justify-content:space-between; margin-bottom:20px;"><h1>Aprovações</h1><button onclick="carregarPendencias()" class="btn-prim">Atualizar</button></div>
-                <div class="card"><div id="listaAprovacoes"></div></div>
+                <div class="header-flex"><h1 class="page-h1">Aprovações</h1><button onclick="carregarPendencias()" class="btn-prim">Atualizar</button></div>
+                <div class="card"><div id="listaAprovacoes" class="table-wrap"></div></div>
             </div>
         </main>
     </div>
 
     <div id="modalFuncionario" class="modal-bg">
-        <div class="modal-box">
+        <div class="modal-content">
             <h3>Novo Colaborador</h3>
             <input id="newNome" placeholder="Nome" required><input id="newCargo" placeholder="Cargo">
             <input id="newSetor" placeholder="Setor"><input id="newTurno" placeholder="Turno">
             <label>Nascimento</label><input id="newNasc" type="date">
-            <div style="margin-top:20px; display:flex; gap:10px;">
+            <div style="margin-top:15px; display:flex; gap:10px;">
                 <button onclick="salvarFuncionario()" class="btn-green" style="flex:1;">Salvar</button>
-                <button onclick="document.getElementById('modalFuncionario').style.display='none'" class="btn-sec" style="flex:1;">Cancelar</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="modalDetalhes" class="modal-bg">
-        <div class="modal-box">
-            <h3>Detalhes</h3>
-            <div id="conteudoModalDetalhes" style="font-size:14px; margin-bottom:20px;"></div>
-            <input type="hidden" id="hdnIdFerias"><input type="hidden" id="hdnDadosFerias">
-            <button onclick="agendarViaEmailManual()" class="btn-sec" style="width:100%; margin-bottom:15px; color:#3498db; border-color:#3498db;">Enviar E-mail</button>
-            <div style="display:flex; gap:10px;">
-                <button onclick="acaoFerias('Aprovada')" class="btn-green" style="flex:1;">Aprovar</button>
-                <button onclick="acaoFerias('Rejeitada')" class="btn-red" style="flex:1;">Rejeitar</button>
-                <button onclick="document.getElementById('modalDetalhes').style.display='none'" class="btn-sec" style="flex:1;">Fechar</button>
+                <button onclick="document.getElementById('modalFuncionario').classList.remove('open')" class="btn-sec" style="flex:1;">Cancelar</button>
             </div>
         </div>
     </div>
@@ -335,8 +351,8 @@
     <div id="areaImpressao" style="display:none;"></div>
 
     <script>
-        // === ATUALIZE O LINK AQUI ===
-        const API_URL = 'https://script.google.com/macros/s/AKfycbzn0sGe-BdE6-vP3M603v2i0AO7GQTPGjLIkmLldqneLRf9GXxGLy9hOx0S5YaujVIO/exec';
+        // === LINK DO SEU SCRIPT AQUI ===
+        const API_URL = 'https://script.google.com/macros/s/AKfycbxJvJwvSJvZihuh6y2R1Dtvh3TwjRtHixzniePEFUYa_2SEwAgzFGonwuKxzDztVJAN/exec';
         
         let chartRef = null, chartRef2 = null;
         let inactivityTimer;
@@ -348,7 +364,9 @@
             document.getElementById('appContainer').style.display = 'none';
             document.getElementById('globalOverlay').style.display = 'none';
             document.getElementById('dataHoje').innerText = new Date().toLocaleDateString('pt-BR');
-            setTimeout(() => { if(document.getElementById('globalOverlay').style.display !== 'none') document.getElementById('btnResetLoad').style.display = 'block'; }, 8000);
+            setTimeout(() => {
+                if(document.getElementById('globalOverlay').style.display !== 'none') document.getElementById('btnResetLoad').style.display = 'block';
+            }, 8000);
         });
 
         // MONITOR
@@ -423,6 +441,8 @@
                     const ctx = document.getElementById('graficoDashboard'); if(chartRef) chartRef.destroy();
                     chartRef = new Chart(ctx, { type: 'doughnut', data: { labels: Object.keys(dados.setores), datasets: [{ data: Object.values(dados.setores), backgroundColor: ['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'right' } } } });
                 }
+                const rpf = await fetch(`${API_URL}?action=obterProximasFerias`); const dpf = await rpf.json();
+                document.getElementById('listaProximasFerias').innerHTML = (dpf.sucesso && dpf.dados.length) ? dpf.dados.map(f => `<div style="padding:10px; border-bottom:1px solid #f3f4f6; display:flex; justify-content:space-between;"><strong>${f.colaborador}</strong><span style="background:#e0f2fe; padding:2px 6px; border-radius:4px; font-size:12px;">${f.saida}</span></div>`).join('') : "<p style='text-align:center;color:#999;padding:20px;'>Nenhuma prevista.</p>";
             } catch(e){}
         }
 
@@ -467,17 +487,9 @@
                     </div>
                 `;
             } else {
-                let tit = t==='suspensao' ? "TERMO DE SUSPENSÃO" : (t==='aviso_ferias' ? "AVISO DE FÉRIAS" : "DOCUMENTO");
-                html = `
-                    <div style="text-align: center; margin-bottom: 50px;"><h2>${tit}</h2><p>VETORE INDÚSTRIA E COMÉRCIO DE AUTOPEÇAS LTDA.</p></div>
-                    <p><strong>Colaborador:</strong> ${n}</p>
-                    <p><strong>Data:</strong> ${dataExt}</p>
-                    <hr style="margin: 20px 0;">
-                    <div style="text-align: justify; line-height: 1.6; margin-bottom: 50px;">${m}</div>
-                    <div style="text-align: center; margin-top: 100px; border-top: 1px solid #000; width: 50%; margin-left: auto; margin-right: auto; padding-top: 10px;">Assinatura Responsável</div>
-                `;
+                let tit = t==='suspensao'?"TERMO DE SUSPENSÃO":(t==='aviso_ferias'?"AVISO DE FÉRIAS":"DOCUMENTO");
+                html = `<div style="text-align: center; margin-bottom: 50px;"><h2>${tit}</h2><p>VETORE INDÚSTRIA E COMÉRCIO DE AUTOPEÇAS LTDA.</p></div><p><strong>Colaborador:</strong> ${n}</p><p><strong>Data:</strong> ${dataExt}</p><hr style="margin:20px 0"><div style="text-align: justify; line-height: 1.6; margin-bottom: 50px;">${m}</div><div style="text-align: center; margin-top: 100px; border-top: 1px solid #000; width: 50%; margin: auto; padding-top: 10px;">Assinatura Responsável</div>`;
             }
-
             const area = document.getElementById('areaImpressao');
             area.innerHTML = html;
             window.print();
@@ -487,18 +499,17 @@
         function toggleViewFunc(v) { document.getElementById('viewListaFunc').style.display = v=='lista'?'block':'none'; document.getElementById('viewNiverFunc').style.display = v=='niver'?'block':'none'; if(v=='niver') carregarAniversariantes(); }
         async function carregarFuncionarios() { const div = document.getElementById('tabelaFuncionarios'); div.innerHTML='Carregando...'; const res = await fetch(`${API_URL}?action=obterFuncionarios`); const d = await res.json(); let h = '<table width="100%"><tr><th>Nome</th><th>Cargo</th><th>Ação</th></tr>' + d.dados.funcionarios.map(f=>`<tr><td>${f.nome}</td><td>${f.cargo}</td><td><button onclick="delFunc('${f.linha}')" class="btn-red" style="padding:4px 8px;">Excluir</button></td></tr>`).join('') + '</table>'; div.innerHTML = h; }
         async function carregarAniversariantes() { const div = document.getElementById('listaAniversariantes'); div.innerHTML='Calculando...'; const res = await fetch(`${API_URL}?action=obterFuncionarios`); const d = await res.json(); const mes = new Date().getMonth()+1; const lista = d.dados.funcionarios.filter(f => f.nascimento && parseInt(f.nascimento.split('/')[1]) == mes); div.innerHTML = lista.length ? lista.map(f=>`<div style="padding:10px;">🎉 <strong>${f.nome}</strong> - ${f.nascimento}</div>`).join('') : "Nenhum aniversariante."; }
-        async function salvarFuncionario() { await fetch(`${API_URL}?action=adicionarFuncionario&nome=${encodeURIComponent(document.getElementById('newNome').value)}&cargo=${encodeURIComponent(document.getElementById('newCargo').value)}&setor=${encodeURIComponent(document.getElementById('newSetor').value)}&turno=${encodeURIComponent(document.getElementById('newTurno').value)}&nascimento=${document.getElementById('newNasc').value}`); document.getElementById('modalFuncionario').style.display='none'; carregarFuncionarios(); }
+        async function salvarFuncionario() { await fetch(`${API_URL}?action=adicionarFuncionario&nome=${encodeURIComponent(document.getElementById('newNome').value)}&cargo=${encodeURIComponent(document.getElementById('newCargo').value)}&setor=${encodeURIComponent(document.getElementById('newSetor').value)}&turno=${encodeURIComponent(document.getElementById('newTurno').value)}&nascimento=${document.getElementById('newNasc').value}`); document.getElementById('modalFuncionario').classList.remove('open'); carregarFuncionarios(); }
         async function delFunc(l) { if(confirm('Excluir?')) await fetch(`${API_URL}?action=deletarFuncionario&linha=${l}`); carregarFuncionarios(); }
         async function carregarColabs() { const res = await fetch(`${API_URL}?action=obterFuncionarios`); const d = await res.json(); const ops = d.dados.funcionarios.map(f => `<option value="${f.nome}">${f.nome}</option>`).join(''); document.getElementById('feriasColab').innerHTML = ops; document.getElementById('docColab').innerHTML = ops; }
         async function solicitarFerias() { await fetch(`${API_URL}?action=agendarFerias&email=${encodeURIComponent(document.getElementById('feriasColab').value)}&modelo=${document.getElementById('feriasModelo').value}&dataSaida=${document.getElementById('feriasInicio').value}&obs=${encodeURIComponent(document.getElementById('feriasObs').value)}`); alert('Sucesso!'); carregarListaFerias(); }
-        async function carregarListaFerias() { const res = await fetch(`${API_URL}?action=obterTodasFerias`); const d = await res.json(); document.getElementById('listaFeriasRecentes').innerHTML = d.dados.map(f=>`<div onclick='verDetalhesFerias(${JSON.stringify(f)})' style="padding:10px; border-bottom:1px solid #eee; cursor:pointer;"><strong>${f.colaborador}</strong><br><small>${f.saida} - ${f.status}</small></div>`).join(''); }
+        async function carregarListaFerias() { const res = await fetch(`${API_URL}?action=obterTodasFerias`); const d = await res.json(); document.getElementById('listaFeriasRecentes').innerHTML = d.dados.map(f=>`<div style="padding:10px; border-bottom:1px solid #eee;"><strong>${f.colaborador}</strong><br><small>${f.saida} - ${f.status}</small></div>`).join(''); }
         async function alterarSenha() { const s = document.getElementById('novaSenha').value; if(!s) return alert("Digite a nova senha"); await fetch(`${API_URL}?action=alterarSenha&email=${localStorage.getItem('u_email')}&novaSenha=${encodeURIComponent(s)}`); alert('Senha alterada!'); document.getElementById('novaSenha').value=''; }
         async function criarUsuario() { const e=document.getElementById('newUserEmail').value; const s=document.getElementById('newUserPass').value; const n=document.getElementById('newUserNome').value; const c=document.getElementById('newUserCargo').value; if(!e || !s) return alert("Preencha email e senha"); await fetch(`${API_URL}?action=criarNovoUsuario&email=${e}&senha=${s}&nome=${n}&cargo=${c}`); alert('Usuário criado!'); }
         async function abrirConfigEmails() { const res=await fetch(`${API_URL}?action=obterEmailsNotificacao`); const d=await res.json(); document.getElementById('txtEmailsConfig').value=d.dados.emails; }
         async function salvarConfigEmails() { await fetch(`${API_URL}?action=salvarEmailsNotificacao&emails=${encodeURIComponent(document.getElementById('txtEmailsConfig').value)}`); alert('Salvo!'); }
         async function carregarPendencias() { const div=document.getElementById('listaAprovacoes'); div.innerHTML='...'; const res=await fetch(`${API_URL}?action=obterSolicitacoesPendentes`); const d=await res.json(); if(d.sucesso){ if(!d.dados.solicitacoes.length) div.innerHTML='<p style="padding:20px; color:#999;">Tudo limpo!</p>'; else { let h='<table width="100%"><tr><th>Nome</th><th>Data</th><th>Horas</th><th>Ação</th></tr>'; d.dados.solicitacoes.forEach(s=>{ h+=`<tr><td>${s.nome}</td><td>${formatDataBr(s.data.split('T')[0])}</td><td>${s.horas}</td><td><button class="btn-green" onclick="aprovar('${s.linha}')" style="padding:4px 8px; font-size:11px;">APROVAR</button></td></tr>` }); div.innerHTML=h+'</table>'; } } }
         async function aprovar(l){ await fetch(`${API_URL}?action=aprovarSolicitacao&linha=${l}&emailAprovador=${localStorage.getItem('u_email')}`); carregarPendencias(); }
-        function verDetalhesFerias(f) { document.getElementById('hdnIdFerias').value = f.linha; document.getElementById('hdnDadosFerias').value = JSON.stringify(f); document.getElementById('conteudoModalDetalhes').innerHTML = `<p><strong>Colaborador:</strong> ${f.colaborador}</p><p><strong>Início:</strong> ${formatDataBr(f.saida)}</p><p><strong>Modelo:</strong> ${f.modelo}</p><p><strong>Obs:</strong> ${f.obs||'-'}</p>`; document.getElementById('modalDetalhes').style.display='flex'; }
         function preencherFiltroDatas(){const s=document.getElementById('filtroPeriodo'); if(!s)return; s.innerHTML=''; const h=new Date(); const m=["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"]; let o=(h.getDate()>=21)?1:0; for(let i=0;i<12;i++){let d=new Date(h.getFullYear(),h.getMonth()+o-i,1); let op=document.createElement('option'); op.value=`${d.getMonth()}-${d.getFullYear()}`; op.text=`${m[d.getMonth()]}/${d.getFullYear()}`; s.add(op);}}
         async function recarregarHoras(){ const v=document.getElementById('filtroPeriodo').value; let u=`${API_URL}?action=obterDadosHorasExtras`; if(v){const[m,a]=v.split('-'); u+=`&mes=${m}&ano=${a}`;} const res=await fetch(u); const d=await res.json(); if(d.sucesso){ document.getElementById('totalHorasValor').innerText=d.dados.totalHoras; document.getElementById('maiorSaldoValor').innerText=d.dados.colaboradorMaisHoras.horas; document.getElementById('maiorSaldoNome').innerText=d.dados.colaboradorMaisHoras.nome; const ctx=document.getElementById('graficoHoras'); if(chartRef2)chartRef2.destroy(); const l=d.dados.horasPorSetor.map(x=>x.setor); const va=d.dados.horasPorSetor.map(x=>x.minutos); chartRef2=new Chart(ctx,{type:'bar',data:{labels:l,datasets:[{label:'Min',data:va,backgroundColor:'#3b82f6',borderRadius:4}]},options:{maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}}); let h='<table><thead><tr><th>#</th><th>Nome</th><th>Horas</th></tr></thead><tbody>'; if(d.dados.ranking.length)d.dados.ranking.forEach((c,i)=>{let b=i<3?`<span style="background:${i==0?'#f59e0b':(i==1?'#9ca3af':'#b45309')};color:white;padding:2px 6px;border-radius:50%;font-size:10px;">${i+1}</span>`:i+1; h+=`<tr><td>${b}</td><td>${c.nome}</td><td style="font-weight:700;color:var(--primary);">${c.horas}</td></tr>`;}); else h+='<tr><td colspan="3" style="text-align:center;">Sem dados.</td></tr>'; document.getElementById('tabelaRanking').innerHTML=h+'</tbody></table>'; } }
         async function downloadExcel(){ const v=document.getElementById('filtroPeriodo').value; if(!v)return; const[m,a]=v.split('-'); const res=await fetch(`${API_URL}?action=exportarExcel&mes=${m}&ano=${a}`); const d=await res.json(); if(d.sucesso){const b=new Blob(["\ufeff"+d.dados.arquivo],{type:'application/vnd.ms-excel'}); const l=document.createElement('a'); l.href=URL.createObjectURL(b); l.download=d.dados.nome; l.click();} }
