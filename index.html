@@ -78,6 +78,7 @@
         .bg-purple-light { background: #f5f3ff; color: #8b5cf6; }
         .kpi-val { font-size: 32px; font-weight: 800; color: var(--text-main); }
         .kpi-sub { font-size: 12px; color: #94a3b8; margin-top: 5px; }
+        .kpi-lbl { font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; display: block; }
 
         /* CARDS & UI */
         .card { background: white; border-radius: var(--radius); padding: 25px; box-shadow: var(--shadow); margin-bottom: 20px; border: 1px solid #e2e8f0; }
@@ -244,7 +245,16 @@
             </div>
 
             <div id="ferias-page" class="page">
-                <div class="page-header"><h1 class="page-title">Gestão de Férias</h1></div>
+                <div class="welcome-banner">
+                    <div class="banner-text">
+                        <h1><i class="fas fa-plane-departure"></i> Gestão de Férias</h1>
+                        <p>Agende e acompanhe as férias dos colaboradores.</p>
+                    </div>
+                    <div class="date-badge">
+                        <span>Data de Hoje</span>
+                        <strong id="dataHojeFer">--/--/----</strong>
+                    </div>
+                </div>
                 <div class="row">
                     <div class="col-2 card">
                         <div class="card-head">Nova Solicitação</div>
@@ -266,7 +276,16 @@
             </div>
 
             <div id="documentos-page" class="page">
-                <div class="page-header"><h1 class="page-title">Emissão de Documentos</h1></div>
+                <div class="welcome-banner">
+                    <div class="banner-text">
+                        <h1><i class="fas fa-file-contract"></i> Emissão de Documentos</h1>
+                        <p>Gere e imprima documentos oficiais da empresa.</p>
+                    </div>
+                    <div class="date-badge">
+                        <span>Data de Hoje</span>
+                        <strong id="dataHojeDoc">--/--/----</strong>
+                    </div>
+                </div>
                 <div class="card" style="max-width: 700px;">
                     <label>1. Selecione o Colaborador</label>
                     <select id="docColab"></select>
@@ -287,11 +306,14 @@
             </div>
 
             <div id="funcionarios-page" class="page">
-                <div class="page-header">
-                    <h1 class="page-title">Funcionários</h1>
+                <div class="welcome-banner">
+                    <div class="banner-text">
+                        <h1><i class="fas fa-users"></i> Funcionários</h1>
+                        <p>Gerencie o cadastro de colaboradores da empresa.</p>
+                    </div>
                     <div style="display:flex; gap:10px;">
                         <button onclick="toggleViewFunc('lista')" class="btn-prim">Lista</button>
-                        <button onclick="toggleViewFunc('niver')" class="btn-sec">🎂 Aniversariantes</button>
+                        <button onclick="toggleViewFunc('niver')" class="btn-sec">🎂 Aniversáriantes</button>
                     </div>
                 </div>
                 <div id="viewListaFunc" class="card">
@@ -305,7 +327,16 @@
             </div>
 
             <div id="configuracoes-page" class="page">
-                <div class="page-header"><h1 class="page-title">Configurações</h1></div>
+                <div class="welcome-banner">
+                    <div class="banner-text">
+                        <h1><i class="fas fa-cog"></i> Configurações</h1>
+                        <p>Gerencie usuários, senhas e notificações do sistema.</p>
+                    </div>
+                    <div class="date-badge">
+                        <span>Data de Hoje</span>
+                        <strong id="dataHojeConfig">--/--/----</strong>
+                    </div>
+                </div>
                 <div class="row">
                     <div class="col-1 card">
                         <div class="card-head">Alterar Senha</div>
@@ -334,12 +365,15 @@
             </div>
 
             <div id="horas-page" class="page">
-                <div class="page-header">
-                    <h1 class="page-title">Horas Extras</h1>
+                <div class="welcome-banner">
+                    <div class="banner-text">
+                        <h1><i class="fas fa-clock"></i> Horas Extras</h1>
+                        <p>Acompanhe o banco de horas e gere relatórios por período.</p>
+                    </div>
                     <div style="display:flex; gap:10px;">
-                        <select id="filtroPeriodo" onchange="recarregarHoras()" style="width:auto; margin:0;"></select>
-                        <button onclick="downloadExcel()" class="btn-excel">Exportar</button>
-                        <button onclick="recarregarHoras()" class="btn-prim">Atualizar</button>
+                        <select id="filtroPeriodo" onchange="recarregarHoras()" style="width:auto; margin:0; padding:10px; border-radius:8px; border:1px solid rgba(255,255,255,0.3); background:rgba(255,255,255,0.2); color:white; font-weight:600;"></select>
+                        <button onclick="downloadExcel()" class="btn-sec" style="background:rgba(255,255,255,0.2); color:white; border:1px solid rgba(255,255,255,0.3);">Exportar</button>
+                        <button onclick="recarregarHoras()" class="btn-sec" style="background:rgba(255,255,255,0.2); color:white; border:1px solid rgba(255,255,255,0.3);">Atualizar</button>
                     </div>
                 </div>
                 <div class="kpi-row">
@@ -352,7 +386,13 @@
                 </div>
             </div>
             <div id="aprovacoes-page" class="page">
-                <div class="page-header"><h1 class="page-title">Aprovações</h1><button onclick="carregarPendencias()" class="btn-prim">Atualizar</button></div>
+                <div class="welcome-banner">
+                    <div class="banner-text">
+                        <h1><i class="fas fa-check-circle"></i> Aprovações</h1>
+                        <p>Gerencie solicitações de horas extras pendentes.</p>
+                    </div>
+                    <button onclick="carregarPendencias()" class="btn-sec" style="background:rgba(255,255,255,0.2); color:white; border:1px solid rgba(255,255,255,0.3);">Atualizar</button>
+                </div>
                 <div class="card"><div id="listaAprovacoes" class="table-container"></div></div>
             </div>
         </main>
@@ -400,7 +440,14 @@
             document.getElementById('loginScreen').style.display = 'flex';
             document.getElementById('appContainer').style.display = 'none';
             document.getElementById('globalOverlay').style.display = 'none';
-            document.getElementById('dataHoje').innerText = new Date().toLocaleDateString('pt-BR');
+            const dataAtual = new Date().toLocaleDateString('pt-BR');
+            document.getElementById('dataHoje').innerText = dataAtual;
+            // Atualizar data em todas as páginas
+            const dataElements = ['dataHojeFer', 'dataHojeDoc', 'dataHojeConfig'];
+            dataElements.forEach(id => {
+                const el = document.getElementById(id);
+                if(el) el.innerText = dataAtual;
+            });
             setTimeout(() => { if(document.getElementById('globalOverlay').style.display !== 'none') document.getElementById('btnResetLoad').style.display = 'block'; }, 8000);
         });
 
@@ -555,4 +602,3 @@
     </script>
 </body>
 </html>
-
